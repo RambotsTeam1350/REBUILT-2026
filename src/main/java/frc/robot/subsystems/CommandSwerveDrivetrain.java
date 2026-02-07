@@ -41,8 +41,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
-import frc.robot.generated.TunerConstantsThorBot.TunerSwerveDrivetrain;
-import frc.robot.generated.TunerConstantsThorBot;
+import frc.robot.generated.TunerConstantsLokiBot.TunerSwerveDrivetrain; //This still has to be changed when you change which bot you're using
+import frc.robot.generated.TunerConstants;
 import frc.robot.LimelightHelpers;
 
 /**
@@ -53,26 +53,22 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
-    //private final AHRS gyro = new AHRS(SPI.Port.kMXP);
     private double maxSpeedMetersPerSecond = 5.0; // Example max speed, adjust as needed
     private Pigeon2 pigeon = new Pigeon2(0, "rio");
     private SwerveDrivePoseEstimator poseEstimator;
 
-    //private static SwerveModulePosition[] tempModulePositions;
-    // private CommandSwerveDrivetrain drivetrain = new CommandSwerveDrivetrain(null, null);
 
-    Pose2d vision = LimelightHelpers.getBotPose2d_wpiBlue("limelight-three");
+    Pose2d vision = LimelightHelpers.getBotPose2d_wpiBlue("limelight-fifteen");
 
     private double initialLeftDistance = 0.0;
     private double initialRightDistance = 0.0;
 
-    //private double angleOffsetDeg = 0.0; // temp value
 
 //positions of each swere module from the center of the bot
-private static final Translation2d frontLeftLocation = new Translation2d(0,0.3); // 2 numbers will go here, x and y position for each one. FROM THE PIGEON, IF PIGEON ISNT IN THE CENTER OF THE BOT, MEASURE FROM THE PIGEON
-private static final Translation2d frontRightLocation = new Translation2d(.6,0.3); // so like actual numbers gotta go in these translation2d objects
-private static final Translation2d backLeftLocation = new Translation2d(0,-0.3); //Meters
-private static final Translation2d backRightLocation = new Translation2d(.6,-0.3);
+private static final Translation2d frontLeftLocation = new Translation2d(-0.29,0.29); // 2 numbers will go here, x and y position for each one. From the center of the bot.
+private static final Translation2d frontRightLocation = new Translation2d(0.29,0.29); // so like actual numbers gotta go in these translation2d objects
+private static final Translation2d backLeftLocation = new Translation2d(-0.29,-0.29); //Meters
+private static final Translation2d backRightLocation = new Translation2d(0.29,-0.29); // 0.58 left to right, square
 
 private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
     frontLeftLocation,
@@ -81,23 +77,17 @@ private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
     backRightLocation
 );
 
-  private final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>[] swerveModules = new SwerveModuleConstants[] {
+// Do NOT cache module positions here. We must read the current module positions
+// each update so the pose estimator can integrate wheel movement.
+private SwerveModulePosition[] getModulePositions() {
+    return new SwerveModulePosition[] {
+        getModule(0).getCachedPosition(),
+        getModule(1).getCachedPosition(),
+        getModule(2).getCachedPosition(),
+        getModule(3).getCachedPosition(),
+    };
+}
 
-    TunerConstantsThorBot.FrontLeft,
-    TunerConstantsThorBot.FrontRight,
-    TunerConstantsThorBot.BackLeft,
-    TunerConstantsThorBot.BackRight
-  }; 
-
-SwerveModulePosition[] positions = new SwerveModulePosition[] {
-    getModule(0).getCachedPosition(),
-    getModule(1).getCachedPosition(),
-    getModule(2).getCachedPosition(),
-    getModule(3).getCachedPosition(),
-};
-
-//private final CommandSwerveDrivetrain swerveDrive = this;
-    //private final CommandSwerveDrivetrain drivetrain = new CommandSwerveDrivetrain(0, null);
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -219,22 +209,26 @@ SwerveModulePosition[] positions = new SwerveModulePosition[] {
         poseEstimator = new SwerveDrivePoseEstimator(
             kinematics,
             getGyroscopeRotation(),
-            positions,
+            getModulePositions(),
             new Pose2d(0, 0, new Rotation2d())
         );
 
         // Initialize Limelight robot orientation now that poseEstimator exists
         LimelightHelpers.SetRobotOrientation(
-            "limelight-three",
-            poseEstimator.getEstimatedPosition().getRotation().getDegrees() + 180,
+            "limelight-fifteen",
+            poseEstimator.getEstimatedPosition().getRotation().getDegrees(),
             0, 0, 0, 0, 0
+        );
+
+        LimelightHelpers.SetRobotOrientation(
+            "limelight-three",
+            poseEstimator.getEstimatedPosition().getRotation().getDegrees(),
+             0, 0, 0, 0, 0
         );
 
     }
     
-    
-
-    
+    //finished pose estimator, added support for Bot B, and a prototype intake controller
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -344,16 +338,38 @@ SwerveModulePosition[] positions = new SwerveModulePosition[] {
                 );
                 m_hasAppliedOperatorPerspective = true;
             });
-        }
+        } 
 
+        // Read fresh module positions each loop so odometry integrates wheel motion
+        SwerveModulePosition[] modulePositions = getModulePositions();
         poseEstimator.update(
             getGyroscopeRotation(),
-            positions
+            modulePositions
         );
 
-        //System.out.println(poseEstimator.getEstimatedPosition());
-        //System.out.print(poseEstimator);
-         System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
+    /*  |   getBotPoseEstimate_wpiBlue_MegaTag2(...) — explicit MegaTag2 PoseEstimate API
+        v    (requires you to call SetRobotOrientation(...) before using MegaTag2). */
+    frc.robot.LimelightHelpers.PoseEstimate llEstimate5 =
+    LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-fifteen");
+
+    frc.robot.LimelightHelpers.PoseEstimate llEstimate3 = 
+    LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-three");
+
+        if (LimelightHelpers.validPoseEstimate(llEstimate5)) {
+    // llEstimate.pose is the Pose2d, llEstimate.timestampSeconds is the measurement time
+    poseEstimator.addVisionMeasurement(
+        llEstimate5.pose,
+        llEstimate5.timestampSeconds
+    );
+}
+        if (LimelightHelpers.validPoseEstimate(llEstimate3)) {
+    // llEstimate.pose is the Pose2d, llEstimate.timestampSeconds is the measurement time
+    poseEstimator.addVisionMeasurement(
+        llEstimate3.pose,
+        llEstimate3.timestampSeconds
+    );
+}
+    System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
          
     }
 
@@ -436,8 +452,8 @@ public void drive(Translation2d translation, double directionDegrees, boolean is
      * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
      * @param timestampSeconds The timestamp of the vision measurement in seconds.
      */
-    @Override
-    public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
+    //@Override
+    /*    public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
         double fpgaTime = Utils.fpgaToCurrentTime(timestampSeconds);
         // Forward to the underlying CTRE drivetrain (it will handle fusion internally)
         super.addVisionMeasurement(visionRobotPoseMeters, fpgaTime);
@@ -445,7 +461,7 @@ public void drive(Translation2d translation, double directionDegrees, boolean is
         if (poseEstimator != null) {
             poseEstimator.addVisionMeasurement(visionRobotPoseMeters, fpgaTime);
         }
-    }
+    } */
 
     /**
      * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate

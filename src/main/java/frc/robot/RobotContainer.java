@@ -16,11 +16,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignToReefTagRelative;
-import frc.robot.generated.TunerConstantsThorBot;
+import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.IntakeTestSubsystem;
 
 public class RobotContainer {
-    private double MaxSpeed = TunerConstantsThorBot.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -32,9 +33,11 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
+    private final IntakeTestSubsystem intaketestSubsytem = new IntakeTestSubsystem();
+
     private final CommandXboxController joystick = new CommandXboxController(0);
 
-    public final CommandSwerveDrivetrain drivetrain = TunerConstantsThorBot.createDrivetrain();
+    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     public RobotContainer() {
         configureBindings();
@@ -75,6 +78,9 @@ public class RobotContainer {
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         joystick.rightBumper().onTrue(new AlignToReefTagRelative(true, drivetrain));
+
+        joystick.b().onTrue(intaketestSubsytem.IntakeUpCommand());
+        joystick.a().onTrue(intaketestSubsytem.IntakeDownCommand());
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
