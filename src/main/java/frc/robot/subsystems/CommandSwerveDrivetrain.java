@@ -220,15 +220,13 @@ private SwerveModulePosition[] getModulePositions() {
             0, 0, 0, 0, 0
         );
 
-        LimelightHelpers.SetRobotOrientation(
+          LimelightHelpers.SetRobotOrientation(
             "limelight-three",
             poseEstimator.getEstimatedPosition().getRotation().getDegrees(),
              0, 0, 0, 0, 0
-        );
+        ); 
 
     }
-    
-    //finished pose estimator, added support for Bot B, and a prototype intake controller
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -347,7 +345,9 @@ private SwerveModulePosition[] getModulePositions() {
             modulePositions
         );
 
-    /*  |   getBotPoseEstimate_wpiBlue_MegaTag2(...) — explicit MegaTag2 PoseEstimate API
+    poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.6, 0.6, 9999)); // This makes it so the pose Estimator doesn't use the angles from the limelight, only stable pigeon angles.
+
+    /*  |   getBotPoseEstimate_wpiBlue_MegaTag2(...) — If you wanna use MegaTag2 instead of MegaTag1
         v    (requires you to call SetRobotOrientation(...) before using MegaTag2). */
     frc.robot.LimelightHelpers.PoseEstimate llEstimate5 =
     LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-fifteen");
@@ -356,18 +356,17 @@ private SwerveModulePosition[] getModulePositions() {
     LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-three");
 
         if (LimelightHelpers.validPoseEstimate(llEstimate5)) {
+            double visionRobotTime5 = Utils.fpgaToCurrentTime(llEstimate5.timestampSeconds);
     // llEstimate.pose is the Pose2d, llEstimate.timestampSeconds is the measurement time
-    poseEstimator.addVisionMeasurement(
-        llEstimate5.pose,
-        llEstimate5.timestampSeconds
-    );
+        poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.6, 0.6, Math.toRadians(9999)));
+        poseEstimator.addVisionMeasurement(llEstimate5.pose, visionRobotTime5);
 }
+
         if (LimelightHelpers.validPoseEstimate(llEstimate3)) {
+            double visionRobotTime3 = Utils.fpgaToCurrentTime(llEstimate3.timestampSeconds);
     // llEstimate.pose is the Pose2d, llEstimate.timestampSeconds is the measurement time
-    poseEstimator.addVisionMeasurement(
-        llEstimate3.pose,
-        llEstimate3.timestampSeconds
-    );
+        poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.6, 0.6, Math.toRadians(9999)));
+        poseEstimator.addVisionMeasurement(llEstimate3.pose, visionRobotTime3);
 }
     System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
          
