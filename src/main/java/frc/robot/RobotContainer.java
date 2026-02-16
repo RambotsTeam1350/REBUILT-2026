@@ -8,8 +8,15 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -18,11 +25,17 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignToReefTagRelative;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.IntakeTestSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.ThroatSubsystem;
+import frc.robot.subsystems.Intake.IntakeLevelSubsystem;
+import frc.robot.subsystems.Intake.IntakeWheelSubsystem;
+import frc.robot.subsystems.TestPIDMotorSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
+                                                                                      // max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -33,39 +46,51 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    private final IntakeTestSubsystem intaketestSubsytem = new IntakeTestSubsystem();
+    private final IntakeLevelSubsystem intaketestSubsytem = new IntakeLevelSubsystem();
+    private final IntakeWheelSubsystem IntakeWheelSubsystem = new IntakeWheelSubsystem();
+    private final ShooterSubsystem ShooterSubsystem = new ShooterSubsystem();
 
     private final CommandXboxController joystick = new CommandXboxController(0);
+    private final ThroatSubsystem ThroatSubsystem = new ThroatSubsystem();
+    private final TestPIDMotorSubsystem pidcontroler = new TestPIDMotorSubsystem();
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    private final SendableChooser<Command> autoChooser;
+
+    //private final SparkFlex motor = new SparkFlex(16, MotorType.kBrushless);
 
     public RobotContainer() {
+        // Explicitly ensure the drivetrain configures AutoBuilder before attempting
+        // to build the chooser. If configuration fails, fall back to an empty chooser
+        // to avoid crashing the robot code.
+
         configureBindings();
+        autoChooser = AutoBuilder.buildAutoChooser("blue middle");
+        SmartDashboard.putData("Auto Chooser", autoChooser);
     }
 
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
+                // Drivetrain will execute this command periodically
+                drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
+                                                                                                   // negative Y
+                                                                                                   // (forward)
+                        .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                        .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with
+                                                                                    // negative X (left)
+                ));
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
-            drivetrain.applyRequest(() -> idle).ignoringDisable(true)
-        );
+                drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
         joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
-        ));
+        joystick.b().whileTrue(drivetrain.applyRequest(
+                () -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -79,13 +104,29 @@ public class RobotContainer {
 
         joystick.rightBumper().onTrue(new AlignToReefTagRelative(true, drivetrain));
 
-        joystick.b().onTrue(intaketestSubsytem.IntakeUpCommand());
-        joystick.a().onTrue(intaketestSubsytem.IntakeDownCommand());
+        // joystick.b().onTrue(intaketestSubsytem.IntakeUpCommand());
+        joystick.x().onTrue(ThroatSubsystem.runMotorCommand());
+        joystick.y().onTrue(ThroatSubsystem.stopMotorCommand());
+
+        joystick.a().onTrue(intaketestSubsytem.IntakeUpCommand());
+        joystick.a().onTrue(IntakeWheelSubsystem.runMotorCommand());
+
+        joystick.b().onTrue(IntakeWheelSubsystem.stopMotorCommand());
+        joystick.b().onTrue(intaketestSubsytem.IntakeDownCommand());
+
+        joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
+        joystick.y().onTrue(ShooterSubsystem.stopMotorCommand());
+
+        // joystick.x().onTrue(pidcontroler.MotionMagicCommand());
+        // joystick.y().onTrue(pidcontroler.StopMotionMagicCommand());
+
+        // SmartDashboard.putData(autochooser);
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        return autoChooser.getSelected();
     }
+
 }

@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.Intake;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -10,8 +10,9 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class IntakeTestSubsystem {
+public class IntakeLevelSubsystem extends SubsystemBase{
     private StatusSignal<Angle> motorPosition;
     
     private final double gearBoxRatio = 27;
@@ -19,7 +20,7 @@ public class IntakeTestSubsystem {
 
    public StatusSignal<Angle> position;
 
-    public IntakeTestSubsystem() {
+    public IntakeLevelSubsystem() {
         intakeMotor = new TalonFX(17); 
         position = intakeMotor.getPosition();
 
@@ -33,7 +34,7 @@ TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.Slot0.kS = 0.25; // S value: Soft Limit
 
     MotionMagicConfigs mm = cfg.MotionMagic;
-    mm.MotionMagicCruiseVelocity = 80; // Target cruise velocity of 80 rps
+    mm.MotionMagicCruiseVelocity = 30; // Target cruise velocity of 80 rps
     mm.MotionMagicAcceleration = 160; // Target acceleration of 160 rps/s (0.5 seconds)
     mm.MotionMagicJerk = 1600; // Target jerk of 1600 rps/s/s (0.1 seconds)
 

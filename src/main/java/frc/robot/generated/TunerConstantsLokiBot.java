@@ -160,7 +160,7 @@ public class TunerConstantsLokiBot {
 
     // Back Right
     private static final int kBackRightDriveMotorId = 11;
-    private static final int kBackRightSteerMotorId = 14;
+    private static final int kBackRightSteerMotorId = 12;
     private static final int kBackRightEncoderId = 3;
     private static final Angle kBackRightEncoderOffset = Rotations.of(0.38427734375);
     private static final boolean kBackRightSteerMotorInverted = true;

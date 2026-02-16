@@ -16,11 +16,15 @@ import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
-import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -41,7 +45,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
-import frc.robot.generated.TunerConstantsLokiBot.TunerSwerveDrivetrain; //This still has to be changed when you change which bot you're using
+import frc.robot.generated.TunerConstantsThorBot.TunerSwerveDrivetrain; //This still has to be changed when you change which bot you're using
 import frc.robot.generated.TunerConstants;
 import frc.robot.LimelightHelpers;
 
@@ -50,18 +54,23 @@ import frc.robot.LimelightHelpers;
  * Subsystem so it can easily be used in command-based projects.
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
+    private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
     private double maxSpeedMetersPerSecond = 5.0; // Example max speed, adjust as needed
     private Pigeon2 pigeon = new Pigeon2(0, "rio");
-    private SwerveDrivePoseEstimator poseEstimator;
-
+    public SwerveDrivePoseEstimator poseEstimator;
 
     Pose2d vision = LimelightHelpers.getBotPose2d_wpiBlue("limelight-fifteen");
 
     private double initialLeftDistance = 0.0;
     private double initialRightDistance = 0.0;
+
+    public double positiveXDistance = poseEstimator.getEstimatedPosition().getX();
+    public double positiveYDistance = poseEstimator.getEstimatedPosition().getY();
+    public double positiveRotation = poseEstimator.getEstimatedPosition().getRotation().getDegrees();
+
 
 
 //positions of each swere module from the center of the bot
@@ -102,26 +111,10 @@ private SwerveModulePosition[] getModulePositions() {
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
 
     // Limelight orientation call moved to constructor after poseEstimator is initialized.
-/*private final SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric()
+/* private final SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric()
     .withDeadband(0.1) // Add a joystick deadband
     .withDriveRequestType(SwerveAppData.DriveRequestType.kOpenLoopForward); // Or other drive types
 */
-/*
-             boolean doRejectUpdate = false;
-                LimelightHelpers.SetRobotOrientation("limelight-three",poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-                LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
-                if(Math.abs(m_gyro.getRate()) > 720) // if our angular velocity is greater than 720 degrees per second, ignore vision updates
-                {
-                    doRejectUpdate = true;
-                }
-                if(!doRejectUpdate)
-                {
-                    poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(.6,.6,9999999));
-                    poseEstimator.addVisionMeasurement(
-                        mt2.pose,
-                        mt2.timestampSeconds);
-                }
- */
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
         new SysIdRoutine.Config(
@@ -196,14 +189,14 @@ private SwerveModulePosition[] getModulePositions() {
      */
     public CommandSwerveDrivetrain(
         SwerveDrivetrainConstants drivetrainConstants,
-        SwerveModuleConstants<?, ?, ?>... modules
-    ) {
+        SwerveModuleConstants<?, ?, ?>... modules) {
+        
         super(drivetrainConstants, modules);
         if (Utils.isSimulation()) {
             startSimThread();
         }
+       
         
-
         // initial left/right wheel distances (meters)
 
         poseEstimator = new SwerveDrivePoseEstimator(
@@ -226,8 +219,49 @@ private SwerveModulePosition[] getModulePositions() {
              0, 0, 0, 0, 0
         ); 
 
+        RobotConfig config;
+    try {
+       config = RobotConfig.fromGUISettings();
+    } catch (Exception e) {
+      // Handle exception as needed
+        DriverStation.reportError("Failed to load RobotConfig", e.getStackTrace());
+        throw new RuntimeException("RobotConfig load failed", e);
+      
     }
 
+    // Configure AutoBuilder last
+    AutoBuilder.configure(
+            () -> getState().Pose, // Robot pose supplier
+            this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+            () -> getState().Speeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            (speeds, feedforwards) -> setControl(
+                    m_pathApplyRobotSpeeds.withSpeeds(speeds)
+                        .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                        .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+                ), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+            new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
+                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                    new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+            ),
+            config, // The robot configuration
+            () -> {
+              // Boolean supplier that controls when the path will be mirrored for the red alliance
+              // This will flip the path being followed to the red side of the field.
+              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Red;
+              }
+              return false;
+            },
+            this // Reference to this subsystem to set requirements
+    );
+        // Ensure the PathPlanner AutoBuilder is configured for this drivetrain.
+        // TunerConstants.createDrivetrain() uses this constructor, so configure
+        // AutoBuilder here so callers (such as RobotContainer) can safely call
+        // AutoBuilder.buildAutoChooser(...) afterward.
+    }
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
      * <p>
@@ -250,6 +284,8 @@ private SwerveModulePosition[] getModulePositions() {
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+           
     }
 
     /**
@@ -282,6 +318,8 @@ private SwerveModulePosition[] getModulePositions() {
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+          
     }
 
     /**
@@ -368,7 +406,7 @@ private SwerveModulePosition[] getModulePositions() {
         poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.6, 0.6, Math.toRadians(9999)));
         poseEstimator.addVisionMeasurement(llEstimate3.pose, visionRobotTime3);
 }
-    System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
+    //  System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
          
     }
 

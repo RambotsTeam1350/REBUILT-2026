@@ -11,14 +11,14 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.IntakeTestSubsystem;
+import frc.robot.subsystems.Intake.IntakeLevelSubsystem;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private Pigeon2 pigeon = new Pigeon2(0, "rio");
   private final RobotContainer m_robotContainer;
 
-  private final IntakeTestSubsystem intakeTestSubsystem = new IntakeTestSubsystem();
+  private final IntakeLevelSubsystem intakeLevelSubsystem = new IntakeLevelSubsystem();
 
   public Robot() {
     m_robotContainer = new RobotContainer();
@@ -27,7 +27,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run(); 
-    BaseStatusSignal.refreshAll(intakeTestSubsystem.position);
+    BaseStatusSignal.refreshAll(intakeLevelSubsystem.position);
   } 
 
   @Override
