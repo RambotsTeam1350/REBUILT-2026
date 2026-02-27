@@ -25,12 +25,12 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignToReefTagRelative;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.ThroatSubsystem;
+import frc.robot.subsystems.ThroatAndIndexerSubsystem;
 import frc.robot.subsystems.Intake.IntakeLevelSubsystem;
 import frc.robot.subsystems.Intake.IntakeWheelSubsystem;
+import frc.robot.subsystems.Shooter.ShooterPowerSubsystem;
 import frc.robot.subsystems.TestPIDMotorSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.ClimberSubsystem;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -48,11 +48,12 @@ public class RobotContainer {
 
     private final IntakeLevelSubsystem intaketestSubsytem = new IntakeLevelSubsystem();
     private final IntakeWheelSubsystem IntakeWheelSubsystem = new IntakeWheelSubsystem();
-    private final ShooterSubsystem ShooterSubsystem = new ShooterSubsystem();
+    private final ShooterPowerSubsystem ShooterSubsystem = new ShooterPowerSubsystem();
 
     private final CommandXboxController joystick = new CommandXboxController(0);
-    private final ThroatSubsystem ThroatSubsystem = new ThroatSubsystem();
+    private final ThroatAndIndexerSubsystem ThroatAndIndexerSubsystem = new ThroatAndIndexerSubsystem();
     private final TestPIDMotorSubsystem pidcontroler = new TestPIDMotorSubsystem();
+    private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private final SendableChooser<Command> autoChooser;
@@ -102,12 +103,13 @@ public class RobotContainer {
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        joystick.rightBumper().onTrue(new AlignToReefTagRelative(true, drivetrain));
+        // joystick.rightBumper().onTrue(new AlignToReefTagRelative(true, drivetrain));
 
         // joystick.b().onTrue(intaketestSubsytem.IntakeUpCommand());
-        joystick.x().onTrue(ThroatSubsystem.runMotorCommand());
-        joystick.y().onTrue(ThroatSubsystem.stopMotorCommand());
 
+    //  joystick.x().onTrue(ThroatAndIndexerSubsystem.runMotorCommand());
+    //  joystick.y().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
+        
         joystick.a().onTrue(intaketestSubsytem.IntakeUpCommand());
         joystick.a().onTrue(IntakeWheelSubsystem.runMotorCommand());
 
@@ -116,6 +118,9 @@ public class RobotContainer {
 
         joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
         joystick.y().onTrue(ShooterSubsystem.stopMotorCommand());
+
+        joystick.povUp().onTrue(climberSubsystem.ClimbUpCommand());
+        joystick.povDown().onTrue(climberSubsystem.ClimbDownCommand());
 
         // joystick.x().onTrue(pidcontroler.MotionMagicCommand());
         // joystick.y().onTrue(pidcontroler.StopMotionMagicCommand());

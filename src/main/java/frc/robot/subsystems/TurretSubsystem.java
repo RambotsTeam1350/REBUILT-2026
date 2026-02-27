@@ -79,7 +79,7 @@ public class TurretSubsystem extends SubsystemBase {
         getAngleToTarget();
         // ^ make sure all of these numbers are being updated frequently so the turret is always aiming at the right place
         BaseStatusSignal.refreshAll(motorPosition);
-        System.out.print(motor.getPosition().getValueAsDouble() + " Turret Motor Position");
+        // System.out.print(motor.getPosition().getValueAsDouble() + " Turret Motor Position");
         
     }
 
@@ -107,7 +107,7 @@ public double getAngleToTarget() {
 private double degreesToEncoderUnits(double degrees) {
         // Assuming 2048 units per revolution and a gear ratio of 9:1
         double unitsPerRevolution = 2048;
-        return (degrees / 360.0) * gearBoxRatio;
+        return (degrees / 360.0) * unitsPerRevolution * gearBoxRatio;
     }
 
     public Command TurretToMaxPosition(double maxPosition) {

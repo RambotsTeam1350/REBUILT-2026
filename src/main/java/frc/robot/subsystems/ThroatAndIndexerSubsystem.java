@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
-public class ThroatSubsystem  extends SubsystemBase {
+public class ThroatAndIndexerSubsystem  extends SubsystemBase {
 
     private final TalonFX motor;
 
@@ -18,7 +18,7 @@ public class ThroatSubsystem  extends SubsystemBase {
     public double velocityDouble = 0.0;
     public static double positionDouble = 0.0;
 
-    public ThroatSubsystem() {
+    public ThroatAndIndexerSubsystem() {
         motor = new TalonFX(15);
 
         velocity = motor.getVelocity();
