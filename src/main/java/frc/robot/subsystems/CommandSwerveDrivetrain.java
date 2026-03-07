@@ -45,7 +45,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
-import frc.robot.generated.TunerConstantsLokiBot.TunerSwerveDrivetrain; //This still has to be changed when you change which bot you're using
+import frc.robot.generated.TunerConstantsThorBot.TunerSwerveDrivetrain; //This still has to be changed when you change which bot you're using
 import frc.robot.generated.TunerConstants;
 import frc.robot.LimelightHelpers;
 
@@ -67,9 +67,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private double initialLeftDistance = 0.0;
     private double initialRightDistance = 0.0;
 
-    public double positiveXDistance = poseEstimator.getEstimatedPosition().getX();
-    public double positiveYDistance = poseEstimator.getEstimatedPosition().getY();
-    public double positiveRotation = poseEstimator.getEstimatedPosition().getRotation().getDegrees();
+    //public double positiveXDistance = poseEstimator.getEstimatedPosition().getX();
+    //public double positiveYDistance = poseEstimator.getEstimatedPosition().getY();
+    //public double positiveRotation = poseEstimator.getEstimatedPosition().getRotation().getDegrees();
 
 
 
@@ -406,7 +406,7 @@ private SwerveModulePosition[] getModulePositions() {
         poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.6, 0.6, Math.toRadians(9999)));
         poseEstimator.addVisionMeasurement(llEstimate3.pose, visionRobotTime3);
 }
-    //  System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
+      //System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
          
     }
 
@@ -424,6 +424,16 @@ private SwerveModulePosition[] getModulePositions() {
         // Pigeon2 in Phoenix 6 exposes a direct Rotation2d accessor.
         // Use that instead of working with StatusSignal/Angle wrappers.
         return pigeon.getRotation2d();
+    }
+
+    /**
+     * Expose the internal WPILib pose estimator so other subsystems (e.g. turret)
+     * can use the robot pose for calculations.
+     *
+     * @return the SwerveDrivePoseEstimator used by this drivetrain
+     */
+    public SwerveDrivePoseEstimator getPoseEstimator() {
+        return poseEstimator;
     }
 
 /**

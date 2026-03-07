@@ -14,6 +14,8 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.math.estimator.PoseEstimator;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -26,6 +28,7 @@ import frc.robot.commands.AlignToReefTagRelative;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ThroatAndIndexerSubsystem;
+import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.Intake.IntakeLevelSubsystem;
 import frc.robot.subsystems.Intake.IntakeWheelSubsystem;
 import frc.robot.subsystems.Shooter.ShooterPowerSubsystem;
@@ -54,10 +57,10 @@ public class RobotContainer {
     private final ThroatAndIndexerSubsystem ThroatAndIndexerSubsystem = new ThroatAndIndexerSubsystem();
     private final TestPIDMotorSubsystem pidcontroler = new TestPIDMotorSubsystem();
     private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    private final TurretSubsystem turretSubsystem;
     private final SendableChooser<Command> autoChooser;
-
+    
     //private final SparkFlex motor = new SparkFlex(16, MotorType.kBrushless);
 
     public RobotContainer() {
@@ -65,7 +68,12 @@ public class RobotContainer {
         // to build the chooser. If configuration fails, fall back to an empty chooser
         // to avoid crashing the robot code.
 
+        // Construct the turret after the drivetrain so we can pass the drivetrain's
+        // pose estimator into the turret constructor.
+        turretSubsystem = new TurretSubsystem(drivetrain.getPoseEstimator());
+
         configureBindings();
+
         autoChooser = AutoBuilder.buildAutoChooser("blue middle");
         SmartDashboard.putData("Auto Chooser", autoChooser);
     }
@@ -105,22 +113,28 @@ public class RobotContainer {
 
         // joystick.rightBumper().onTrue(new AlignToReefTagRelative(true, drivetrain));
 
-        // joystick.b().onTrue(intaketestSubsytem.IntakeUpCommand());
+        //joystick.b().onTrue(intaketestSubsytem.IntakeDownCommand());
+        //joystick.b().onTrue(pidcontroler.MotorTest());
+        //joystick.a().onTrue(pidcontroler.StopMotorCommand());
+        //joystick.b().onTrue(turretSubsystem.TurretTestSpeed());
+        joystick.a().onTrue(turretSubsystem.TurretAutoAimToHub());
 
-    //  joystick.x().onTrue(ThroatAndIndexerSubsystem.runMotorCommand());
-    //  joystick.y().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
+        joystick.x().onTrue(turretSubsystem.TurretToMaxPosition());
+    
+        //joystick.y().onTrue(turretSubsystem.TurretTestSpeed());
+        joystick.b().onTrue(turretSubsystem.TurretToZero());
         
-        joystick.a().onTrue(intaketestSubsytem.IntakeUpCommand());
-        joystick.a().onTrue(IntakeWheelSubsystem.runMotorCommand());
+        //joystick.a().onTrue(intaketestSubsytem.IntakeUpCommand());
+        //joystick.x().onTrue(IntakeWheelSubsystem.runMotorCommand());
 
-        joystick.b().onTrue(IntakeWheelSubsystem.stopMotorCommand());
-        joystick.b().onTrue(intaketestSubsytem.IntakeDownCommand());
+        //joystick.y().onTrue(IntakeWheelSubsystem.stopMotorCommand());
+        //joystick.b().onTrue(intaketestSubsytem.IntakeDownCommand());
 
-        joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
-        joystick.y().onTrue(ShooterSubsystem.stopMotorCommand());
+       // joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
+       // joystick.y().onTrue(ShooterSubsystem.stopMotorCommand());
 
-        joystick.povUp().onTrue(climberSubsystem.ClimbUpCommand());
-        joystick.povDown().onTrue(climberSubsystem.ClimbDownCommand());
+       // joystick.povUp().onTrue(climberSubsystem.ClimbUpCommand());
+       // joystick.povDown().onTrue(climberSubsystem.ClimbDownCommand());
 
         // joystick.x().onTrue(pidcontroler.MotionMagicCommand());
         // joystick.y().onTrue(pidcontroler.StopMotionMagicCommand());

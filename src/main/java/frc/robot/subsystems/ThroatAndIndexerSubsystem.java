@@ -19,7 +19,7 @@ public class ThroatAndIndexerSubsystem  extends SubsystemBase {
     public static double positionDouble = 0.0;
 
     public ThroatAndIndexerSubsystem() {
-        motor = new TalonFX(15);
+        motor = new TalonFX(32);
 
         velocity = motor.getVelocity();
         position = motor.getPosition();
@@ -40,7 +40,7 @@ public class ThroatAndIndexerSubsystem  extends SubsystemBase {
       public Command runMotorCommand() {
         return Commands.runOnce(
             () -> {
-                runMotor(0.3);
+                runMotor(1);
             }
         );
     }

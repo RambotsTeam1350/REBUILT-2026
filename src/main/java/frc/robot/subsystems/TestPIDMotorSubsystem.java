@@ -19,7 +19,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class TestPIDMotorSubsystem extends SubsystemBase{
     
-     private final TalonFX motor = new TalonFX(14);
+     private final TalonFX motor = new TalonFX(33);
     private StatusSignal<Angle> motorPosition;
         public TestPIDMotorSubsystem() {
             
@@ -45,6 +45,18 @@ public class TestPIDMotorSubsystem extends SubsystemBase{
                 Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(-4)))
             );
        } 
+
+        public Command MotorTest() {
+        return Commands.sequence(
+                Commands.runOnce(() -> motor.set(0.5))
+            );
+       }
+
+        public Command StopMotorCommand() {
+        return Commands.sequence(
+                Commands.runOnce(() -> motor.set(0))
+            );
+       }
 
        public Command StopMotionMagicCommand() {
         return Commands.sequence(

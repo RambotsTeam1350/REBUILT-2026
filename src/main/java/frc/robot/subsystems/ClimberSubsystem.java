@@ -39,7 +39,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-         System.out.println(motorPosition.getValueAsDouble() + " Climber motor");
+         //System.out.println(motorPosition.getValueAsDouble() + " Climber motor");
     }
 
         public Command ClimbUpCommand() {

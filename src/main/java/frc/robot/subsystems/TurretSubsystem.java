@@ -2,6 +2,8 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import java.util.Vector;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -13,8 +15,10 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -34,12 +38,15 @@ public class TurretSubsystem extends SubsystemBase {
     //public double PoseEstimatorYposition = 0; //Yᵣ
     //public double PoseEstimatorRotation = 0; //θᵣ
 
-    double gearBoxRatio = 30; // Assuming a 9:1 gear ratio for the turret
+    double gearBoxRatio = 9; // Assuming a 9:1 gear ratio for the turret
     private StatusSignal<Angle> motorPosition;
 
     public double TargetXposition = 4.625594; //Xₜ 182.11 in inches
     public double TargetYposition = 4.03479; //Yₜ 158.85 in inches 
     public double TargetRotation;
+
+    public double XofTurretOnBot = 3; //XofTurretOnBot
+    public double YofTurretOnBot = 3;
 
     public double AngleToTarget;
 
@@ -47,7 +54,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     public TurretSubsystem(SwerveDrivePoseEstimator poseEstimator) {
         this.poseEstimator = poseEstimator;
-        motor = new TalonFX(14);
+        motor = new TalonFX(13);
 
 
          TalonFXConfiguration cfg = new TalonFXConfiguration();
@@ -60,13 +67,17 @@ public class TurretSubsystem extends SubsystemBase {
 
             
             MotionMagicConfigs mm = cfg.MotionMagic;
-            mm.MotionMagicCruiseVelocity = 6; 
+            mm.MotionMagicCruiseVelocity = 4; 
             mm.MotionMagicAcceleration = 80;
             mm.MotionMagicJerk = 1600; 
             motor.getConfigurator().apply(cfg);
 
             this.motorPosition = this.motor.getPosition();
 
+    }
+
+    public double degreesToRadians(double degrees) {
+        return degrees * (Math.PI / 180);
     }
 
 @Override
@@ -77,12 +88,16 @@ public class TurretSubsystem extends SubsystemBase {
         getPoseEstimatorRotation();
         getTargetRotation();
         getAngleToTarget();
+        
+        //System.out.println(getAngleToTarget());
+
         // ^ make sure all of these numbers are being updated frequently so the turret is always aiming at the right place
         BaseStatusSignal.refreshAll(motorPosition);
-        // System.out.print(motor.getPosition().getValueAsDouble() + " Turret Motor Position");
+        System.out.print(motor.getPosition().getValueAsDouble() + " Turret Motor Position");
         
     }
-
+ 
+/* ------------------------------------------------------------------------------ */
 public double getPoseEstimatorY() {
     return poseEstimator.getEstimatedPosition().getY();
 }
@@ -95,33 +110,68 @@ public double getPoseEstimatorRotation() {
     return poseEstimator.getEstimatedPosition().getRotation().getDegrees();
 }
 
+public double getTurretRotation() {
+    return encoderUnitsToDegrees(motor.getPosition().getValueAsDouble());
+}
+/* ------------------------------------------------------------------------------ */
+
 public double getTargetRotation()
 {
     return Math.atan2((TargetYposition - getPoseEstimatorY()), (TargetXposition - getPoseEstimatorX()));
 }
 //TargetRotation - poseEstimator.getEstimatedPosition().getRotation().getDegrees(); //θᵣₑₗₐₜᵢᵥₑ
 public double getAngleToTarget() {
-    return getTargetRotation() - getPoseEstimatorRotation();
+    return (getPoseEstimatorRotation() - getTargetRotation());
 }
+/* --------- v new calculations as of 3/7/26 v --------- */
+
+public Translation2d getDistanceBotonTurretFieldRelative() { //step 1 of the five step plan :)
+    return new Translation2d(XofTurretOnBot * Math.cos(degreesToRadians(getPoseEstimatorRotation())), 
+    YofTurretOnBot * Math.sin(degreesToRadians(getPoseEstimatorRotation())));
+}
+
+public Translation2d getPositionTurretonField() {
+    return new Translation2d();
+}
+
+public double getTurretAngleBotRelative() {
+    return 3 - getPoseEstimatorRotation();
+}
+
+/* --------- ^ new calculations as of 3/7/26 ^ --------- */
 
 private double degreesToEncoderUnits(double degrees) {
         // Assuming 2048 units per revolution and a gear ratio of 9:1
         double unitsPerRevolution = 2048;
-        return (degrees / 360.0) * unitsPerRevolution * gearBoxRatio;
+        return ((degrees / 360.0) * (8.5810546875/9)) * gearBoxRatio; // 8.58 is what full revolution actualy is, instead of 9
     }
 
-    public Command TurretToMaxPosition(double maxPosition) {
+private double encoderUnitsToDegrees(double encoderUnits) {
+    return ( 360 * ( encoderUnits / ((8.5810546875/9) * gearBoxRatio)));
+}
+    public Command TurretToMaxPosition() {
         return Commands.sequence(
-                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(maxPosition)))
+                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(360))))
             );
        } 
+/* 
+       public Command TurretTestSpeed() {
+        return Commands.sequence(
+                Commands.runOnce(() -> motor.set(0.1))
+            );
+       }
+*/
+       public Command TurretTestStop() {
+        return Commands.sequence(
+                Commands.runOnce(() -> motor.set(0))
+            );
+       }
 
     public Command TurretAutoAimToHub() {
         return Commands.sequence(
-                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(getAngleToTarget()))))
-            );
+                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(getAngleToTarget())))));
        }
-    
+     
 
     public Command TurretToZero() {
         return Commands.sequence(
