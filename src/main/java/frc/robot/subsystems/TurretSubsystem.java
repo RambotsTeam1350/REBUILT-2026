@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.commands.GetTurretToHub;
 
 /*  
     This subsystem will eventaully use auto-aiming features and kinematics from the pose estimator, 
@@ -89,6 +90,7 @@ public class TurretSubsystem extends SubsystemBase {
         getTargetRotation();
         getAngleToTarget();
         
+        GetTurretToHub.calculateTurretToHubVector(getPoseEstimatorX(), getPoseEstimatorY(), degreesToRadians(getPoseEstimatorRotation()), XofTurretOnBot, YofTurretOnBot, TargetXposition, TargetYposition);
         //System.out.println(getAngleToTarget());
 
         // ^ make sure all of these numbers are being updated frequently so the turret is always aiming at the right place
@@ -151,7 +153,9 @@ private double encoderUnitsToDegrees(double encoderUnits) {
 }
     public Command TurretToMaxPosition() {
         return Commands.sequence(
-                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(360))))
+                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(
+    GetTurretToHub.calculateTurretToHubVector(getPoseEstimatorX(), getPoseEstimatorY(), degreesToRadians(getPoseEstimatorRotation()), XofTurretOnBot, YofTurretOnBot, TargetXposition, TargetYposition).getAngle().getDegrees()
+                    ))))
             );
        } 
 /* 
