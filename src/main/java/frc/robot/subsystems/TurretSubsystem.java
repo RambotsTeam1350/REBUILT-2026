@@ -13,9 +13,11 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -23,7 +25,10 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+import frc.robot.LimelightHelpers;
+import frc.robot.LimelightHelpers.LimelightTarget_Barcode;
+import frc.robot.LimelightHelpers.LimelightTarget_Detector;
+import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.commands.GetTurretToHub;
 
@@ -39,15 +44,15 @@ public class TurretSubsystem extends SubsystemBase {
     //public double PoseEstimatorYposition = 0; //Yᵣ
     //public double PoseEstimatorRotation = 0; //θᵣ
 
-    double gearBoxRatio = 9; // Assuming a 9:1 gear ratio for the turret
+    double gearBoxRatio = 3.0; // Assuming a 9:1 gear ratio for the turret
     private StatusSignal<Angle> motorPosition;
 
     public double TargetXposition = 4.625594; //Xₜ 182.11 in inches
     public double TargetYposition = 4.03479; //Yₜ 158.85 in inches 
     public double TargetRotation;
 
-    public double XofTurretOnBot = 3; //XofTurretOnBot
-    public double YofTurretOnBot = 3;
+    public double XofTurretOnBot = 0.05; //XofTurretOnBot
+    public double YofTurretOnBot = -0.05;
 
     public double AngleToTarget;
 
@@ -68,7 +73,7 @@ public class TurretSubsystem extends SubsystemBase {
 
             
             MotionMagicConfigs mm = cfg.MotionMagic;
-            mm.MotionMagicCruiseVelocity = 4; 
+            mm.MotionMagicCruiseVelocity = 7; 
             mm.MotionMagicAcceleration = 80;
             mm.MotionMagicJerk = 1600; 
             motor.getConfigurator().apply(cfg);
@@ -89,13 +94,16 @@ public class TurretSubsystem extends SubsystemBase {
         getPoseEstimatorRotation();
         getTargetRotation();
         getAngleToTarget();
-        
+
         GetTurretToHub.calculateTurretToHubVector(getPoseEstimatorX(), getPoseEstimatorY(), degreesToRadians(getPoseEstimatorRotation()), XofTurretOnBot, YofTurretOnBot, TargetXposition, TargetYposition);
+        //System.out.println(GetTurretToHub.calculateTurretToHubVector(getPoseEstimatorX(), getPoseEstimatorY(), degreesToRadians(getPoseEstimatorRotation()), XofTurretOnBot, YofTurretOnBot, TargetXposition, TargetYposition).getAngle().getDegrees());
+        
+        TurretAutoAimToHub();
         //System.out.println(getAngleToTarget());
 
         // ^ make sure all of these numbers are being updated frequently so the turret is always aiming at the right place
         BaseStatusSignal.refreshAll(motorPosition);
-        System.out.print(motor.getPosition().getValueAsDouble() + " Turret Motor Position");
+        //System.out.print(motor.getPosition().getValueAsDouble() + " Turret Motor Position");
         
     }
  
@@ -153,9 +161,7 @@ private double encoderUnitsToDegrees(double encoderUnits) {
 }
     public Command TurretToMaxPosition() {
         return Commands.sequence(
-                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(
-    GetTurretToHub.calculateTurretToHubVector(getPoseEstimatorX(), getPoseEstimatorY(), degreesToRadians(getPoseEstimatorRotation()), XofTurretOnBot, YofTurretOnBot, TargetXposition, TargetYposition).getAngle().getDegrees()
-                    ))))
+                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(360))))
             );
        } 
 /* 
@@ -165,6 +171,9 @@ private double encoderUnitsToDegrees(double encoderUnits) {
             );
        }
 */
+   
+       //_________________________________________________________________________________________________
+
        public Command TurretTestStop() {
         return Commands.sequence(
                 Commands.runOnce(() -> motor.set(0))
@@ -173,7 +182,9 @@ private double encoderUnitsToDegrees(double encoderUnits) {
 
     public Command TurretAutoAimToHub() {
         return Commands.sequence(
-                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(getAngleToTarget())))));
+                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(
+                GetTurretToHub.calculateTurretToHubVector(getPoseEstimatorX(), getPoseEstimatorY(), degreesToRadians(getPoseEstimatorRotation()), XofTurretOnBot, YofTurretOnBot, TargetXposition, TargetYposition).getAngle().getDegrees()
+                )))));
        }
      
 

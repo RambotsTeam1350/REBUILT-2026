@@ -388,10 +388,10 @@ private SwerveModulePosition[] getModulePositions() {
     /*  |   getBotPoseEstimate_wpiBlue_MegaTag2(...) — If you wanna use MegaTag2 instead of MegaTag1
         v    (requires you to call SetRobotOrientation(...) before using MegaTag2). */
     frc.robot.LimelightHelpers.PoseEstimate llEstimate5 =
-    LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-fifteen");
+    LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-fifteen");
 
     frc.robot.LimelightHelpers.PoseEstimate llEstimate3 = 
-    LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-three");
+    LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-three");
 
         if (LimelightHelpers.validPoseEstimate(llEstimate5)) {
             double visionRobotTime5 = Utils.fpgaToCurrentTime(llEstimate5.timestampSeconds);
@@ -406,7 +406,7 @@ private SwerveModulePosition[] getModulePositions() {
         poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.6, 0.6, Math.toRadians(9999)));
         poseEstimator.addVisionMeasurement(llEstimate3.pose, visionRobotTime3);
 }
-      //System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
+      System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
          
     }
 

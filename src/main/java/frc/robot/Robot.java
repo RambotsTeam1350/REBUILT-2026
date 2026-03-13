@@ -8,26 +8,37 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.Intake.IntakeLevelSubsystem;
+import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.TurretSubsystem;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private Pigeon2 pigeon = new Pigeon2(0, "rio");
   private final RobotContainer m_robotContainer;
-
+  private final TurretSubsystem turretSubsystem;
+  public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
   private final IntakeLevelSubsystem intakeLevelSubsystem = new IntakeLevelSubsystem();
+ 
 
   public Robot() {
     m_robotContainer = new RobotContainer();
+
+    turretSubsystem = new TurretSubsystem(drivetrain.getPoseEstimator());
+    //CommandScheduler.registerSubsystem(turretSubsystem);
+    
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run(); 
     BaseStatusSignal.refreshAll(intakeLevelSubsystem.position);
+    
   } 
 
   @Override

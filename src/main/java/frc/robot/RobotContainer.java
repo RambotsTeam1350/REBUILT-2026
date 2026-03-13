@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.commands.AlignToHub;
 import frc.robot.commands.AlignToReefTagRelative;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -34,6 +35,9 @@ import frc.robot.subsystems.Intake.IntakeWheelSubsystem;
 import frc.robot.subsystems.Shooter.ShooterPowerSubsystem;
 import frc.robot.subsystems.TestPIDMotorSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
+
+import frc.robot.LimelightHelpers.LimelightTarget_Detector;
+import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -60,6 +64,7 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private final TurretSubsystem turretSubsystem;
     private final SendableChooser<Command> autoChooser;
+    private LimelightTarget_Detector limelight = new LimelightTarget_Detector();
     
     //private final SparkFlex motor = new SparkFlex(16, MotorType.kBrushless);
 
@@ -78,6 +83,7 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Chooser", autoChooser);
     }
 
+    
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
@@ -108,6 +114,13 @@ public class RobotContainer {
         joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
+     
+        
+     
+        //joystick.rightBumper().whileTrue(new AlignToHub(drivetrain, limelight, 0)); // Align to hub with no offset
+
+
+
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
@@ -117,12 +130,12 @@ public class RobotContainer {
         //joystick.b().onTrue(pidcontroler.MotorTest());
         //joystick.a().onTrue(pidcontroler.StopMotorCommand());
         //joystick.b().onTrue(turretSubsystem.TurretTestSpeed());
-        joystick.a().onTrue(turretSubsystem.TurretAutoAimToHub());
+        //joystick.a().onTrue(turretSubsystem.TurretAutoAimToHub());
 
-        joystick.x().onTrue(turretSubsystem.TurretToMaxPosition());
+       //joystick.x().whileTrue(turretSubsystem.TurretToMaxPosition());
     
         //joystick.y().onTrue(turretSubsystem.TurretTestSpeed());
-        joystick.b().onTrue(turretSubsystem.TurretToZero());
+        //joystick.b().onTrue(turretSubsystem.TurretToZero());
         
         //joystick.a().onTrue(intaketestSubsytem.IntakeUpCommand());
         //joystick.x().onTrue(IntakeWheelSubsystem.runMotorCommand());
@@ -130,14 +143,18 @@ public class RobotContainer {
         //joystick.y().onTrue(IntakeWheelSubsystem.stopMotorCommand());
         //joystick.b().onTrue(intaketestSubsytem.IntakeDownCommand());
 
-       // joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
-       // joystick.y().onTrue(ShooterSubsystem.stopMotorCommand());
+        joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
+        joystick.y().onTrue(ShooterSubsystem.stopMotorCommand());
 
        // joystick.povUp().onTrue(climberSubsystem.ClimbUpCommand());
        // joystick.povDown().onTrue(climberSubsystem.ClimbDownCommand());
 
         // joystick.x().onTrue(pidcontroler.MotionMagicCommand());
         // joystick.y().onTrue(pidcontroler.StopMotionMagicCommand());
+
+        joystick.a().onTrue(ThroatAndIndexerSubsystem.runMotorCommand());
+        joystick.b().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
+
 
         // SmartDashboard.putData(autochooser);
 

@@ -40,7 +40,7 @@ public class ThroatAndIndexerSubsystem  extends SubsystemBase {
       public Command runMotorCommand() {
         return Commands.runOnce(
             () -> {
-                runMotor(1);
+                runMotor(.5);
             }
         );
     }
