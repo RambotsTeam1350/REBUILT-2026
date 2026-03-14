@@ -192,5 +192,14 @@ private double encoderUnitsToDegrees(double encoderUnits) {
         return Commands.sequence(
                 Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(0)))
             );
-       } 
+       }
+
+    /**
+     * Sets the turret to a specific angle in degrees using MotionMagic control.
+     *
+     * @param degrees The target angle in degrees
+     */
+    public void setTurretAngle(double degrees) {
+        motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(degrees)));
+    }
 }
