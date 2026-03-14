@@ -54,6 +54,10 @@ public class TurretSubsystem extends SubsystemBase {
     public double XofTurretOnBot = 0.05; //XofTurretOnBot
     public double YofTurretOnBot = -0.05;
 
+    // Limelight camera position relative to robot center (in meters)
+    public double XofCameraOnBot = 0.0; // TODO: Measure actual camera X offset
+    public double YofCameraOnBot = 0.0; // TODO: Measure actual camera Y offset
+
     public double AngleToTarget;
 
     private SwerveDrivePoseEstimator poseEstimator;
@@ -201,5 +205,23 @@ private double encoderUnitsToDegrees(double encoderUnits) {
      */
     public void setTurretAngle(double degrees) {
         motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(degrees)));
+    }
+
+    /**
+     * Gets the camera position relative to robot center.
+     *
+     * @return Translation2d representing camera position in robot frame
+     */
+    public Translation2d getCameraPositionOnBot() {
+        return new Translation2d(XofCameraOnBot, YofCameraOnBot);
+    }
+
+    /**
+     * Gets the turret position relative to robot center.
+     *
+     * @return Translation2d representing turret position in robot frame
+     */
+    public Translation2d getTurretPositionOnBot() {
+        return new Translation2d(XofTurretOnBot, YofTurretOnBot);
     }
 }
