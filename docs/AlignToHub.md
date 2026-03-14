@@ -2,15 +2,23 @@
 
 ## Overview
 
-The `AlignToHub` command automatically aligns the turret to the hub using AprilTag detection from the Limelight camera. It uses vision data to calculate the precise angle from the turret to the hub and rotates the turret accordingly, **accounting for the geometric offset between the camera and turret positions on the robot**.
+The `AlignToHub` command automatically aligns the turret to the hub using AprilTag detection from the Limelight camera. It **automatically detects the alliance color** and targets the correct hub AprilTags:
+- **Red Alliance:** AprilTags 9 and 10
+- **Blue Alliance:** AprilTags 24 and 25
+
+It uses vision data to calculate the precise angle from the turret to the hub and rotates the turret accordingly, **accounting for the geometric offset between the camera and turret positions on the robot**.
 
 ## Implementation Details
 
 ### Key Features
 
-1. **AprilTag Detection** - Uses `LimelightHelpers.getRawFiducials()` to get vision data from the `limelight-fifteen` camera
-2. **Target Identification** - Searches for a specific AprilTag ID to locate the hub
-3. **Angle Calculation with Camera-Turret Offset Compensation**:
+1. **Alliance-Aware AprilTag Detection** - Automatically selects the correct hub tags based on alliance color
+   - Uses `DriverStation.getAlliance()` to determine Red or Blue alliance
+   - Searches for tags 9 & 10 (Red) or 24 & 25 (Blue)
+   - Defaults to Blue alliance tags if alliance info unavailable
+2. **Multi-Tag Support** - If multiple hub tags are visible, uses the closest one
+3. **Limelight Integration** - Uses `LimelightHelpers.getRawFiducials()` to get vision data from the `limelight-fifteen` camera
+4. **Angle Calculation with Camera-Turret Offset Compensation**:
    - Scales the `txnc` (normalized horizontal offset -1 to 1) by the camera's 63.3° horizontal FOV to get the angle from the camera's perspective
    - Calculates the geometric angular offset between camera and turret positions on the robot
    - Uses the target distance from the AprilTag to compute the parallax correction
@@ -22,15 +30,18 @@ The `AlignToHub` command automatically aligns the turret to the hub using AprilT
 ### Constructor
 
 ```java
-new AlignToHub(TurretSubsystem turretSubsystem, int hubAprilTagID)
+new AlignToHub(TurretSubsystem turretSubsystem)
 ```
 
 **Parameters:**
 - `turretSubsystem` - The turret subsystem to control
-- `hubAprilTagID` - The AprilTag ID of the hub to align to
+
+**Note:** Alliance color is automatically detected from the Driver Station. No need to specify AprilTag IDs.
 
 ### Constants
 
+- `RED_HUB_TAGS` = {9, 10} - AprilTag IDs for Red alliance hub
+- `BLUE_HUB_TAGS` = {24, 25} - AprilTag IDs for Blue alliance hub
 - `ALIGNMENT_TOLERANCE_DEGREES` = 2.0° - How close the turret must be to consider aligned
 - `REQUIRED_ON_TARGET_COUNT` = 5 - Number of consecutive cycles turret must be on target before finishing
 - `limelightName` = "limelight-fifteen" - The Limelight camera name
@@ -41,7 +52,9 @@ new AlignToHub(TurretSubsystem turretSubsystem, int hubAprilTagID)
 1. **Initialize** - Resets the consecutive on-target counter
 2. **Execute** (called repeatedly):
    - Retrieves raw fiducial data from Limelight
-   - Searches for the hub's AprilTag by ID
+   - Determines alliance color (Red or Blue)
+   - Searches for any hub AprilTag (9, 10 for Red; 24, 25 for Blue)
+   - If multiple tags visible, selects the closest one
    - If found:
      - Calculates `angleToTagFromCamera` using `txnc` value scaled by FOV
      - Gets camera and turret positions on the robot
@@ -89,11 +102,16 @@ Measure from the robot center to the Limelight camera mount position in the robo
 
 ```java
 // In RobotContainer.java
-private final int HUB_APRILTAG_ID = 7; // Example AprilTag ID for the hub
 
-// Bind to a button
-joystick.rightBumper().whileTrue(new AlignToHub(turretSubsystem, HUB_APRILTAG_ID));
+// Bind to a button - alliance color is auto-detected
+joystick.rightBumper().whileTrue(new AlignToHub(turretSubsystem));
 ```
+
+**Alliance Detection:**
+- Command automatically queries `DriverStation.getAlliance()` at runtime
+- Red alliance → searches for tags 9 and 10
+- Blue alliance → searches for tags 24 and 25
+- If alliance info unavailable → defaults to Blue tags (24, 25)
 
 ## Advantages Over Pose Estimator Alone
 
