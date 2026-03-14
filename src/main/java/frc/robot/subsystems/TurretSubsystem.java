@@ -47,6 +47,11 @@ public class TurretSubsystem extends SubsystemBase {
     double gearBoxRatio = 3.0; // Assuming a 9:1 gear ratio for the turret
     private StatusSignal<Angle> motorPosition;
 
+    // Turret physical limits (degrees relative to robot front)
+    // The turret can rotate approximately 180 degrees, centered on the back of the robot
+    private static final double TURRET_MIN_ANGLE = -90.0; // 90 degrees left of back = right side
+    private static final double TURRET_MAX_ANGLE = 90.0;  // 90 degrees right of back = left side
+
     public double TargetXposition = 4.625594; //Xₜ 182.11 in inches
     public double TargetYposition = 4.03479; //Yₜ 158.85 in inches 
     public double TargetRotation;
@@ -163,6 +168,29 @@ private double degreesToEncoderUnits(double degrees) {
 private double encoderUnitsToDegrees(double encoderUnits) {
     return ( 360 * ( encoderUnits / ((8.5810546875/9) * gearBoxRatio)));
 }
+
+/**
+ * Normalizes an angle to the range [-180, 180] degrees.
+ *
+ * @param degrees The angle to normalize
+ * @return The normalized angle in [-180, 180] range
+ */
+private double normalizeAngle(double degrees) {
+    double angle = degrees;
+    while (angle > 180) angle -= 360;
+    while (angle < -180) angle += 360;
+    return angle;
+}
+
+/**
+ * Clamps a turret angle to the physical limits of the turret mechanism.
+ *
+ * @param degrees The desired turret angle
+ * @return The clamped angle within [TURRET_MIN_ANGLE, TURRET_MAX_ANGLE]
+ */
+private double clampTurretAngle(double degrees) {
+    return Math.max(TURRET_MIN_ANGLE, Math.min(TURRET_MAX_ANGLE, degrees));
+}
     public Command TurretToMaxPosition() {
         return Commands.sequence(
                 Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(360))))
@@ -185,11 +213,35 @@ private double encoderUnitsToDegrees(double encoderUnits) {
        }
 
     public Command TurretAutoAimToHub() {
-        return Commands.sequence(
-                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(
-                GetTurretToHub.calculateTurretToHubVector(getPoseEstimatorX(), getPoseEstimatorY(), degreesToRadians(getPoseEstimatorRotation()), XofTurretOnBot, YofTurretOnBot, TargetXposition, TargetYposition).getAngle().getDegrees()
-                )))));
-       }
+        return Commands.runOnce(() -> {
+            // Calculate vector from turret to hub in field frame
+            Translation2d turretToHubVector = GetTurretToHub.calculateTurretToHubVector(
+                getPoseEstimatorX(),
+                getPoseEstimatorY(),
+                degreesToRadians(getPoseEstimatorRotation()),
+                XofTurretOnBot,
+                YofTurretOnBot,
+                TargetXposition,
+                TargetYposition
+            );
+
+            // Get field-absolute angle to hub
+            double fieldAngleToHub = turretToHubVector.getAngle().getDegrees();
+
+            // Convert to robot-relative angle
+            // Field angle - robot rotation = robot-relative angle
+            double robotRelativeAngle = fieldAngleToHub - getPoseEstimatorRotation();
+
+            // Normalize to [-180, 180] range
+            robotRelativeAngle = normalizeAngle(robotRelativeAngle);
+
+            // Clamp to turret physical limits
+            robotRelativeAngle = clampTurretAngle(robotRelativeAngle);
+
+            // Command turret to robot-relative angle
+            motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(robotRelativeAngle)));
+        });
+    }
      
 
     public Command TurretToZero() {

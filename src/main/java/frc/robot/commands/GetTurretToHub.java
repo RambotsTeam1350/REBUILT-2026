@@ -11,11 +11,12 @@ public class GetTurretToHub extends Command {
 
     /**
      * Calculates the vector from the robot's turret to a field hub.
+     * NOTE: This returns a field-absolute vector. For turret control, use calculateRobotRelativeAngleToHub().
      *
      * @param robotX             Robot center X coordinate (field frame). // pose estimator
-     * @param robotY             Robot center Y coordinate (field frame). // pose estimator 
+     * @param robotY             Robot center Y coordinate (field frame). // pose estimator
      * @param robotThetaRadians  Robot orientation relative to field axes. // pose estimator
-     * @param turretRelX         Turret X position relative to robot center (robot frame). // constant 
+     * @param turretRelX         Turret X position relative to robot center (robot frame). // constant
      * @param turretRelY         Turret Y position relative to robot center (robot frame). // constant - both of these from the center of the bot and relative to it
      * @param hubX               Hub X coordinate (field frame). // constant
      * @param hubY               Hub Y coordinate (field frame). // constant
@@ -55,6 +56,51 @@ public class GetTurretToHub extends Command {
         Translation2d turretToHubVector = hubTranslation.minus(turretFieldTranslation);
         
         return turretToHubVector;
+    }
+
+    /**
+     * Calculates the robot-relative angle from the turret to the hub.
+     * This is the correct method to use for turret aiming commands.
+     *
+     * @param robotX             Robot center X coordinate (field frame)
+     * @param robotY             Robot center Y coordinate (field frame)
+     * @param robotThetaRadians  Robot orientation relative to field axes
+     * @param turretRelX         Turret X position relative to robot center (robot frame)
+     * @param turretRelY         Turret Y position relative to robot center (robot frame)
+     * @param hubX               Hub X coordinate (field frame)
+     * @param hubY               Hub Y coordinate (field frame)
+     * @return Robot-relative angle in degrees (normalized to [-180, 180])
+     */
+    public static double calculateRobotRelativeAngleToHub(
+            double robotX,
+            double robotY,
+            double robotThetaRadians,
+            double turretRelX,
+            double turretRelY,
+            double hubX,
+            double hubY) {
+
+        // Get the field-absolute vector
+        Translation2d turretToHubVector = calculateTurretToHubVector(
+            robotX, robotY, robotThetaRadians,
+            turretRelX, turretRelY,
+            hubX, hubY
+        );
+
+        // Get field-absolute angle
+        double fieldAngleDegrees = turretToHubVector.getAngle().getDegrees();
+
+        // Convert robot orientation to degrees
+        double robotThetaDegrees = Math.toDegrees(robotThetaRadians);
+
+        // Convert to robot-relative angle
+        double robotRelativeAngle = fieldAngleDegrees - robotThetaDegrees;
+
+        // Normalize to [-180, 180]
+        while (robotRelativeAngle > 180) robotRelativeAngle -= 360;
+        while (robotRelativeAngle < -180) robotRelativeAngle += 360;
+
+        return robotRelativeAngle;
     }
 
     // --- Example Usage ---
