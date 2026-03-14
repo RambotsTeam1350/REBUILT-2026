@@ -16,6 +16,7 @@ import frc.robot.subsystems.Intake.IntakeLevelSubsystem;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.LimelightHelpers;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
@@ -45,8 +46,10 @@ public class Robot extends TimedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
-
+  public void disabledPeriodic() {
+  LimelightHelpers.SetIMUMode("limelight-three", 1);
+  LimelightHelpers.SetIMUMode("limelight-fifteen", 1);
+  }
   @Override
   public void disabledExit() {}
 
@@ -73,8 +76,10 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {}
-
+  public void teleopPeriodic() {
+LimelightHelpers.SetIMUMode("limelight-three", 3);
+LimelightHelpers.SetIMUMode("limelight-fifteen", 3);
+}
   @Override
   public void teleopExit() {}
 

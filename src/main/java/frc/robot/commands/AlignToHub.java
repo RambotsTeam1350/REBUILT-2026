@@ -19,7 +19,7 @@ import frc.robot.subsystems.TurretSubsystem;
  */
 public class AlignToHub extends Command {
     private final TurretSubsystem turretSubsystem;
-    private final String limelightName = "limelight-fifteen";
+    private final String limelightName = "limelight-three";
 
     // Hub AprilTag IDs by alliance
     private static final int[] RED_HUB_TAGS = {9, 10};
