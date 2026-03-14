@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 FRC Team 1350 (La Salle Robotics) 2026 robot code. Command-based Java robot with swerve drive, shooter, turret auto-aiming, intake, climber, and vision-based localization.
 
+## Competition Rules
+
+Competition rules are available at: https://firstfrc.blob.core.windows.net/frc2026/Manual/2026GameManual.pdf
+
 ## Build & Deploy Commands
 
 ```bash
