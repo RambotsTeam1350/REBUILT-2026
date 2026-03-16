@@ -7,6 +7,11 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.time.LocalDateTime;
+
 public class GetTurretToHub extends Command {
 
     /**
@@ -34,6 +39,9 @@ public class GetTurretToHub extends Command {
             double hubX,
             double hubY) {
         
+		// Conditional logging flag
+		boolean turretAimLogging = false;
+		
         // 1. Define the robot's pose in the global field coordinate system
         Pose2d robotPose = new Pose2d(robotX, robotY, new Rotation2d(robotThetaRadians));
         
@@ -54,6 +62,23 @@ public class GetTurretToHub extends Command {
         // 5. Calculate the vector from the turret to the hub (Destination - Source)
         // In Java, we use the .minus() method since there is no operator overloading
         Translation2d turretToHubVector = hubTranslation.minus(turretFieldTranslation);
+		
+		// 6. Log the parameters and result if the flag is true
+        if (turretAimLogging) {
+            // FileWriter(filename, true) enables append mode. It creates the file if missing.
+            try (PrintWriter out = new PrintWriter(new FileWriter("TurretAiming.log", true))) {
+                out.printf("[%s] Inputs: Robot(%.3f, %.3f, %.3f rad), TurretRel(%.3f, %.3f), Hub(%.3f, %.3f) | " +
+                           "Output Vector: X=%.3f, Y=%.3f%n",
+                        LocalDateTime.now(), // Added a timestamp to make the log easier to read
+                        robotX, robotY, robotThetaRadians, 
+                        turretRelX, turretRelY, 
+                        hubX, hubY, 
+                        turretToHubVector.getX(), turretToHubVector.getY()
+                );
+            } catch (IOException e) {
+                System.err.println("Failed to write to TurretAiming.log: " + e.getMessage());
+            }
+        }
         
         return turretToHubVector;
     }
