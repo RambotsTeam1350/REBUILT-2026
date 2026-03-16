@@ -35,6 +35,7 @@ import frc.robot.subsystems.Intake.IntakeWheelSubsystem;
 import frc.robot.subsystems.Shooter.ShooterPowerSubsystem;
 import frc.robot.subsystems.TestPIDMotorSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.commands.AlignToHub;
 
 import frc.robot.LimelightHelpers.LimelightTarget_Detector;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
@@ -103,7 +104,7 @@ public class RobotContainer {
         RobotModeTriggers.disabled().whileTrue(
                 drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+      //  joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
         joystick.b().whileTrue(drivetrain.applyRequest(
                 () -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
@@ -123,6 +124,7 @@ public class RobotContainer {
 
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        //joystick.rightBumper().onTrue(new AlignToHub(turretSubsystem));
 
         // joystick.rightBumper().onTrue(new AlignToReefTagRelative(true, drivetrain));
 
@@ -130,8 +132,8 @@ public class RobotContainer {
         //joystick.b().onTrue(pidcontroler.MotorTest());
         //joystick.a().onTrue(pidcontroler.StopMotorCommand());
         //joystick.b().onTrue(turretSubsystem.TurretTestSpeed());
-        //joystick.a().onTrue(turretSubsystem.TurretAutoAimToHub());
-
+        joystick.a().onTrue(turretSubsystem.TurretAutoAimToHub()); // Align to hub with no offset
+        joystick.b().onTrue(new AlignToHub(turretSubsystem));
        //joystick.x().whileTrue(turretSubsystem.TurretToMaxPosition());
     
         //joystick.y().onTrue(turretSubsystem.TurretTestSpeed());
@@ -143,8 +145,8 @@ public class RobotContainer {
         //joystick.y().onTrue(IntakeWheelSubsystem.stopMotorCommand());
         //joystick.b().onTrue(intaketestSubsytem.IntakeDownCommand());
 
-        joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
-        joystick.y().onTrue(ShooterSubsystem.stopMotorCommand());
+        //joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
+        //joystick.y().onTrue(ShooterSubsystem.stopMotorCommand());
 
        // joystick.povUp().onTrue(climberSubsystem.ClimbUpCommand());
        // joystick.povDown().onTrue(climberSubsystem.ClimbDownCommand());
@@ -152,8 +154,8 @@ public class RobotContainer {
         // joystick.x().onTrue(pidcontroler.MotionMagicCommand());
         // joystick.y().onTrue(pidcontroler.StopMotionMagicCommand());
 
-        joystick.a().onTrue(ThroatAndIndexerSubsystem.runMotorCommand());
-        joystick.b().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
+        //joystick.a().onTrue(ThroatAndIndexerSubsystem.runMotorCommand());
+        //joystick.b().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
 
 
         // SmartDashboard.putData(autochooser);

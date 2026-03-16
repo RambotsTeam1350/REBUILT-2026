@@ -32,9 +32,8 @@ public class Robot extends TimedRobot {
 
     turretSubsystem = new TurretSubsystem(drivetrain.getPoseEstimator());
     //CommandScheduler.registerSubsystem(turretSubsystem);
-    
+     
   }
-
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run(); 
@@ -43,12 +42,17 @@ public class Robot extends TimedRobot {
   } 
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    double currentHeading = drivetrain.getPoseEstimator().getEstimatedPosition().getRotation().getDegrees();
+     LimelightHelpers.SetRobotOrientation("limelight-fifteen", currentHeading, 0, 0, 0, 0, 0);
+      LimelightHelpers.SetRobotOrientation("limelight-three", currentHeading, 0, 0, 0, 0, 0);
+  
+      LimelightHelpers.SetIMUMode("limelight-three", 1);
+  LimelightHelpers.SetIMUMode("limelight-fifteen", 1);
+  }
 
   @Override
   public void disabledPeriodic() {
-  LimelightHelpers.SetIMUMode("limelight-three", 1);
-  LimelightHelpers.SetIMUMode("limelight-fifteen", 1);
   }
   @Override
   public void disabledExit() {}
@@ -73,12 +77,13 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    LimelightHelpers.SetIMUMode("limelight-three", 3);
+    LimelightHelpers.SetIMUMode("limelight-fifteen", 3);
   }
 
   @Override
   public void teleopPeriodic() {
-LimelightHelpers.SetIMUMode("limelight-three", 3);
-LimelightHelpers.SetIMUMode("limelight-fifteen", 3);
+
 }
   @Override
   public void teleopExit() {}
@@ -103,4 +108,6 @@ LimelightHelpers.SetIMUMode("limelight-fifteen", 3);
   pigeon.setYaw(0);
   }
 }
+
+
 

@@ -383,7 +383,7 @@ private SwerveModulePosition[] getModulePositions() {
             modulePositions
         );
 
-    poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.6, 0.6, 9999)); // This makes it so the pose Estimator doesn't use the angles from the limelight, only stable pigeon angles.
+    poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.00001, 0.00001, 9999)); // This makes it so the pose Estimator doesn't use the angles from the limelight, only stable pigeon angles.
 
     // MegaTag2 requires updated robot orientation EVERY cycle for accurate pose estimates.
     double currentHeading = poseEstimator.getEstimatedPosition().getRotation().getDegrees();

@@ -136,8 +136,8 @@ public class AlignToHub extends Command {
             // The target turret angle is the current angle plus the correction
             double targetTurretAngle = currentTurretAngle + totalAngleCorrection;
 
-            // Command the turret to the target angle
-            turretSubsystem.setTurretAngle(targetTurretAngle);
+            // Command the turret to the target angle (imperative call so it runs now)
+            turretSubsystem.setTurretAngleImmediate(targetTurretAngle);
 
             // Check if we're on target
             if (Math.abs(totalAngleCorrection) < ALIGNMENT_TOLERANCE_DEGREES) {
@@ -146,10 +146,11 @@ public class AlignToHub extends Command {
                 consecutiveOnTargetCount = 0;
             }
         } else {
-            // If we can't see the tag, use pose estimator fallback
-            turretSubsystem.TurretAutoAimToHub();
+            // If we can't see the tag, use pose estimator fallback (imperative)
+            turretSubsystem.turretAutoAimToHubImmediate();
             consecutiveOnTargetCount = 0;
         }
+        System.out.println("Command Ran");
     }
 
     @Override
@@ -162,7 +163,7 @@ public class AlignToHub extends Command {
     public void end(boolean interrupted) {
         if (interrupted) {
             // Stop the turret if interrupted
-            turretSubsystem.TurretTestStop();
+            turretSubsystem.turretTestStopImmediate();
         }
     }
 }

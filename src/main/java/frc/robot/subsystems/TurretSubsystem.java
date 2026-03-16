@@ -56,7 +56,7 @@ public class TurretSubsystem extends SubsystemBase {
     public double TargetYposition = 4.03479; //Yₜ 158.85 in inches 
     public double TargetRotation;
 
-    public double XofTurretOnBot = 0.05; //XofTurretOnBot
+    public double XofTurretOnBot = -0.05; //XofTurretOnBot
     public double YofTurretOnBot = -0.05;
 
     // Limelight camera position relative to robot center (in meters)
@@ -212,6 +212,13 @@ private double clampTurretAngle(double degrees) {
             );
        }
 
+    /**
+     * Imperative immediate stop for the turret motor.
+     */
+    public void turretTestStopImmediate() {
+        motor.set(0);
+    }
+
     public Command TurretAutoAimToHub() {
         return Commands.runOnce(() -> {
             // Calculate vector from turret to hub in field frame
@@ -255,8 +262,51 @@ private double clampTurretAngle(double degrees) {
      *
      * @param degrees The target angle in degrees
      */
-    public void setTurretAngle(double degrees) {
+    public Command setTurretAngle(double degrees) {
+        return Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(degrees))));
+    }
+
+    /**
+     * Immediately set the turret to a specific angle (imperative API).
+     * Use this from other commands when you want to directly command the motor
+     * without creating/scheduling a Command object.
+     *
+     * @param degrees The target angle in degrees
+     */
+    public void setTurretAngleImmediate(double degrees) {
         motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(degrees)));
+    }
+
+    /**
+     * Imperative version of TurretAutoAimToHub(). Calculates the robot-relative
+     * angle to the hub and immediately commands the motor. This is useful when
+     * calling from another command's execute() so the action runs immediately
+     * without scheduling an inner Command.
+     */
+    public void turretAutoAimToHubImmediate() {
+        // Calculate vector from turret to hub in field frame
+        Translation2d turretToHubVector = GetTurretToHub.calculateTurretToHubVector(
+            getPoseEstimatorX(),
+            getPoseEstimatorY(),
+            degreesToRadians(getPoseEstimatorRotation()),
+            XofTurretOnBot,
+            YofTurretOnBot,
+            TargetXposition,
+            TargetYposition
+        );
+
+        // Get field-absolute angle to hub
+        double fieldAngleToHub = turretToHubVector.getAngle().getDegrees();
+
+        // Convert to robot-relative angle
+        double robotRelativeAngle = fieldAngleToHub - getPoseEstimatorRotation();
+
+        // Normalize and clamp
+        robotRelativeAngle = normalizeAngle(robotRelativeAngle);
+        robotRelativeAngle = clampTurretAngle(robotRelativeAngle);
+
+        // Command turret to robot-relative angle
+        motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(robotRelativeAngle)));
     }
 
     /**
