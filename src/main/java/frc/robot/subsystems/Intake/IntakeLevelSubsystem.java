@@ -21,7 +21,7 @@ public class IntakeLevelSubsystem extends SubsystemBase{
    public StatusSignal<Angle> position;
 
     public IntakeLevelSubsystem() {
-        intakeMotor = new TalonFX(17); 
+        intakeMotor = new TalonFX(14); 
         position = intakeMotor.getPosition();
 
 TalonFXConfiguration cfg = new TalonFXConfiguration();
@@ -34,7 +34,7 @@ TalonFXConfiguration cfg = new TalonFXConfiguration();
     cfg.Slot0.kS = 0.25; // S value: Soft Limit
 
     MotionMagicConfigs mm = cfg.MotionMagic;
-    mm.MotionMagicCruiseVelocity = 13; // Target cruise velocity of 80 rps
+    mm.MotionMagicCruiseVelocity = 16; // Target cruise velocity of 80 rps
     mm.MotionMagicAcceleration = 160; // Target acceleration of 160 rps/s (0.5 seconds)
     mm.MotionMagicJerk = 1600; // Target jerk of 1600 rps/s/s (0.1 seconds)
 
@@ -43,20 +43,20 @@ TalonFXConfiguration cfg = new TalonFXConfiguration();
 
     public void periodic() {
         BaseStatusSignal.refreshAll(position);
-        //System.out.println(position.getValueAsDouble() + " Intake Level motor");
+       // System.out.println(position.getValueAsDouble() + " Intake Level motor");
     }
 
     public Command IntakeUpCommand() {
         final MotionMagicVoltage m_request = new MotionMagicVoltage(0);
         return Commands.sequence(
-          Commands.runOnce (() -> intakeMotor.setControl(m_request.withPosition(-6.4)))  
+          Commands.runOnce (() -> intakeMotor.setControl(m_request.withPosition(0)))  
         );
     }
 
     public Command IntakeDownCommand() {
         final MotionMagicVoltage m_request = new MotionMagicVoltage(0);
         return Commands.sequence(
-          Commands.runOnce (() -> intakeMotor.setControl(m_request.withPosition(0)))  
+          Commands.runOnce (() -> intakeMotor.setControl(m_request.withPosition(-10.2)))  
         );
     }
 }

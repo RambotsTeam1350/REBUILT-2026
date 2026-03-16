@@ -122,7 +122,7 @@ public class RobotContainer {
 
 
         // reset the field-centric heading on left bumper press
-        joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+       // joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         // joystick.rightBumper().onTrue(new AlignToReefTagRelative(true, drivetrain));
 
@@ -137,24 +137,45 @@ public class RobotContainer {
         //joystick.y().onTrue(turretSubsystem.TurretTestSpeed());
         //joystick.b().onTrue(turretSubsystem.TurretToZero());
         
-        //joystick.a().onTrue(intaketestSubsytem.IntakeUpCommand());
+        //joystick.leftBumper().onTrue(intaketestSubsytem.IntakeUpCommand());
         //joystick.x().onTrue(IntakeWheelSubsystem.runMotorCommand());
 
         //joystick.y().onTrue(IntakeWheelSubsystem.stopMotorCommand());
-        //joystick.b().onTrue(intaketestSubsytem.IntakeDownCommand());
-
-        joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
-        joystick.y().onTrue(ShooterSubsystem.stopMotorCommand());
-
-       // joystick.povUp().onTrue(climberSubsystem.ClimbUpCommand());
-       // joystick.povDown().onTrue(climberSubsystem.ClimbDownCommand());
+        //joystick.rightBumper().onTrue(intaketestSubsytem.IntakeDownCommand());
 
         // joystick.x().onTrue(pidcontroler.MotionMagicCommand());
         // joystick.y().onTrue(pidcontroler.StopMotionMagicCommand());
 
-        joystick.a().onTrue(ThroatAndIndexerSubsystem.runMotorCommand());
+        joystick.povUp().onTrue(climberSubsystem.ClimbUpCommand());
+        joystick.povDown().onTrue(climberSubsystem.ClimbDownCommand());
+
+        joystick.x().onTrue(ThroatAndIndexerSubsystem.runMotorCommand());
         joystick.b().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
 
+        joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
+        joystick.b().onTrue(ShooterSubsystem.stopMotorCommand());
+
+        joystick.leftBumper().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
+        joystick.rightBumper().onTrue(ThroatAndIndexerSubsystem.reverseMotorCommand());
+        
+        joystick.y().onTrue(
+            Commands.sequence(
+            IntakeWheelSubsystem.stopMotorCommand(),
+            intaketestSubsytem.IntakeUpCommand()
+
+        )
+     );
+    
+       joystick.a().onTrue(
+            Commands.sequence(
+            intaketestSubsytem.IntakeDownCommand(),
+            IntakeWheelSubsystem.runMotorCommand()
+            )
+        ); 
+
+
+        //joystick.x().onTrue(climberSubsystem.ClimbUpCommand());
+       // joystick.y().onTrue(climberSubsystem.ClimbDownCommand());
 
         // SmartDashboard.putData(autochooser);
 

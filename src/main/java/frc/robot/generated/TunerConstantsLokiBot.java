@@ -279,8 +279,7 @@ public class TunerConstantsLokiBot {
             super(
                 TalonFX::new, TalonFX::new, CANcoder::new,
                 drivetrainConstants, odometryUpdateFrequency,
-                odometryStandardDeviation, visionStandardDeviation, modules
-            );
+                odometryStandardDeviation, visionStandardDeviation, modules             );
         }
     }
 }

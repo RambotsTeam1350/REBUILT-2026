@@ -45,7 +45,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
-import frc.robot.generated.TunerConstantsThorBot.TunerSwerveDrivetrain; //This still has to be changed when you change which bot you're using
+import frc.robot.generated.TunerConstantsLokiBot.TunerSwerveDrivetrain; //This still has to be changed when you change which bot you're using
 import frc.robot.generated.TunerConstants;
 import frc.robot.LimelightHelpers;
 
@@ -393,12 +393,12 @@ private SwerveModulePosition[] getModulePositions() {
     frc.robot.LimelightHelpers.PoseEstimate llEstimate3 = 
     LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-three");
 
-        if (LimelightHelpers.validPoseEstimate(llEstimate5)) {
+      /* if (LimelightHelpers.validPoseEstimate(llEstimate5)) {
             double visionRobotTime5 = Utils.fpgaToCurrentTime(llEstimate5.timestampSeconds);
     // llEstimate.pose is the Pose2d, llEstimate.timestampSeconds is the measurement time
         poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.6, 0.6, Math.toRadians(9999)));
         poseEstimator.addVisionMeasurement(llEstimate5.pose, visionRobotTime5);
-}
+}  */ 
 
         if (LimelightHelpers.validPoseEstimate(llEstimate3)) {
             double visionRobotTime3 = Utils.fpgaToCurrentTime(llEstimate3.timestampSeconds);
@@ -406,7 +406,7 @@ private SwerveModulePosition[] getModulePositions() {
         poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.6, 0.6, Math.toRadians(9999)));
         poseEstimator.addVisionMeasurement(llEstimate3.pose, visionRobotTime3);
 }
-      System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
+      //System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
          
     }
 

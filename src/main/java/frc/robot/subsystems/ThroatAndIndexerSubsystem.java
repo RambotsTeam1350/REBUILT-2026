@@ -8,39 +8,45 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
-public class ThroatAndIndexerSubsystem  extends SubsystemBase {
+public class ThroatAndIndexerSubsystem extends SubsystemBase {
 
-    private final TalonFX motor;
+    private final TalonFX motorThroat;
+    private final TalonFX motorIndexer;
 
-    public final StatusSignal<AngularVelocity> velocity;
-    public final StatusSignal<Angle> position;
+    //public final StatusSignal<AngularVelocity> velocity;
+    //public final StatusSignal<Angle> position;
 
     public double velocityDouble = 0.0;
     public static double positionDouble = 0.0;
 
     public ThroatAndIndexerSubsystem() {
-        motor = new TalonFX(32);
+        motorThroat = new TalonFX(47);
+        motorIndexer = new TalonFX(33);
 
-        velocity = motor.getVelocity();
-        position = motor.getPosition();
+        //velocity = motor.getVelocity();
+        //position = motor.getPosition();
 
      }
 
      public void runMotor(double speed) {
-        motor.set(speed);
+        motorThroat.set(speed);
+        motorIndexer.set(speed);
     }
 
     public void stopMotor() {
-        motor.set(0); 
-
+        motorThroat.set(0);
+        motorIndexer.set(0);
     }
 
-
+    public void reverseMotor(double speed) {
+        motorThroat.set(speed);
+        motorIndexer.set(speed);
+    }
 
       public Command runMotorCommand() {
         return Commands.runOnce(
             () -> {
-                runMotor(.5);
+                runMotor(.6);
             }
         );
     }
@@ -52,4 +58,13 @@ public class ThroatAndIndexerSubsystem  extends SubsystemBase {
             }
         );
      }
+
+        public Command reverseMotorCommand() {
+            return Commands.runOnce(
+                () -> {
+                    reverseMotor(-0.6);
+                }
+            );
+        }
 }
+
