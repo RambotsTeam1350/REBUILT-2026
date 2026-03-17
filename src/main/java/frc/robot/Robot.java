@@ -16,6 +16,7 @@ import frc.robot.subsystems.Intake.IntakeLevelSubsystem;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.LimelightHelpers;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
@@ -31,9 +32,8 @@ public class Robot extends TimedRobot {
 
     turretSubsystem = new TurretSubsystem(drivetrain.getPoseEstimator());
     //CommandScheduler.registerSubsystem(turretSubsystem);
-    
+     
   }
-
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run(); 
@@ -42,11 +42,18 @@ public class Robot extends TimedRobot {
   } 
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    double currentHeading = drivetrain.getPoseEstimator().getEstimatedPosition().getRotation().getDegrees();
+     LimelightHelpers.SetRobotOrientation("limelight-fifteen", currentHeading, 0, 0, 0, 0, 0);
+      LimelightHelpers.SetRobotOrientation("limelight-three", currentHeading, 0, 0, 0, 0, 0);
+  
+      LimelightHelpers.SetIMUMode("limelight-three", 1);
+  LimelightHelpers.SetIMUMode("limelight-fifteen", 1);
+  }
 
   @Override
-  public void disabledPeriodic() {}
-
+  public void disabledPeriodic() {
+  }
   @Override
   public void disabledExit() {}
 
@@ -70,11 +77,14 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    LimelightHelpers.SetIMUMode("limelight-three", 3);
+    LimelightHelpers.SetIMUMode("limelight-fifteen", 3);
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
 
+}
   @Override
   public void teleopExit() {}
 
@@ -98,4 +108,6 @@ public class Robot extends TimedRobot {
   pigeon.setYaw(0);
   }
 }
+
+
 

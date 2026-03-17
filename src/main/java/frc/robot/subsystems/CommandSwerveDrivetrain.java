@@ -383,30 +383,34 @@ private SwerveModulePosition[] getModulePositions() {
             modulePositions
         );
 
-    poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.6, 0.6, 9999)); // This makes it so the pose Estimator doesn't use the angles from the limelight, only stable pigeon angles.
+    poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.00001, 0.00001, 9999)); // This makes it so the pose Estimator doesn't use the angles from the limelight, only stable pigeon angles.
 
-    /*  |   getBotPoseEstimate_wpiBlue_MegaTag2(...) — If you wanna use MegaTag2 instead of MegaTag1
-        v    (requires you to call SetRobotOrientation(...) before using MegaTag2). */
+    // MegaTag2 requires updated robot orientation EVERY cycle for accurate pose estimates.
+    double currentHeading = poseEstimator.getEstimatedPosition().getRotation().getDegrees();
+    LimelightHelpers.SetRobotOrientation("limelight-fifteen", currentHeading, 0, 0, 0, 0, 0);
+    LimelightHelpers.SetRobotOrientation("limelight-three", currentHeading, 0, 0, 0, 0, 0);
+
     frc.robot.LimelightHelpers.PoseEstimate llEstimate5 =
     LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-fifteen");
 
-    frc.robot.LimelightHelpers.PoseEstimate llEstimate3 = 
+    frc.robot.LimelightHelpers.PoseEstimate llEstimate3 =
     LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-three");
 
-      /* if (LimelightHelpers.validPoseEstimate(llEstimate5)) {
+        if (LimelightHelpers.validPoseEstimate(llEstimate5) && llEstimate5.tagCount >= 1) {
+            // Scale standard deviations by tag count: more tags = more trust
+            double stdDev = (llEstimate5.tagCount >= 2) ? 0.4 : 0.8;
             double visionRobotTime5 = Utils.fpgaToCurrentTime(llEstimate5.timestampSeconds);
-    // llEstimate.pose is the Pose2d, llEstimate.timestampSeconds is the measurement time
-        poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.6, 0.6, Math.toRadians(9999)));
-        poseEstimator.addVisionMeasurement(llEstimate5.pose, visionRobotTime5);
-}  */ 
+            poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(stdDev, stdDev, Math.toRadians(9999)));
+            poseEstimator.addVisionMeasurement(llEstimate5.pose, visionRobotTime5);
+        }
 
-        if (LimelightHelpers.validPoseEstimate(llEstimate3)) {
+        if (LimelightHelpers.validPoseEstimate(llEstimate3) && llEstimate3.tagCount >= 1) {
+            double stdDev = (llEstimate3.tagCount >= 2) ? 0.4 : 0.8;
             double visionRobotTime3 = Utils.fpgaToCurrentTime(llEstimate3.timestampSeconds);
-    // llEstimate.pose is the Pose2d, llEstimate.timestampSeconds is the measurement time
-        poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.6, 0.6, Math.toRadians(9999)));
-        poseEstimator.addVisionMeasurement(llEstimate3.pose, visionRobotTime3);
-}
-      //System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
+            poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(stdDev, stdDev, Math.toRadians(9999)));
+            poseEstimator.addVisionMeasurement(llEstimate3.pose, visionRobotTime3);
+        }
+      System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
          
     }
 
