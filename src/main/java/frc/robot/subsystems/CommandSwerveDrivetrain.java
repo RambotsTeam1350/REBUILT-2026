@@ -59,7 +59,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
     private double maxSpeedMetersPerSecond = 5.0; // Example max speed, adjust as needed
-    private Pigeon2 pigeon = new Pigeon2(0, "rio");
+    // Do NOT instantiate a second Pigeon2 here — the CTRE swerve framework already
+    // owns CAN ID 0 internally. Use getPigeon2() to access it.
     public SwerveDrivePoseEstimator poseEstimator;
 
     Pose2d vision = LimelightHelpers.getBotPose2d_wpiBlue("limelight-fifteen");
@@ -384,7 +385,9 @@ private SwerveModulePosition[] getModulePositions() {
         );
 
     // MegaTag2 requires updated robot orientation EVERY cycle for accurate pose estimates.
-    double currentHeading = poseEstimator.getEstimatedPosition().getRotation().getDegrees();
+    // Use the raw Pigeon2 yaw — NOT the fused estimator pose — to avoid a feedback loop
+    // where a prior Limelight correction contaminates the heading fed back to the Limelight.
+    double currentHeading = getPigeon2().getYaw().getValueAsDouble();
     LimelightHelpers.SetRobotOrientation("limelight-fifteen", currentHeading, 0, 0, 0, 0, 0);
     LimelightHelpers.SetRobotOrientation("limelight-three", currentHeading, 0, 0, 0, 0, 0);
 
@@ -436,7 +439,7 @@ private SwerveModulePosition[] getModulePositions() {
         // Extract the Angle with getValue() and use the radians accessor (getRadians()).
         // Pigeon2 in Phoenix 6 exposes a direct Rotation2d accessor.
         // Use that instead of working with StatusSignal/Angle wrappers.
-        return pigeon.getRotation2d();
+        return getPigeon2().getRotation2d();
     }
 
     /**
@@ -542,12 +545,14 @@ public void drive(Translation2d translation, double directionDegrees, boolean is
         double timestampSeconds,
         Matrix<N3, N1> visionMeasurementStdDevs
     ) {
-        double fpgaTime = Utils.fpgaToCurrentTime(timestampSeconds);
-        super.addVisionMeasurement(visionRobotPoseMeters, fpgaTime, visionMeasurementStdDevs);
+        // CTRE's addVisionMeasurement expects time in CTRE domain (Utils.fpgaToCurrentTime converts it).
+        double ctrTime = Utils.fpgaToCurrentTime(timestampSeconds);
+        super.addVisionMeasurement(visionRobotPoseMeters, ctrTime, visionMeasurementStdDevs);
         if (poseEstimator != null) {
-            // WPILib estimator supports passing measurement standard deviations via setVisionMeasurementStdDevs
+            // WPILib's estimator expects raw FPGA seconds (same domain as Timer.getFPGATimestamp()).
+            // The Limelight timestamp is already in FPGA time, so pass it directly — do NOT use ctrTime.
             poseEstimator.setVisionMeasurementStdDevs(visionMeasurementStdDevs);
-            poseEstimator.addVisionMeasurement(visionRobotPoseMeters, fpgaTime);
+            poseEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
         }
     }
 }
