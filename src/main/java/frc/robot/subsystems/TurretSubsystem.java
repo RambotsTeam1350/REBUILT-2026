@@ -132,13 +132,15 @@ public double getTurretRotation() {
 }
 /* ------------------------------------------------------------------------------ */
 
+// Returns the field-absolute angle from the robot to the target, in degrees.
 public double getTargetRotation()
 {
-    return Math.atan2((TargetYposition - getPoseEstimatorY()), (TargetXposition - getPoseEstimatorX()));
+    return Math.toDegrees(Math.atan2((TargetYposition - getPoseEstimatorY()), (TargetXposition - getPoseEstimatorX())));
 }
-//TargetRotation - poseEstimator.getEstimatedPosition().getRotation().getDegrees(); //θᵣₑₗₐₜᵢᵥₑ
+
+// Returns the robot-relative angle to the target, in degrees.
 public double getAngleToTarget() {
-    return (getPoseEstimatorRotation() - getTargetRotation());
+    return normalizeAngle(getTargetRotation() - getPoseEstimatorRotation());
 }
 /* --------- v new calculations as of 3/7/26 v --------- */
 
