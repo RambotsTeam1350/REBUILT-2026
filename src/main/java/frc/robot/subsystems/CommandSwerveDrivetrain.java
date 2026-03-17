@@ -395,18 +395,21 @@ private SwerveModulePosition[] getModulePositions() {
     LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-three");
 
         if (LimelightHelpers.validPoseEstimate(llEstimate5) && llEstimate5.tagCount >= 1) {
-            // Scale standard deviations by tag count: more tags = more trust
+            // Scale standard deviations by tag count: more tags = more trust.
+            // High rotation stddev keeps us relying on Pigeon2 for heading, not Limelight.
             double stdDev = (llEstimate5.tagCount >= 2) ? 0.4 : 0.8;
-            double visionRobotTime5 = Utils.fpgaToCurrentTime(llEstimate5.timestampSeconds);
-            poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(stdDev, stdDev, Math.toRadians(9999)));
-            poseEstimator.addVisionMeasurement(llEstimate5.pose, visionRobotTime5);
+            Matrix<N3, N1> stdDevs = VecBuilder.fill(stdDev, stdDev, Math.toRadians(9999));
+            // Route through the override so BOTH the CTRE internal estimator (used by
+            // PathPlanner via getState().Pose) and the WPILib poseEstimator (used by
+            // turret/subsystems) receive the vision correction. Timestamp conversion
+            // from Limelight time to FPGA time is handled inside the override.
+            addVisionMeasurement(llEstimate5.pose, llEstimate5.timestampSeconds, stdDevs);
         }
 
         if (LimelightHelpers.validPoseEstimate(llEstimate3) && llEstimate3.tagCount >= 1) {
             double stdDev = (llEstimate3.tagCount >= 2) ? 0.4 : 0.8;
-            double visionRobotTime3 = Utils.fpgaToCurrentTime(llEstimate3.timestampSeconds);
-            poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(stdDev, stdDev, Math.toRadians(9999)));
-            poseEstimator.addVisionMeasurement(llEstimate3.pose, visionRobotTime3);
+            Matrix<N3, N1> stdDevs = VecBuilder.fill(stdDev, stdDev, Math.toRadians(9999));
+            addVisionMeasurement(llEstimate3.pose, llEstimate3.timestampSeconds, stdDevs);
         }
       System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
          
