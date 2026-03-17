@@ -97,18 +97,12 @@ public class AlignToHub extends Command {
         }
 
         if (hubTag != null) {
-            // txnc is the normalized horizontal offset from crosshair (-1 to 1)
-            // Positive txnc means target is to the right, negative means left
-            double horizontalAngleOffset = hubTag.txnc;
+            // txnc is the horizontal angle to the target in degrees (not normalized).
+            // Positive = target is to the right of the crosshair, negative = left.
+            double angleToTagFromCamera = hubTag.txnc;
 
             // Get current turret angle
             double currentTurretAngle = turretSubsystem.getTurretRotation();
-
-            // Calculate the angle to the tag from the camera's perspective
-            // txnc is normalized (-1 to 1), so we need to scale it to the camera's field of view
-            // Limelight has approximately 63.3 degree horizontal FOV
-            double cameraHorizontalFOV = 63.3;
-            double angleToTagFromCamera = horizontalAngleOffset * (cameraHorizontalFOV / 2.0);
 
             // Calculate the geometric offset between camera and turret positions
             Translation2d cameraPos = turretSubsystem.getCameraPositionOnBot();
