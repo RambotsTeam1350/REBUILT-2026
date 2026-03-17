@@ -18,7 +18,7 @@ public class IntakeWheelSubsystem extends SubsystemBase {
     public static double positionDouble = 0.0;
 
     public IntakeWheelSubsystem() {
-        motor = new TalonFX(18);
+        motor = new TalonFX(34);
 
         velocity = motor.getVelocity();
         position = motor.getPosition();
@@ -33,11 +33,16 @@ public class IntakeWheelSubsystem extends SubsystemBase {
         motor.set(0); 
 
     }
+
+    public void reverseMotor(double speed) {
+        motor.set(speed);
+    }
  
-       public Command runMotorCommand() {
+      
+        public Command runMotorCommand() {
         return Commands.runOnce(
             () -> {
-                runMotor(-1);
+                runMotor(-.7);
             }
         );
     }
@@ -46,6 +51,14 @@ public class IntakeWheelSubsystem extends SubsystemBase {
         return Commands.runOnce(
             () -> {
                 stopMotor();
+            }
+        );
+      }
+
+      public Command reverseMotorCommand() {
+        return Commands.runOnce(
+            () -> {
+                reverseMotor(.7);
             }
         );
       }

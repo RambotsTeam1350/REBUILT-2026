@@ -15,10 +15,16 @@ public class ClimberSubsystem extends SubsystemBase {
 
     // change the moter ID for the climber when we know what it is
     
-        private final TalonFX motor = new TalonFX(15); 
-        private StatusSignal<Angle> motorPosition;
+        private final TalonFX climbermotor1; 
+        private final TalonFX climbermotor2;
+        private StatusSignal<Angle> motorPosition1;
+        private StatusSignal<Angle> motorPosition2;
 
     public ClimberSubsystem() {
+        climbermotor1 = new TalonFX(17); 
+        climbermotor2 = new TalonFX(19);
+            this.motorPosition1 = this.climbermotor1.getPosition();
+            this.motorPosition2 = this.climbermotor2.getPosition();
 
             TalonFXConfiguration cfg = new TalonFXConfiguration();
             cfg.Slot0.kP = 4.8;
@@ -28,29 +34,39 @@ public class ClimberSubsystem extends SubsystemBase {
             cfg.Slot0.kA = .01;
             cfg.Slot0.kS = .25;
 
-            this.motorPosition = this.motor.getPosition();
+            
             MotionMagicConfigs mm = cfg.MotionMagic;
             mm.MotionMagicCruiseVelocity = 6; 
             mm.MotionMagicAcceleration = 80;
             mm.MotionMagicJerk = 1600; 
-            motor.getConfigurator().apply(cfg);
+            climbermotor1.getConfigurator().apply(cfg);
+            climbermotor2.getConfigurator().apply(cfg);
 
     }
 
     @Override
     public void periodic() {
-         //System.out.println(motorPosition.getValueAsDouble() + " Climber motor");
+
+        motorPosition1.getValueAsDouble();
+        motorPosition2.getValueAsDouble();
+        //System.out.println(motorPosition1.getValueAsDouble() + " Climber motor 1, " + motorPosition2.getValueAsDouble() + " Climber motor 2");
     }
 
         public Command ClimbUpCommand() {
             return Commands.sequence(
-                    Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(4)))
+                    Commands.runOnce(() -> climbermotor1.setControl(new MotionMagicVoltage(26.8))),
+                    Commands.runOnce(() -> climbermotor2.setControl(new MotionMagicVoltage(26.3)))
+    
+        
                 );
             } 
 
+        
+
             public Command ClimbDownCommand() {
             return Commands.sequence(
-                    Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(0)))
+                    Commands.runOnce(() -> climbermotor1.setControl(new MotionMagicVoltage(0)))
+                
                 );
             }
 

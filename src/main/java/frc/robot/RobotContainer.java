@@ -139,7 +139,7 @@ public class RobotContainer {
         //joystick.y().onTrue(turretSubsystem.TurretTestSpeed());
         //joystick.b().onTrue(turretSubsystem.TurretToZero());
         
-        //joystick.a().onTrue(intaketestSubsytem.IntakeUpCommand());
+        //joystick.leftBumper().onTrue(intaketestSubsytem.IntakeUpCommand());
         //joystick.x().onTrue(IntakeWheelSubsystem.runMotorCommand());
 
         //joystick.y().onTrue(IntakeWheelSubsystem.stopMotorCommand());
@@ -154,9 +154,36 @@ public class RobotContainer {
         // joystick.x().onTrue(pidcontroler.MotionMagicCommand());
         // joystick.y().onTrue(pidcontroler.StopMotionMagicCommand());
 
-        //joystick.a().onTrue(ThroatAndIndexerSubsystem.runMotorCommand());
-        //joystick.b().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
+        joystick.povUp().onTrue(climberSubsystem.ClimbUpCommand());
+        joystick.povDown().onTrue(climberSubsystem.ClimbDownCommand());
 
+        joystick.x().onTrue(ThroatAndIndexerSubsystem.runMotorCommand());
+        joystick.b().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
+
+        joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
+        joystick.b().onTrue(ShooterSubsystem.stopMotorCommand());
+
+        joystick.leftBumper().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
+        joystick.rightBumper().onTrue(ThroatAndIndexerSubsystem.reverseMotorCommand());
+        
+        joystick.y().onTrue(
+            Commands.sequence(
+            IntakeWheelSubsystem.stopMotorCommand(),
+            intaketestSubsytem.IntakeUpCommand()
+
+        )
+     );
+    
+       joystick.a().onTrue(
+            Commands.sequence(
+            intaketestSubsytem.IntakeDownCommand(),
+            IntakeWheelSubsystem.runMotorCommand()
+            )
+        ); 
+
+
+        //joystick.x().onTrue(climberSubsystem.ClimbUpCommand());
+       // joystick.y().onTrue(climberSubsystem.ClimbDownCommand());
 
         // SmartDashboard.putData(autochooser);
 
