@@ -331,9 +331,9 @@ private double clampTurretAngle(double degrees) {
         }
 
         if (bestTag != null) {
-            // txnc is horizontal offset in degrees from the crosshair (positive = right).
-            // Add to the current turret angle so the turret rotates to center the tag.
-            double targetAngle = clampTurretAngle(getTurretRotation() + bestTag.txnc);
+            // Camera is fixed to the robot chassis, so txnc is already a robot-relative
+            // angle to the tag. Command the turret directly to that angle.
+            double targetAngle = clampTurretAngle(bestTag.txnc);
             motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(targetAngle)));
         } else {
             // No hub tags visible — fall back to pose estimator
