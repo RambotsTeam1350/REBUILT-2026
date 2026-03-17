@@ -337,7 +337,7 @@ private double clampTurretAngle(double degrees) {
             motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(targetAngle)));
         } else {
             // No hub tags visible — fall back to pose estimator
-            turretAutoAimToHubImmediate();
+            // turretAutoAimToHubImmediate();
         }
     }
 
