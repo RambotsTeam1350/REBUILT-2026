@@ -383,8 +383,6 @@ private SwerveModulePosition[] getModulePositions() {
             modulePositions
         );
 
-    poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.00001, 0.00001, 9999)); // This makes it so the pose Estimator doesn't use the angles from the limelight, only stable pigeon angles.
-
     // MegaTag2 requires updated robot orientation EVERY cycle for accurate pose estimates.
     double currentHeading = poseEstimator.getEstimatedPosition().getRotation().getDegrees();
     LimelightHelpers.SetRobotOrientation("limelight-fifteen", currentHeading, 0, 0, 0, 0, 0);
@@ -396,19 +394,30 @@ private SwerveModulePosition[] getModulePositions() {
     frc.robot.LimelightHelpers.PoseEstimate llEstimate3 =
     LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-three");
 
-        if (LimelightHelpers.validPoseEstimate(llEstimate5) && llEstimate5.tagCount >= 1) {
-            // Scale standard deviations by tag count: more tags = more trust
-            double stdDev = (llEstimate5.tagCount >= 2) ? 0.4 : 0.8;
-            double visionRobotTime5 = Utils.fpgaToCurrentTime(llEstimate5.timestampSeconds);
-            poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(stdDev, stdDev, Math.toRadians(9999)));
-            poseEstimator.addVisionMeasurement(llEstimate5.pose, visionRobotTime5);
+        // Maximum tag distance beyond which pose estimates are too noisy to be useful.
+        final double kMaxTagDistanceMeters = 5.0;
+
+        if (LimelightHelpers.validPoseEstimate(llEstimate5)
+                && llEstimate5.tagCount >= 1
+                && llEstimate5.avgTagDist < kMaxTagDistanceMeters) {
+            // Scale X/Y stdDevs by distance squared: close tags get high trust, far tags
+            // get low trust. At 1m with 2 tags → 0.1; at 2m → 0.4; at 4m → 1.6.
+            // High rotation stddev keeps heading governed by Pigeon2, not Limelight.
+            double xyStdDev = (llEstimate5.tagCount >= 2)
+                    ? 0.1 * llEstimate5.avgTagDist * llEstimate5.avgTagDist
+                    : 0.3 * llEstimate5.avgTagDist * llEstimate5.avgTagDist;
+            Matrix<N3, N1> stdDevs = VecBuilder.fill(xyStdDev, xyStdDev, Math.toRadians(9999));
+            addVisionMeasurement(llEstimate5.pose, llEstimate5.timestampSeconds, stdDevs);
         }
 
-        if (LimelightHelpers.validPoseEstimate(llEstimate3) && llEstimate3.tagCount >= 1) {
-            double stdDev = (llEstimate3.tagCount >= 2) ? 0.4 : 0.8;
-            double visionRobotTime3 = Utils.fpgaToCurrentTime(llEstimate3.timestampSeconds);
-            poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(stdDev, stdDev, Math.toRadians(9999)));
-            poseEstimator.addVisionMeasurement(llEstimate3.pose, visionRobotTime3);
+        if (LimelightHelpers.validPoseEstimate(llEstimate3)
+                && llEstimate3.tagCount >= 1
+                && llEstimate3.avgTagDist < kMaxTagDistanceMeters) {
+            double xyStdDev = (llEstimate3.tagCount >= 2)
+                    ? 0.1 * llEstimate3.avgTagDist * llEstimate3.avgTagDist
+                    : 0.3 * llEstimate3.avgTagDist * llEstimate3.avgTagDist;
+            Matrix<N3, N1> stdDevs = VecBuilder.fill(xyStdDev, xyStdDev, Math.toRadians(9999));
+            addVisionMeasurement(llEstimate3.pose, llEstimate3.timestampSeconds, stdDevs);
         }
       System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
          

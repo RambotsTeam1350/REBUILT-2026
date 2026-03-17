@@ -104,13 +104,11 @@ public class TurretSubsystem extends SubsystemBase {
         getTargetRotation();
         getAngleToTarget();
 
-        GetTurretToHub.calculateTurretToHubVector(getPoseEstimatorX(), getPoseEstimatorY(), degreesToRadians(getPoseEstimatorRotation()), XofTurretOnBot, YofTurretOnBot, TargetXposition, TargetYposition);
-        //System.out.println(GetTurretToHub.calculateTurretToHubVector(getPoseEstimatorX(), getPoseEstimatorY(), degreesToRadians(getPoseEstimatorRotation()), XofTurretOnBot, YofTurretOnBot, TargetXposition, TargetYposition).getAngle().getDegrees());
-        
-        TurretAutoAimToHub();
-        //System.out.println(getAngleToTarget());
+        // Continuously command the motor to track the hub every loop.
+        // turretAutoAimToHubImmediate() drives the motor directly; TurretAutoAimToHub()
+        // only returns a Command object and must not be called here (it was a no-op).
+        turretAutoAimToHubImmediate();
 
-        // ^ make sure all of these numbers are being updated frequently so the turret is always aiming at the right place
         BaseStatusSignal.refreshAll(motorPosition);
         //System.out.print(motor.getPosition().getValueAsDouble() + " Turret Motor Position");
         
@@ -134,13 +132,15 @@ public double getTurretRotation() {
 }
 /* ------------------------------------------------------------------------------ */
 
+// Returns the field-absolute angle from the robot to the target, in degrees.
 public double getTargetRotation()
 {
-    return Math.atan2((TargetYposition - getPoseEstimatorY()), (TargetXposition - getPoseEstimatorX()));
+    return Math.toDegrees(Math.atan2((TargetYposition - getPoseEstimatorY()), (TargetXposition - getPoseEstimatorX())));
 }
-//TargetRotation - poseEstimator.getEstimatedPosition().getRotation().getDegrees(); //θᵣₑₗₐₜᵢᵥₑ
+
+// Returns the robot-relative angle to the target, in degrees.
 public double getAngleToTarget() {
-    return (getPoseEstimatorRotation() - getTargetRotation());
+    return normalizeAngle(getTargetRotation() - getPoseEstimatorRotation());
 }
 /* --------- v new calculations as of 3/7/26 v --------- */
 
@@ -307,6 +307,23 @@ private double clampTurretAngle(double degrees) {
 
         // Command turret to robot-relative angle
         motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(robotRelativeAngle)));
+    }
+
+    /**
+     * Returns the straight-line distance from the turret to the hub in meters,
+     * accounting for the turret's actual field position (robot pose + heading + offset).
+     * Use this as the single authoritative distance for both turret and shooter angle.
+     */
+    public double getDistanceToHub() {
+        return GetTurretToHub.calculateTurretToHubVector(
+            getPoseEstimatorX(),
+            getPoseEstimatorY(),
+            degreesToRadians(getPoseEstimatorRotation()),
+            XofTurretOnBot,
+            YofTurretOnBot,
+            TargetXposition,
+            TargetYposition
+        ).getNorm();
     }
 
     /**
