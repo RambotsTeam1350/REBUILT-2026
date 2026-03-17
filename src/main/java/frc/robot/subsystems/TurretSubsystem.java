@@ -104,13 +104,11 @@ public class TurretSubsystem extends SubsystemBase {
         getTargetRotation();
         getAngleToTarget();
 
-        GetTurretToHub.calculateTurretToHubVector(getPoseEstimatorX(), getPoseEstimatorY(), degreesToRadians(getPoseEstimatorRotation()), XofTurretOnBot, YofTurretOnBot, TargetXposition, TargetYposition);
-        //System.out.println(GetTurretToHub.calculateTurretToHubVector(getPoseEstimatorX(), getPoseEstimatorY(), degreesToRadians(getPoseEstimatorRotation()), XofTurretOnBot, YofTurretOnBot, TargetXposition, TargetYposition).getAngle().getDegrees());
-        
-        TurretAutoAimToHub();
-        //System.out.println(getAngleToTarget());
+        // Continuously command the motor to track the hub every loop.
+        // turretAutoAimToHubImmediate() drives the motor directly; TurretAutoAimToHub()
+        // only returns a Command object and must not be called here (it was a no-op).
+        turretAutoAimToHubImmediate();
 
-        // ^ make sure all of these numbers are being updated frequently so the turret is always aiming at the right place
         BaseStatusSignal.refreshAll(motorPosition);
         //System.out.print(motor.getPosition().getValueAsDouble() + " Turret Motor Position");
         
