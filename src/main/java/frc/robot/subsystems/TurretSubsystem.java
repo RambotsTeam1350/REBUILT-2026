@@ -2,33 +2,21 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import java.util.Vector;
-
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
 
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.RawFiducial;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.commands.GetTurretToHub;
 
 /*  
@@ -96,21 +84,11 @@ public class TurretSubsystem extends SubsystemBase {
 
 @Override
     public void periodic() {
-
-        getPoseEstimatorX();
-        getPoseEstimatorY();
-        getPoseEstimatorRotation();
-        getTargetRotation();
-        getAngleToTarget();
-
-        // Continuously command the motor to track the hub every loop.
-        // turretAutoAimToHubImmediate() drives the motor directly; TurretAutoAimToHub()
-        // only returns a Command object and must not be called here (it was a no-op).
-        turretAutoAimToHubImmediate();
-
+        // Refresh cached signals first so all reads in this loop see current values.
         BaseStatusSignal.refreshAll(motorPosition);
-        //System.out.print(motor.getPosition().getValueAsDouble() + " Turret Motor Position");
-        
+
+        // Turret aiming is now driven by button commands (see RobotContainer).
+        // turretAutoAimToHubImmediate();
     }
  
 /* ------------------------------------------------------------------------------ */
@@ -289,24 +267,57 @@ private double clampTurretAngle(double degrees) {
     }
 
     /**
-     * Aims the turret at the hub using a hybrid strategy:
+     * Aims the turret at the hub using the pose estimator.
      *
-     *   1. Direct vision (primary): when a hub AprilTag is visible in limelight-three,
-     *      txnc (horizontal angle in degrees) is used directly. This skips the pose
-     *      estimation chain entirely and gives ~0.1° accuracy vs ~1-3° for pose-based.
-     *
-     *   2. Pose estimator fallback: when no hub tags are visible, the field-position
-     *      vector calculation is used so the turret keeps tracking while driving.
-     *
-     * NOTE: Set XofCameraOnBot / YofCameraOnBot to the measured camera position
-     * (meters from robot center) to make the geometric correction accurate.
+     * Vision measurements from the Limelight are fed into the pose estimator via
+     * addVisionMeasurement() in CommandSwerveDrivetrain, so the pose stays accurate
+     * when AprilTags are visible. Using the pose estimator exclusively (rather than
+     * directly reading txnc here) avoids jitter from:
+     *   - Limelight publishing at ~22 Hz while the robot loop runs at 50 Hz (stale txnc)
+     *   - Incremental getTurretRotation() + txnc accumulation between Limelight frames
+     *   - Path-switching jumps when tag visibility flickers between loops
      */
     public void turretAutoAimToHubImmediate() {
-        // --- Try direct vision first ---
+        Translation2d turretToHubVector = GetTurretToHub.calculateTurretToHubVector(
+            getPoseEstimatorX(),
+            getPoseEstimatorY(),
+            degreesToRadians(getPoseEstimatorRotation()),
+            XofTurretOnBot,
+            YofTurretOnBot,
+            TargetXposition,
+            TargetYposition
+        );
+        double robotRelativeAngle = normalizeAngle(
+            turretToHubVector.getAngle().getDegrees() - getPoseEstimatorRotation());
+        robotRelativeAngle = clampTurretAngle(robotRelativeAngle);
+        motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(robotRelativeAngle)));
+    }
+
+    /**
+     * Command: continuously aim at the hub using the pose estimator (hold button A).
+     * Uses Commands.run() so the turret tracks every loop while the button is held.
+     */
+    public Command aimAtHubViaPose() {
+        return Commands.run(this::turretAutoAimToHubImmediate, this);
+    }
+
+    /**
+     * Command: continuously aim at the hub using direct Limelight vision (hold button B).
+     * Uses txnc from the closest visible hub AprilTag for the current alliance.
+     * Falls back to pose estimator if no hub tags are visible.
+     */
+    public Command aimAtHubViaVision() {
+        return Commands.run(this::turretAimViaVisionImmediate, this);
+    }
+
+    /**
+     * Aims the turret using direct Limelight txnc from the closest hub AprilTag.
+     * Falls back to pose estimator when no hub tags are visible.
+     */
+    public void turretAimViaVisionImmediate() {
         RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("limelight-three");
         RawFiducial bestTag = null;
         double closestDist = Double.MAX_VALUE;
-
         for (RawFiducial f : fiducials) {
             for (int id : getHubTagIDs()) {
                 if (f.id == id && f.distToRobot < closestDist) {
@@ -317,38 +328,13 @@ private double clampTurretAngle(double degrees) {
         }
 
         if (bestTag != null) {
-            // txnc is the horizontal angle to the tag in degrees (positive = right of crosshair).
-            // Apply geometric correction for the offset between camera and turret positions.
-            double angleToTagDeg = bestTag.txnc;
-            double geometricOffsetDeg = 0.0;
-            if (bestTag.distToRobot > 0.1) {
-                Translation2d camOffset = new Translation2d(
-                    XofCameraOnBot - XofTurretOnBot,
-                    YofCameraOnBot - YofTurretOnBot);
-                double angleRad = Math.toRadians(angleToTagDeg);
-                double perpOffset = camOffset.getX() * Math.sin(angleRad)
-                                  - camOffset.getY() * Math.cos(angleRad);
-                geometricOffsetDeg = Math.toDegrees(Math.atan2(perpOffset, bestTag.distToRobot));
-            }
-            double targetAngle = clampTurretAngle(
-                getTurretRotation() + angleToTagDeg + geometricOffsetDeg);
+            // txnc is horizontal offset in degrees from the crosshair (positive = right).
+            // Add to the current turret angle so the turret rotates to center the tag.
+            double targetAngle = clampTurretAngle(getTurretRotation() + bestTag.txnc);
             motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(targetAngle)));
-
         } else {
-            // --- Pose estimator fallback ---
-            Translation2d turretToHubVector = GetTurretToHub.calculateTurretToHubVector(
-                getPoseEstimatorX(),
-                getPoseEstimatorY(),
-                degreesToRadians(getPoseEstimatorRotation()),
-                XofTurretOnBot,
-                YofTurretOnBot,
-                TargetXposition,
-                TargetYposition
-            );
-            double robotRelativeAngle = normalizeAngle(
-                turretToHubVector.getAngle().getDegrees() - getPoseEstimatorRotation());
-            robotRelativeAngle = clampTurretAngle(robotRelativeAngle);
-            motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(robotRelativeAngle)));
+            // No hub tags visible — fall back to pose estimator
+            turretAutoAimToHubImmediate();
         }
     }
 

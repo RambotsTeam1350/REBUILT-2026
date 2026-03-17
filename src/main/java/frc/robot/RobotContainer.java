@@ -137,9 +137,11 @@ public class RobotContainer {
         //joystick.b().onTrue(pidcontroler.MotorTest());
         //joystick.a().onTrue(pidcontroler.StopMotorCommand());
         //joystick.b().onTrue(turretSubsystem.TurretTestSpeed());
-        joystick.a().onTrue(turretSubsystem.TurretAutoAimToHub()); // Align to hub with no offset
-        joystick.b().onTrue(new AlignToHub(turretSubsystem));
-       //joystick.x().whileTrue(turretSubsystem.TurretToMaxPosition());
+
+        joystick.a().whileTrue(turretSubsystem.aimAtHubViaPose());    // Aim via pose estimator
+        joystick.b().whileTrue(turretSubsystem.aimAtHubViaVision());  // Aim via Limelight vision
+
+        //joystick.x().whileTrue(turretSubsystem.TurretToMaxPosition());
     
         //joystick.y().onTrue(turretSubsystem.TurretTestSpeed());
         //joystick.b().onTrue(turretSubsystem.TurretToZero());
@@ -163,10 +165,10 @@ public class RobotContainer {
         joystick.povDown().onTrue(climberSubsystem.ClimbDownCommand());
 
         joystick.x().onTrue(ThroatAndIndexerSubsystem.runMotorCommand());
-        joystick.b().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
+        // joystick.b().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
 
         joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
-        joystick.b().onTrue(ShooterSubsystem.stopMotorCommand());
+        // joystick.b().onTrue(ShooterSubsystem.stopMotorCommand());
 
         joystick.leftBumper().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
         joystick.rightBumper().onTrue(ThroatAndIndexerSubsystem.reverseMotorCommand());
@@ -178,13 +180,14 @@ public class RobotContainer {
 
         )
      );
-    
-       joystick.a().onTrue(
-            Commands.sequence(
-            intaketestSubsytem.IntakeDownCommand(),
-            IntakeWheelSubsystem.runMotorCommand()
-            )
-        ); 
+
+    //  Temporarily commented intake 
+    //    joystick.a().onTrue(
+    //         Commands.sequence(
+    //         intaketestSubsytem.IntakeDownCommand(),
+    //         IntakeWheelSubsystem.runMotorCommand()
+    //         )
+    //     ); 
 
 
         //joystick.x().onTrue(climberSubsystem.ClimbUpCommand());
