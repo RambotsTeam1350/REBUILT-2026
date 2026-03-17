@@ -8,6 +8,7 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -60,6 +61,8 @@ public class TurretSubsystem extends SubsystemBase {
 
 
          TalonFXConfiguration cfg = new TalonFXConfiguration();
+            // If the turret moves the wrong direction, swap to CounterClockwise_Positive
+            cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
             cfg.Slot0.kP = 4.8;
             cfg.Slot0.kI = 0;
             cfg.Slot0.kD = 0.1;
