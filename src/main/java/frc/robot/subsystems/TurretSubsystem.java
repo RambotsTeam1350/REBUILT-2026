@@ -25,10 +25,9 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.LimelightHelpers;
-import frc.robot.LimelightHelpers.LimelightTarget_Barcode;
-import frc.robot.LimelightHelpers.LimelightTarget_Detector;
-import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
+import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.commands.GetTurretToHub;
 
@@ -278,35 +277,79 @@ private double clampTurretAngle(double degrees) {
     }
 
     /**
-     * Imperative version of TurretAutoAimToHub(). Calculates the robot-relative
-     * angle to the hub and immediately commands the motor. This is useful when
-     * calling from another command's execute() so the action runs immediately
-     * without scheduling an inner Command.
+     * Returns hub AprilTag IDs for the current alliance.
+     * Red: tags 9, 10 — Blue: tags 24, 25.
+     */
+    private int[] getHubTagIDs() {
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
+            return new int[]{9, 10};
+        }
+        return new int[]{24, 25};
+    }
+
+    /**
+     * Aims the turret at the hub using a hybrid strategy:
+     *
+     *   1. Direct vision (primary): when a hub AprilTag is visible in limelight-three,
+     *      txnc (horizontal angle in degrees) is used directly. This skips the pose
+     *      estimation chain entirely and gives ~0.1° accuracy vs ~1-3° for pose-based.
+     *
+     *   2. Pose estimator fallback: when no hub tags are visible, the field-position
+     *      vector calculation is used so the turret keeps tracking while driving.
+     *
+     * NOTE: Set XofCameraOnBot / YofCameraOnBot to the measured camera position
+     * (meters from robot center) to make the geometric correction accurate.
      */
     public void turretAutoAimToHubImmediate() {
-        // Calculate vector from turret to hub in field frame
-        Translation2d turretToHubVector = GetTurretToHub.calculateTurretToHubVector(
-            getPoseEstimatorX(),
-            getPoseEstimatorY(),
-            degreesToRadians(getPoseEstimatorRotation()),
-            XofTurretOnBot,
-            YofTurretOnBot,
-            TargetXposition,
-            TargetYposition
-        );
+        // --- Try direct vision first ---
+        RawFiducial[] fiducials = LimelightHelpers.getRawFiducials("limelight-three");
+        RawFiducial bestTag = null;
+        double closestDist = Double.MAX_VALUE;
 
-        // Get field-absolute angle to hub
-        double fieldAngleToHub = turretToHubVector.getAngle().getDegrees();
+        for (RawFiducial f : fiducials) {
+            for (int id : getHubTagIDs()) {
+                if (f.id == id && f.distToRobot < closestDist) {
+                    bestTag = f;
+                    closestDist = f.distToRobot;
+                }
+            }
+        }
 
-        // Convert to robot-relative angle
-        double robotRelativeAngle = fieldAngleToHub - getPoseEstimatorRotation();
+        if (bestTag != null) {
+            // txnc is the horizontal angle to the tag in degrees (positive = right of crosshair).
+            // Apply geometric correction for the offset between camera and turret positions.
+            double angleToTagDeg = bestTag.txnc;
+            double geometricOffsetDeg = 0.0;
+            if (bestTag.distToRobot > 0.1) {
+                Translation2d camOffset = new Translation2d(
+                    XofCameraOnBot - XofTurretOnBot,
+                    YofCameraOnBot - YofTurretOnBot);
+                double angleRad = Math.toRadians(angleToTagDeg);
+                double perpOffset = camOffset.getX() * Math.sin(angleRad)
+                                  - camOffset.getY() * Math.cos(angleRad);
+                geometricOffsetDeg = Math.toDegrees(Math.atan2(perpOffset, bestTag.distToRobot));
+            }
+            double targetAngle = clampTurretAngle(
+                getTurretRotation() + angleToTagDeg + geometricOffsetDeg);
+            motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(targetAngle)));
 
-        // Normalize and clamp
-        robotRelativeAngle = normalizeAngle(robotRelativeAngle);
-        robotRelativeAngle = clampTurretAngle(robotRelativeAngle);
-
-        // Command turret to robot-relative angle
-        motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(robotRelativeAngle)));
+        } else {
+            // --- Pose estimator fallback ---
+            Translation2d turretToHubVector = GetTurretToHub.calculateTurretToHubVector(
+                getPoseEstimatorX(),
+                getPoseEstimatorY(),
+                degreesToRadians(getPoseEstimatorRotation()),
+                XofTurretOnBot,
+                YofTurretOnBot,
+                TargetXposition,
+                TargetYposition
+            );
+            double robotRelativeAngle = normalizeAngle(
+                turretToHubVector.getAngle().getDegrees() - getPoseEstimatorRotation());
+            robotRelativeAngle = clampTurretAngle(robotRelativeAngle);
+            motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(robotRelativeAngle)));
+        }
     }
 
     /**
