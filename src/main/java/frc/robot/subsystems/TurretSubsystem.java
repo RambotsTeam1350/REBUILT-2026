@@ -310,6 +310,23 @@ private double clampTurretAngle(double degrees) {
     }
 
     /**
+     * Returns the straight-line distance from the turret to the hub in meters,
+     * accounting for the turret's actual field position (robot pose + heading + offset).
+     * Use this as the single authoritative distance for both turret and shooter angle.
+     */
+    public double getDistanceToHub() {
+        return GetTurretToHub.calculateTurretToHubVector(
+            getPoseEstimatorX(),
+            getPoseEstimatorY(),
+            degreesToRadians(getPoseEstimatorRotation()),
+            XofTurretOnBot,
+            YofTurretOnBot,
+            TargetXposition,
+            TargetYposition
+        ).getNorm();
+    }
+
+    /**
      * Gets the camera position relative to robot center.
      *
      * @return Translation2d representing camera position in robot frame

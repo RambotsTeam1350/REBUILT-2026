@@ -32,6 +32,7 @@ import frc.robot.subsystems.ThroatAndIndexerSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.Intake.IntakeLevelSubsystem;
 import frc.robot.subsystems.Intake.IntakeWheelSubsystem;
+import frc.robot.subsystems.Shooter.ShooterAimSubsystem;
 import frc.robot.subsystems.Shooter.ShooterPowerSubsystem;
 import frc.robot.subsystems.TestPIDMotorSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
@@ -64,6 +65,7 @@ public class RobotContainer {
     private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private final TurretSubsystem turretSubsystem;
+    private final ShooterAimSubsystem shooterAimSubsystem;
     private final SendableChooser<Command> autoChooser;
     private LimelightTarget_Detector limelight = new LimelightTarget_Detector();
     
@@ -77,6 +79,9 @@ public class RobotContainer {
         // Construct the turret after the drivetrain so we can pass the drivetrain's
         // pose estimator into the turret constructor.
         turretSubsystem = new TurretSubsystem(drivetrain.getPoseEstimator());
+        // ShooterAimSubsystem uses TurretSubsystem as its distance source so both
+        // subsystems share the same turret-corrected distance to hub.
+        shooterAimSubsystem = new ShooterAimSubsystem(turretSubsystem);
 
         configureBindings();
 
