@@ -408,6 +408,12 @@ private SwerveModulePosition[] getModulePositions() {
 
         // Maximum tag distance beyond which pose estimates are too noisy to be useful.
         final double kMaxTagDistanceMeters = 5.0;
+        // Jump filter threshold — reject measurements that imply the robot teleported.
+        // Bypassed until the first valid fix is accepted (hasReceivedVisionFix == false),
+        // so an AprilTag can seed the initial pose from origin during off-field testing
+        // or when no PathPlanner auto starting pose is set.
+        final double kMaxPoseJumpMeters = 1.0;
+        Pose2d currentPose = poseEstimator.getEstimatedPosition();
 
         if (LimelightHelpers.validPoseEstimate(llEstimate5)
                 && llEstimate5.tagCount >= 1
