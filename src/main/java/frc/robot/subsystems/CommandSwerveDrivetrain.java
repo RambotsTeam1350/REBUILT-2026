@@ -62,6 +62,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     // Do NOT instantiate a second Pigeon2 here — the CTRE swerve framework already
     // owns CAN ID 0 internally. Use getPigeon2() to access it.
     public SwerveDrivePoseEstimator poseEstimator;
+    // False until the first valid vision measurement is accepted. While false, the pose
+    // jump filter is bypassed so an AprilTag can seed the initial position from origin.
+    private boolean hasReceivedVisionFix = false;
 
     Pose2d vision = LimelightHelpers.getBotPose2d_wpiBlue("limelight-fifteen");
 
@@ -402,7 +405,8 @@ private SwerveModulePosition[] getModulePositions() {
 
         if (LimelightHelpers.validPoseEstimate(llEstimate5)
                 && llEstimate5.tagCount >= 1
-                && llEstimate5.avgTagDist < kMaxTagDistanceMeters) {
+                && llEstimate5.avgTagDist < kMaxTagDistanceMeters
+                && (!hasReceivedVisionFix || llEstimate5.pose.getTranslation().getDistance(currentPose.getTranslation()) < kMaxPoseJumpMeters)) {
             // Scale X/Y stdDevs by distance squared: close tags get high trust, far tags
             // get low trust. At 1m with 2 tags → 0.1; at 2m → 0.4; at 4m → 1.6.
             // High rotation stddev keeps heading governed by Pigeon2, not Limelight.
@@ -411,16 +415,19 @@ private SwerveModulePosition[] getModulePositions() {
                     : 0.3 * llEstimate5.avgTagDist * llEstimate5.avgTagDist;
             Matrix<N3, N1> stdDevs = VecBuilder.fill(xyStdDev, xyStdDev, Math.toRadians(9999));
             addVisionMeasurement(llEstimate5.pose, llEstimate5.timestampSeconds, stdDevs);
+            hasReceivedVisionFix = true;
         }
 
         if (LimelightHelpers.validPoseEstimate(llEstimate3)
                 && llEstimate3.tagCount >= 1
-                && llEstimate3.avgTagDist < kMaxTagDistanceMeters) {
+                && llEstimate3.avgTagDist < kMaxTagDistanceMeters
+                && (!hasReceivedVisionFix || llEstimate3.pose.getTranslation().getDistance(currentPose.getTranslation()) < kMaxPoseJumpMeters)) {
             double xyStdDev = (llEstimate3.tagCount >= 2)
                     ? 0.1 * llEstimate3.avgTagDist * llEstimate3.avgTagDist
                     : 0.3 * llEstimate3.avgTagDist * llEstimate3.avgTagDist;
             Matrix<N3, N1> stdDevs = VecBuilder.fill(xyStdDev, xyStdDev, Math.toRadians(9999));
             addVisionMeasurement(llEstimate3.pose, llEstimate3.timestampSeconds, stdDevs);
+            hasReceivedVisionFix = true;
         }
       System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
          
@@ -450,6 +457,20 @@ private SwerveModulePosition[] getModulePositions() {
      */
     public SwerveDrivePoseEstimator getPoseEstimator() {
         return poseEstimator;
+    }
+
+    /**
+     * Resets the robot pose. Called by PathPlanner when an auto routine has a
+     * defined starting pose. Marking hasReceivedVisionFix=true here means the
+     * jump filter is active immediately — we already know where we are.
+     */
+    @Override
+    public void resetPose(Pose2d pose) {
+        super.resetPose(pose);
+        if (poseEstimator != null) {
+            poseEstimator.resetPosition(getPigeon2().getRotation2d(), getModulePositions(), pose);
+        }
+        hasReceivedVisionFix = true;
     }
 
 /**
