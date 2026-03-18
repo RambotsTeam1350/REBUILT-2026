@@ -41,6 +41,8 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -62,6 +64,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     // Do NOT instantiate a second Pigeon2 here — the CTRE swerve framework already
     // owns CAN ID 0 internally. Use getPigeon2() to access it.
     public SwerveDrivePoseEstimator poseEstimator;
+    private final Field2d m_wpiLibField = new Field2d();
     // False until the first valid vision measurement is accepted. While false, the pose
     // jump filter is bypassed so an AprilTag can seed the initial position from origin.
     private boolean hasReceivedVisionFix = false;
@@ -209,6 +212,8 @@ private SwerveModulePosition[] getModulePositions() {
             getModulePositions(),
             new Pose2d(0, 0, new Rotation2d())
         );
+
+        SmartDashboard.putData("WPILib Field", m_wpiLibField);
 
         // Initialize Limelight robot orientation now that poseEstimator exists
         LimelightHelpers.SetRobotOrientation(
@@ -386,6 +391,7 @@ private SwerveModulePosition[] getModulePositions() {
             getGyroscopeRotation(),
             modulePositions
         );
+        m_wpiLibField.setRobotPose(poseEstimator.getEstimatedPosition());
 
     // MegaTag2 requires updated robot orientation EVERY cycle for accurate pose estimates.
     // Use the raw Pigeon2 yaw — NOT the fused estimator pose — to avoid a feedback loop
