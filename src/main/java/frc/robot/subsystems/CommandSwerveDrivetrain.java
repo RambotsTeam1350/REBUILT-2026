@@ -417,29 +417,45 @@ private SwerveModulePosition[] getModulePositions() {
 
         if (LimelightHelpers.validPoseEstimate(llEstimate5)
                 && llEstimate5.tagCount >= 1
-                && llEstimate5.avgTagDist < kMaxTagDistanceMeters
-                && (!hasReceivedVisionFix || llEstimate5.pose.getTranslation().getDistance(currentPose.getTranslation()) < kMaxPoseJumpMeters)) {
-            // Scale X/Y stdDevs by distance squared: close tags get high trust, far tags
-            // get low trust. At 1m with 2 tags → 0.1; at 2m → 0.4; at 4m → 1.6.
-            // High rotation stddev keeps heading governed by Pigeon2, not Limelight.
-            double xyStdDev = (llEstimate5.tagCount >= 2)
-                    ? 0.1 * llEstimate5.avgTagDist * llEstimate5.avgTagDist
-                    : 0.3 * llEstimate5.avgTagDist * llEstimate5.avgTagDist;
-            Matrix<N3, N1> stdDevs = VecBuilder.fill(xyStdDev, xyStdDev, Math.toRadians(9999));
-            addVisionMeasurement(llEstimate5.pose, llEstimate5.timestampSeconds, stdDevs);
-            hasReceivedVisionFix = true;
+                && llEstimate5.avgTagDist < kMaxTagDistanceMeters) {
+            if (!hasReceivedVisionFix) {
+                // Hard-seed the estimator on first tag detection so wheel odometry
+                // drift doesn't need to be filtered away — we know exactly where we are.
+                poseEstimator.resetPosition(
+                    getPigeon2().getRotation2d(),
+                    getModulePositions(),
+                    llEstimate5.pose
+                );
+                hasReceivedVisionFix = true;
+            } else if (llEstimate5.pose.getTranslation().getDistance(currentPose.getTranslation()) < kMaxPoseJumpMeters) {
+                // Scale X/Y stdDevs by distance squared: close tags get high trust, far tags
+                // get low trust. At 1m with 2 tags → 0.1; at 2m → 0.4; at 4m → 1.6.
+                // High rotation stddev keeps heading governed by Pigeon2, not Limelight.
+                double xyStdDev = (llEstimate5.tagCount >= 2)
+                        ? 0.1 * llEstimate5.avgTagDist * llEstimate5.avgTagDist
+                        : 0.3 * llEstimate5.avgTagDist * llEstimate5.avgTagDist;
+                Matrix<N3, N1> stdDevs = VecBuilder.fill(xyStdDev, xyStdDev, Math.toRadians(9999));
+                addVisionMeasurement(llEstimate5.pose, llEstimate5.timestampSeconds, stdDevs);
+            }
         }
 
         if (LimelightHelpers.validPoseEstimate(llEstimate3)
                 && llEstimate3.tagCount >= 1
-                && llEstimate3.avgTagDist < kMaxTagDistanceMeters
-                && (!hasReceivedVisionFix || llEstimate3.pose.getTranslation().getDistance(currentPose.getTranslation()) < kMaxPoseJumpMeters)) {
-            double xyStdDev = (llEstimate3.tagCount >= 2)
-                    ? 0.1 * llEstimate3.avgTagDist * llEstimate3.avgTagDist
-                    : 0.3 * llEstimate3.avgTagDist * llEstimate3.avgTagDist;
-            Matrix<N3, N1> stdDevs = VecBuilder.fill(xyStdDev, xyStdDev, Math.toRadians(9999));
-            addVisionMeasurement(llEstimate3.pose, llEstimate3.timestampSeconds, stdDevs);
-            hasReceivedVisionFix = true;
+                && llEstimate3.avgTagDist < kMaxTagDistanceMeters) {
+            if (!hasReceivedVisionFix) {
+                poseEstimator.resetPosition(
+                    getPigeon2().getRotation2d(),
+                    getModulePositions(),
+                    llEstimate3.pose
+                );
+                hasReceivedVisionFix = true;
+            } else if (llEstimate3.pose.getTranslation().getDistance(currentPose.getTranslation()) < kMaxPoseJumpMeters) {
+                double xyStdDev = (llEstimate3.tagCount >= 2)
+                        ? 0.1 * llEstimate3.avgTagDist * llEstimate3.avgTagDist
+                        : 0.3 * llEstimate3.avgTagDist * llEstimate3.avgTagDist;
+                Matrix<N3, N1> stdDevs = VecBuilder.fill(xyStdDev, xyStdDev, Math.toRadians(9999));
+                addVisionMeasurement(llEstimate3.pose, llEstimate3.timestampSeconds, stdDevs);
+            }
         }
       System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
          
