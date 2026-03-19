@@ -80,11 +80,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
 
 
-//positions of each swere module from the center of the bot
-private static final Translation2d frontLeftLocation = new Translation2d(-0.29,0.29); // 2 numbers will go here, x and y position for each one. From the center of the bot.
-private static final Translation2d frontRightLocation = new Translation2d(0.29,0.29); // so like actual numbers gotta go in these translation2d objects
-private static final Translation2d backLeftLocation = new Translation2d(-0.29,-0.29); //Meters
-private static final Translation2d backRightLocation = new Translation2d(0.29,-0.29); // 0.58 left to right, square
+// Module positions relative to robot center, in WPILib convention (X=forward, Y=left).
+// Values match TunerConstantsThorBot: 11 inches (0.2794 m) in each axis.
+private static final Translation2d frontLeftLocation  = new Translation2d( 0.2794,  0.2794);
+private static final Translation2d frontRightLocation = new Translation2d( 0.2794, -0.2794);
+private static final Translation2d backLeftLocation   = new Translation2d(-0.2794,  0.2794);
+private static final Translation2d backRightLocation  = new Translation2d(-0.2794, -0.2794);
 
 private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
     frontLeftLocation,
