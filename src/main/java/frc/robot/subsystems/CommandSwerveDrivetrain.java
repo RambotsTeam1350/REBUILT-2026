@@ -47,7 +47,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
-import frc.robot.generated.TunerConstantsThorBot.TunerSwerveDrivetrain; //This still has to be changed when you change which bot you're using
+import frc.robot.generated.TunerConstantsLokiBot.TunerSwerveDrivetrain; //This still has to be changed when you change which bot you're using
 import frc.robot.generated.TunerConstants;
 import frc.robot.LimelightHelpers;
 

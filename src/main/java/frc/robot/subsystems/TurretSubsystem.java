@@ -230,7 +230,7 @@ private double clampTurretAngle(double degrees) {
 
     public Command TurretToZero() {
         return Commands.sequence(
-                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(0)))
+                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(0))))
             );
        }
 
