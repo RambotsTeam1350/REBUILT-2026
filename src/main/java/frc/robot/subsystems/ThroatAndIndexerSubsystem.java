@@ -60,10 +60,16 @@ public class ThroatAndIndexerSubsystem extends SubsystemBase {
      }
 
         public Command reverseMotorCommand() {
-            return Commands.runOnce(
+            return Commands.sequence ( Commands.runOnce(
                 () -> {
                     reverseMotor(-0.6);
                 }
+            ),
+            Commands.waitSeconds(0.75),
+            Commands.runOnce( () -> {
+                    runMotor(0.6);
+                }
+            )
             );
         }
 }

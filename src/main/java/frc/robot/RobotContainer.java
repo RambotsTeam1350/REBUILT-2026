@@ -60,6 +60,7 @@ public class RobotContainer {
     private final ShooterPowerSubsystem ShooterSubsystem = new ShooterPowerSubsystem();
 
     private final CommandXboxController joystick = new CommandXboxController(0);
+    private final CommandXboxController copilotController = new CommandXboxController(1);
     private final ThroatAndIndexerSubsystem ThroatAndIndexerSubsystem = new ThroatAndIndexerSubsystem();
     private final TestPIDMotorSubsystem pidcontroler = new TestPIDMotorSubsystem();
     private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
@@ -161,8 +162,8 @@ public class RobotContainer {
         // joystick.x().onTrue(pidcontroler.MotionMagicCommand());
         // joystick.y().onTrue(pidcontroler.StopMotionMagicCommand());
 
-        joystick.povUp().onTrue(climberSubsystem.ClimbUpCommand());
-        joystick.povDown().onTrue(climberSubsystem.ClimbDownCommand());
+        copilotController.povUp().onTrue(climberSubsystem.ClimbUpCommand());
+        copilotController.povDown().onTrue(climberSubsystem.ClimbDownCommand());
 
         joystick.x().onTrue(ThroatAndIndexerSubsystem.runMotorCommand());
         // joystick.b().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
@@ -170,8 +171,8 @@ public class RobotContainer {
         joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
         // joystick.b().onTrue(ShooterSubsystem.stopMotorCommand());
 
-        joystick.leftBumper().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
-        joystick.rightBumper().onTrue(ThroatAndIndexerSubsystem.reverseMotorCommand());
+        copilotController.leftBumper().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
+        copilotController.rightBumper().onTrue(ThroatAndIndexerSubsystem.reverseMotorCommand());
         
         joystick.y().onTrue(
             Commands.sequence(
