@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
@@ -86,7 +87,12 @@ public class RobotContainer {
 
         configureBindings();
 
-        autoChooser = AutoBuilder.buildAutoChooser("blue middle");
+        NamedCommands.registerCommand("TurretAutoAimToHub", turretSubsystem.TurretAutoAimToHub());
+        NamedCommands.registerCommand("runMotorCommand",
+                Commands.parallel(ShooterSubsystem.runMotorCommand(), ThroatAndIndexerSubsystem.runMotorCommand()));
+        NamedCommands.registerCommand("ClimbDownCommand", climberSubsystem.ClimbDownCommand());
+
+        autoChooser = AutoBuilder.buildAutoChooser("middle boring");
         SmartDashboard.putData("Auto Chooser", autoChooser);
     }
 
