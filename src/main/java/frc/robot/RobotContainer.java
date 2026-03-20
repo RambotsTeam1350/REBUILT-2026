@@ -162,18 +162,20 @@ public class RobotContainer {
         copilotController.povDown().onTrue(climberSubsystem.ClimbDownCommand());
 
         copilotController.x().onTrue(
-            IntakeWheelSubsystem.runMotorCommand()
+            Commands.sequence(IntakeWheelSubsystem.runMotorCommand(),
+            intaketestSubsytem.IntakeDownCommand())
         );
         
-        copilotController.y().onTrue(IntakeWheelSubsystem.stopMotorCommand());  
+        copilotController.y().onTrue(
+                Commands.sequence(IntakeWheelSubsystem.stopMotorCommand(),
+                intaketestSubsytem.IntakeUpCommand()
+                )
+        );  
+
+        copilotController.a().onTrue(IntakeWheelSubsystem.stopMotorCommand());
 
         copilotController.leftBumper().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
         copilotController.rightBumper().onTrue(ThroatAndIndexerSubsystem.reverseMotorCommand());
-
-        copilotController.a().whileTrue(ShooterSubsystem.runMotorCommand());
-        
-        //joystick.x().onTrue(climberSubsystem.ClimbUpCommand());
-       // joystick.y().onTrue(climberSubsystem.ClimbDownCommand());
 
         // SmartDashboard.putData(autochooser);
 
