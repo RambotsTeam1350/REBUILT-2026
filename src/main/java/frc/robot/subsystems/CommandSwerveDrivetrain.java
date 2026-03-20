@@ -81,10 +81,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
 
 //positions of each swere module from the center of the bot
-private static final Translation2d frontLeftLocation = new Translation2d(-0.29,0.29); // 2 numbers will go here, x and y position for each one. From the center of the bot.
-private static final Translation2d frontRightLocation = new Translation2d(0.29,0.29); // so like actual numbers gotta go in these translation2d objects
-private static final Translation2d backLeftLocation = new Translation2d(-0.29,-0.29); //Meters
-private static final Translation2d backRightLocation = new Translation2d(0.29,-0.29); // 0.58 left to right, square
+private static final Translation2d frontLeftLocation = new Translation2d(0.29, 0.29);   // +X = forward, +Y = left
+private static final Translation2d frontRightLocation = new Translation2d(0.29, -0.29);  // +X = forward, -Y = right
+private static final Translation2d backLeftLocation = new Translation2d(-0.29, 0.29);   // -X = back,    +Y = left
+private static final Translation2d backRightLocation = new Translation2d(-0.29, -0.29); // -X = back,    -Y = right
 
 private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
     frontLeftLocation,
