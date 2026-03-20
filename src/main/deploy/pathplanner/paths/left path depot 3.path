@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.991,
-        "y": 7.0
+        "x": 2.8507155635062613,
+        "y": 3.9133094812164577
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.991,
-        "y": 7.0
+        "x": 2.143608782319714,
+        "y": 4.620416262403006
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "climb 2"
     },
     {
       "anchor": {
-        "x": 2.0,
-        "y": 7.0
+        "x": 1.5851341681574236,
+        "y": 4.22159212880143
       },
       "prevControl": {
-        "x": 1.0,
-        "y": 7.0
+        "x": 1.990769230769231,
+        "y": 4.627227191413238
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,10 +31,22 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "ClimbUpCommand",
+      "waypointRelativePos": 0.3355932203389831,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ClimbUpCommand"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
-    "maxVelocity": 1.0,
-    "maxAcceleration": 1.0,
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -42,7 +54,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 90.0
   },
   "reversed": false,
   "folder": null,
@@ -50,5 +62,5 @@
     "velocity": 0,
     "rotation": 0.0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }
