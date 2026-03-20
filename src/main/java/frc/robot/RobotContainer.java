@@ -43,8 +43,8 @@ import frc.robot.LimelightHelpers.LimelightTarget_Detector;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 
 public class RobotContainer {
-    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.5; // 50% of top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond) * 0.5; // 50% max angular rate
+    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.8; // 80% of top speed
+    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond) * 0.8; // 80% max angular rate
                                                                                       // max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -101,14 +101,17 @@ public class RobotContainer {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
-                // Drivetrain will execute this command periodically
-                drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
-                                                                                                   // negative Y
-                                                                                                   // (forward)
-                        .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                        .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with
-                                                                                    // negative X (left)
-                ));
+                // Drivetrain will execute this command periodically.
+                // Squared input curve: preserves sign but squares magnitude for finer low-speed control.
+                drivetrain.applyRequest(() -> {
+                    double vx = -joystick.getLeftY();
+                    double vy = -joystick.getLeftX();
+                    double rot = -joystick.getRightX();
+                    return drive
+                            .withVelocityX(Math.copySign(vx * vx, vx) * MaxSpeed)
+                            .withVelocityY(Math.copySign(vy * vy, vy) * MaxSpeed)
+                            .withRotationalRate(Math.copySign(rot * rot, rot) * MaxAngularRate);
+                }));
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
