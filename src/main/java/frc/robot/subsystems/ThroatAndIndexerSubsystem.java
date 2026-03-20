@@ -28,13 +28,16 @@ public class ThroatAndIndexerSubsystem extends SubsystemBase {
 
      }
 
-     public void runMotor(double speed) {
-        motorThroat.set(speed);
-        motorIndexer.set(speed);
+     public void runMotor() {
+        motorThroat.set(0.4);
+        motorIndexer.set(0.4);
     }
 
-    public void stopMotor() {
+    public void stopMotorThroat() {
         motorThroat.set(0);
+    }
+
+    public void stopMotorIndexer() {
         motorIndexer.set(0);
     }
 
@@ -44,30 +47,36 @@ public class ThroatAndIndexerSubsystem extends SubsystemBase {
     }
 
       public Command runMotorCommand() {
-        return Commands.runOnce(
+        return Commands.sequence(
+        Commands.runOnce(
             () -> {
-                runMotor(.6);
-            }
+                runMotor();
+            })
         );
     }
 
      public Command stopMotorCommand() {
-        return Commands.runOnce(
-            () -> {
-                stopMotor();
-            }
+        return Commands.sequence(
+            Commands.runOnce(() -> {
+                stopMotorIndexer();
+            }),
+            Commands.waitSeconds(0.1),
+            Commands.runOnce(() -> {
+                stopMotorThroat();
+            })
+
         );
      }
 
         public Command reverseMotorCommand() {
             return Commands.sequence ( Commands.runOnce(
                 () -> {
-                    reverseMotor(-0.6);
+                    reverseMotor(-0.5);
                 }
             ),
             Commands.waitSeconds(0.75),
             Commands.runOnce( () -> {
-                    runMotor(0.6);
+                    runMotor();
                 }
             )
             );

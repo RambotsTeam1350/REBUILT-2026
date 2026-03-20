@@ -56,7 +56,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     public TurretSubsystem(SwerveDrivePoseEstimator poseEstimator) {
         this.poseEstimator = poseEstimator;
-        motor = new TalonFX(13);
+        motor = new TalonFX(18);
 
 
          TalonFXConfiguration cfg = new TalonFXConfiguration();

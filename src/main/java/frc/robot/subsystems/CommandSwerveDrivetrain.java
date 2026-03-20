@@ -457,7 +457,7 @@ private SwerveModulePosition[] getModulePositions() {
                 addVisionMeasurement(llEstimate3.pose, llEstimate3.timestampSeconds, stdDevs);
             }
         }
-      System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
+      //System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y: " + poseEstimator.getEstimatedPosition().getY() + " Angle: " + poseEstimator.getEstimatedPosition().getRotation().getDegrees() + " degrees");
          
     }
 

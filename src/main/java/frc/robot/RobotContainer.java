@@ -148,10 +148,9 @@ public class RobotContainer {
         joystick.leftTrigger().onTrue(turretSubsystem.TurretToZero());
 
         joystick.rightTrigger().whileTrue(ThroatAndIndexerSubsystem.runMotorCommand());
-        joystick.rightBumper().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
-        // joystick.b().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
-
         joystick.rightTrigger().whileTrue(ShooterSubsystem.runMotorCommand());
+
+        joystick.rightBumper().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
         joystick.rightBumper().onTrue(ShooterSubsystem.stopMotorCommand());
         // joystick.b().onTrue(ShooterSubsystem.stopMotorCommand());
 
@@ -163,22 +162,15 @@ public class RobotContainer {
         copilotController.povDown().onTrue(climberSubsystem.ClimbDownCommand());
 
         copilotController.x().onTrue(
-            Commands.sequence(
-            IntakeWheelSubsystem.runMotorCommand(),
-            intaketestSubsytem.IntakeDownCommand()
-            )
+            IntakeWheelSubsystem.runMotorCommand()
         );
         
-        copilotController.y().onTrue(
-            Commands.sequence(
-            IntakeWheelSubsystem.stopMotorCommand(),
-            intaketestSubsytem.IntakeUpCommand()
-
-            )
-        );  
+        copilotController.y().onTrue(IntakeWheelSubsystem.stopMotorCommand());  
 
         copilotController.leftBumper().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
         copilotController.rightBumper().onTrue(ThroatAndIndexerSubsystem.reverseMotorCommand());
+
+        copilotController.a().whileTrue(ShooterSubsystem.runMotorCommand());
         
         //joystick.x().onTrue(climberSubsystem.ClimbUpCommand());
        // joystick.y().onTrue(climberSubsystem.ClimbDownCommand());

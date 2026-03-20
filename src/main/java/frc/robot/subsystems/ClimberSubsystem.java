@@ -36,7 +36,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
             
             MotionMagicConfigs mm = cfg.MotionMagic;
-            mm.MotionMagicCruiseVelocity = 6; 
+            mm.MotionMagicCruiseVelocity = 8; 
             mm.MotionMagicAcceleration = 80;
             mm.MotionMagicJerk = 1600; 
             climbermotor1.getConfigurator().apply(cfg);
