@@ -6,6 +6,7 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -49,14 +50,20 @@ TalonFXConfiguration cfg = new TalonFXConfiguration();
     public Command IntakeUpCommand() {
         final MotionMagicVoltage m_request = new MotionMagicVoltage(0);
         return Commands.sequence(
-          Commands.runOnce (() -> intakeMotor.setControl(m_request.withPosition(0)))  
+          Commands.runOnce(() -> {
+              intakeMotor.setNeutralMode(NeutralModeValue.Brake);
+              intakeMotor.setControl(m_request.withPosition(0));
+          })
         );
     }
 
     public Command IntakeDownCommand() {
         final MotionMagicVoltage m_request = new MotionMagicVoltage(0);
         return Commands.sequence(
-          Commands.runOnce (() -> intakeMotor.setControl(m_request.withPosition(-10.2)))  
+          Commands.runOnce(() -> {
+              intakeMotor.setNeutralMode(NeutralModeValue.Coast);
+              intakeMotor.setControl(m_request.withPosition(-10.2));
+          })
         );
     }
 }
