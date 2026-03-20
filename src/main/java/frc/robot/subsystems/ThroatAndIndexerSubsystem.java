@@ -21,7 +21,7 @@ public class ThroatAndIndexerSubsystem extends SubsystemBase {
 
     public ThroatAndIndexerSubsystem() {
         motorThroat = new TalonFX(47);
-        motorIndexer = new TalonFX(33);
+        motorIndexer = new TalonFX(13);
 
         //velocity = motor.getVelocity();
         //position = motor.getPosition();

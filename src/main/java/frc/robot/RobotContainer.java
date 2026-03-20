@@ -132,71 +132,51 @@ public class RobotContainer {
      
         //joystick.rightBumper().whileTrue(new AlignToHub(drivetrain, limelight, 0)); // Align to hub with no offset
 
-
+//////////////////////////////////////////////////////////////////////////////
+/// DRIVER CONTROLS
+//////////////////////////////////////////////////////////////////////////////
 
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-        //joystick.rightBumper().onTrue(new AlignToHub(turretSubsystem));
-
-        // joystick.rightBumper().onTrue(new AlignToReefTagRelative(true, drivetrain));
-
-        //joystick.b().onTrue(intaketestSubsytem.IntakeDownCommand());
-        //joystick.b().onTrue(pidcontroler.MotorTest());
-        //joystick.a().onTrue(pidcontroler.StopMotorCommand());
-        //joystick.b().onTrue(turretSubsystem.TurretTestSpeed());
 
         joystick.a().whileTrue(turretSubsystem.aimAtHubViaPose());    // Aim via pose estimator
         joystick.b().whileTrue(turretSubsystem.aimAtHubViaVision());  // Aim via Limelight vision
 
-        //joystick.x().whileTrue(turretSubsystem.TurretToMaxPosition());
-    
-        //joystick.y().onTrue(turretSubsystem.TurretTestSpeed());
-        //joystick.b().onTrue(turretSubsystem.TurretToZero());
-        
-        //joystick.leftBumper().onTrue(intaketestSubsytem.IntakeUpCommand());
-        //joystick.x().onTrue(IntakeWheelSubsystem.runMotorCommand());
+        joystick.leftTrigger().onTrue(turretSubsystem.TurretToZero());
 
-        //joystick.y().onTrue(IntakeWheelSubsystem.stopMotorCommand());
-        //joystick.b().onTrue(intaketestSubsytem.IntakeDownCommand());
+        joystick.rightTrigger().whileTrue(ThroatAndIndexerSubsystem.runMotorCommand());
+        joystick.rightBumper().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
+        // joystick.b().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
 
-        //joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
-        //joystick.y().onTrue(ShooterSubsystem.stopMotorCommand());
+        joystick.rightTrigger().whileTrue(ShooterSubsystem.runMotorCommand());
+        joystick.rightBumper().onTrue(ShooterSubsystem.stopMotorCommand());
+        // joystick.b().onTrue(ShooterSubsystem.stopMotorCommand());
 
-       // joystick.povUp().onTrue(climberSubsystem.ClimbUpCommand());
-       // joystick.povDown().onTrue(climberSubsystem.ClimbDownCommand());
-
-        // joystick.x().onTrue(pidcontroler.MotionMagicCommand());
-        // joystick.y().onTrue(pidcontroler.StopMotionMagicCommand());
-
+//////////////////////////////////////////////////////////////////////////////
+/// COPILOT CONTROLS
+//////////////////////////////////////////////////////////////////////////////
+ 
         copilotController.povUp().onTrue(climberSubsystem.ClimbUpCommand());
         copilotController.povDown().onTrue(climberSubsystem.ClimbDownCommand());
 
-        joystick.x().onTrue(ThroatAndIndexerSubsystem.runMotorCommand());
-        // joystick.b().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
-
-        joystick.x().onTrue(ShooterSubsystem.runMotorCommand());
-        // joystick.b().onTrue(ShooterSubsystem.stopMotorCommand());
-
-        copilotController.leftBumper().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
-        copilotController.rightBumper().onTrue(ThroatAndIndexerSubsystem.reverseMotorCommand());
+        copilotController.x().onTrue(
+            Commands.sequence(
+            IntakeWheelSubsystem.runMotorCommand(),
+            intaketestSubsytem.IntakeDownCommand()
+            )
+        );
         
-        joystick.y().onTrue(
+        copilotController.y().onTrue(
             Commands.sequence(
             IntakeWheelSubsystem.stopMotorCommand(),
             intaketestSubsytem.IntakeUpCommand()
 
-        )
-     );
+            )
+        );  
 
-    //  Temporarily commented intake 
-    //    joystick.a().onTrue(
-    //         Commands.sequence(
-    //         intaketestSubsytem.IntakeDownCommand(),
-    //         IntakeWheelSubsystem.runMotorCommand()
-    //         )
-    //     ); 
-
-
+        copilotController.leftBumper().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
+        copilotController.rightBumper().onTrue(ThroatAndIndexerSubsystem.reverseMotorCommand());
+        
         //joystick.x().onTrue(climberSubsystem.ClimbUpCommand());
        // joystick.y().onTrue(climberSubsystem.ClimbDownCommand());
 
