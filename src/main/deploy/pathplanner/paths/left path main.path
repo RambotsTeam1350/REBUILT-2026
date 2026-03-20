@@ -3,13 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.714937388193202,
-        "y": 7.336869409660108
+        "x": 2.235,
+        "y": 5.574
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.604758497316638,
-        "y": 7.4828980322003575
+        "x": 2.29650042083409,
+        "y": 7.906051938537683
+      },
+      "isLocked": false,
+      "linkedName": "left main distance"
+    },
+    {
+      "anchor": {
+        "x": 4.398,
+        "y": 7.4
+      },
+      "prevControl": {
+        "x": 4.148018687091549,
+        "y": 7.403056664287493
+      },
+      "nextControl": {
+        "x": 6.907066189624329,
+        "y": 7.369320214669052
       },
       "isLocked": false,
       "linkedName": null
@@ -20,8 +36,8 @@
         "y": 5.973935599284436
       },
       "prevControl": {
-        "x": 7.620983899821109,
-        "y": 7.4991234347048294
+        "x": 5.608995942094027,
+        "y": 6.999998030598873
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,7 +46,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.328877005347593,
+      "waypointRelativePos": 0.65,
       "rotationDegrees": 0.0
     }
   ],
@@ -50,7 +66,7 @@
     },
     {
       "name": "IntakeDownCommand",
-      "waypointRelativePos": 0.33220338983050846,
+      "waypointRelativePos": 1.4630872483221522,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -70,13 +86,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -90.0
+    "rotation": -45.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 135.0
   },
   "useDefaultConstraints": true
 }

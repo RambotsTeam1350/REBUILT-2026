@@ -15,25 +15,6 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "TurretAutoAimToHub"
-                      }
-                    },
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.7
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "parallel",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
                         "name": "runMotorCommand"
                       }
                     },
