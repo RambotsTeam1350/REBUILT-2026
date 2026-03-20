@@ -2,6 +2,7 @@ package frc.robot.subsystems.Intake;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -38,6 +39,13 @@ TalonFXConfiguration cfg = new TalonFXConfiguration();
     mm.MotionMagicCruiseVelocity = 16; // Target cruise velocity of 80 rps
     mm.MotionMagicAcceleration = 160; // Target acceleration of 160 rps/s (0.5 seconds)
     mm.MotionMagicJerk = 1600; // Target jerk of 1600 rps/s/s (0.1 seconds)
+
+    CurrentLimitsConfigs currentLimits = new CurrentLimitsConfigs()
+        .withStatorCurrentLimit(40)       // Amps — max torque current to motor
+        .withStatorCurrentLimitEnable(true)
+        .withSupplyCurrentLimit(30)       // Amps — max current drawn from battery
+        .withSupplyCurrentLimitEnable(true);
+    cfg.CurrentLimits = currentLimits;
 
     intakeMotor.getConfigurator().apply(cfg);
     }
