@@ -163,11 +163,19 @@ public class RobotContainer {
         //     )
         // );
 
-        // AUDITION: reverseMotorCommand repeating every 2 seconds while trigger held
+        // AUDITION: indexer/throat reverses every 2 seconds while shooter runs continuously
         joystick.rightTrigger().whileTrue(
-            Commands.repeatingSequence(
-                ThroatAndIndexerSubsystem.reverseMotorCommand(),
-                Commands.waitSeconds(2.0)
+            Commands.parallel(
+                Commands.startEnd(
+                    () -> { ShooterSubsystem.runMotor1(0.8); ShooterSubsystem.runMotor2(-0.8); },
+                    () -> ShooterSubsystem.stopMotor(),
+                    ShooterSubsystem
+                ),
+                Commands.repeatingSequence(
+                    ThroatAndIndexerSubsystem.runMotorCommand(),
+                    Commands.waitSeconds(2.0),
+                    ThroatAndIndexerSubsystem.reverseMotorCommand()
+                )
             )
         );
 
