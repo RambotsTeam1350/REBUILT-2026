@@ -147,18 +147,27 @@ public class RobotContainer {
 
         joystick.leftTrigger().onTrue(turretSubsystem.TurretToZero());
 
+        // Original rightTrigger binding — uncomment to restore:
+        // joystick.rightTrigger().whileTrue(
+        //     Commands.parallel(
+        //         Commands.startEnd(
+        //             () -> ThroatAndIndexerSubsystem.runMotor(),
+        //             () -> { ThroatAndIndexerSubsystem.stopMotorThroat(); ThroatAndIndexerSubsystem.stopMotorIndexer(); },
+        //             ThroatAndIndexerSubsystem
+        //         ),
+        //         Commands.startEnd(
+        //             () -> { ShooterSubsystem.runMotor1(0.8); ShooterSubsystem.runMotor2(-0.8); },
+        //             () -> ShooterSubsystem.stopMotor(),
+        //             ShooterSubsystem
+        //         )
+        //     )
+        // );
+
+        // AUDITION: reverseMotorCommand repeating every 2 seconds while trigger held
         joystick.rightTrigger().whileTrue(
-            Commands.parallel(
-                Commands.startEnd(
-                    () -> ThroatAndIndexerSubsystem.runMotor(),
-                    () -> { ThroatAndIndexerSubsystem.stopMotorThroat(); ThroatAndIndexerSubsystem.stopMotorIndexer(); },
-                    ThroatAndIndexerSubsystem
-                ),
-                Commands.startEnd(
-                    () -> { ShooterSubsystem.runMotor1(0.8); ShooterSubsystem.runMotor2(-0.8); },
-                    () -> ShooterSubsystem.stopMotor(),
-                    ShooterSubsystem
-                )
+            Commands.repeatingSequence(
+                ThroatAndIndexerSubsystem.reverseMotorCommand(),
+                Commands.waitSeconds(2.0)
             )
         );
 
