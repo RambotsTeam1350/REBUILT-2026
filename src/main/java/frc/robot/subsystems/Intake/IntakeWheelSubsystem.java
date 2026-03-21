@@ -1,6 +1,8 @@
 package frc.robot.subsystems.Intake;
 
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.*;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,6 +25,13 @@ public class IntakeWheelSubsystem extends SubsystemBase {
         velocity = motor.getVelocity();
         position = motor.getPosition();
 
+        TalonFXConfiguration cfg = new TalonFXConfiguration();
+        cfg.CurrentLimits = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(40)
+            .withStatorCurrentLimitEnable(true)
+            .withSupplyCurrentLimit(30)
+            .withSupplyCurrentLimitEnable(true);
+        motor.getConfigurator().apply(cfg);
     }
 
      public void runMotor(double speed) {
