@@ -46,6 +46,14 @@ public class IntakeWheelSubsystem extends SubsystemBase {
             }
         );
     }
+
+        public Command runMotorCommand(double speed) {
+        return Commands.runOnce(
+            () -> {
+                runMotor(speed);
+            }
+        );
+    }
  
      public Command stopMotorCommand() {
         return Commands.runOnce(
