@@ -147,12 +147,20 @@ public class RobotContainer {
 
         joystick.leftTrigger().onTrue(turretSubsystem.TurretToZero());
 
-        joystick.rightTrigger().whileTrue(ThroatAndIndexerSubsystem.runMotorCommand());
-        joystick.rightTrigger().whileTrue(ShooterSubsystem.runMotorCommand());
-
-        joystick.rightBumper().onTrue(ThroatAndIndexerSubsystem.stopMotorCommand());
-        joystick.rightBumper().onTrue(ShooterSubsystem.stopMotorCommand());
-        // joystick.b().onTrue(ShooterSubsystem.stopMotorCommand());
+        joystick.rightTrigger().whileTrue(
+            Commands.parallel(
+                Commands.startEnd(
+                    () -> ThroatAndIndexerSubsystem.runMotor(),
+                    () -> { ThroatAndIndexerSubsystem.stopMotorThroat(); ThroatAndIndexerSubsystem.stopMotorIndexer(); },
+                    ThroatAndIndexerSubsystem
+                ),
+                Commands.startEnd(
+                    () -> { ShooterSubsystem.runMotor1(0.8); ShooterSubsystem.runMotor2(-0.8); },
+                    () -> ShooterSubsystem.stopMotor(),
+                    ShooterSubsystem
+                )
+            )
+        );
 
 //////////////////////////////////////////////////////////////////////////////
 /// COPILOT CONTROLS
