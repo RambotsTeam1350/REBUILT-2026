@@ -176,7 +176,13 @@ public class RobotContainer {
 
         copilotController.leftBumper().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
         copilotController.rightBumper().onTrue(ThroatAndIndexerSubsystem.reverseMotorCommand());
-        copilotController.rightTrigger().onTrue(IntakeWheelSubsystem.runMotorCommand(-0.2));
+        copilotController.rightTrigger().whileTrue(
+            Commands.startEnd(
+                () -> IntakeWheelSubsystem.runMotor(-0.2),
+                () -> IntakeWheelSubsystem.stopMotor(),
+                IntakeWheelSubsystem
+            )
+        );
 
         // SmartDashboard.putData(autochooser);
 
