@@ -7,10 +7,10 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.*;
 import edu.wpi.first.units.measure.*;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ShooterPowerSubsystem extends SubsystemBase{
@@ -22,6 +22,14 @@ public class ShooterPowerSubsystem extends SubsystemBase{
            motor1 = new TalonFX(40);
            motor2 = new TalonFX(41);
 
+           TalonFXConfiguration cfg = new TalonFXConfiguration();
+           cfg.CurrentLimits = new CurrentLimitsConfigs()
+               .withStatorCurrentLimit(60)
+               .withStatorCurrentLimitEnable(true)
+               .withSupplyCurrentLimit(40)
+               .withSupplyCurrentLimitEnable(true);
+           motor1.getConfigurator().apply(cfg);
+           motor2.getConfigurator().apply(cfg);
         }
     
         public void runMotor1(double speed) {
@@ -40,8 +48,8 @@ public class ShooterPowerSubsystem extends SubsystemBase{
         public Command runMotorCommand() {
             return Commands.runOnce(
             () -> {
-                runMotor1(30);
-                runMotor2(-30);  
+                runMotor1(0.8);
+                runMotor2(-0.8);
             }
         );
     }
