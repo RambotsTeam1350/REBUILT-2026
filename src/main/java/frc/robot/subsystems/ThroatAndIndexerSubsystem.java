@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.*;
 import edu.wpi.first.units.measure.*;
@@ -31,6 +32,8 @@ public class ThroatAndIndexerSubsystem extends SubsystemBase {
             .withStatorCurrentLimitEnable(true)
             .withSupplyCurrentLimit(30)
             .withSupplyCurrentLimitEnable(true);
+        cfg.OpenLoopRamps = new OpenLoopRampsConfigs()
+            .withDutyCycleOpenLoopRampPeriod(0.3); // seconds from 0 to full output
         motorThroat.getConfigurator().apply(cfg);
         motorIndexer.getConfigurator().apply(cfg);
      }
@@ -78,7 +81,7 @@ public class ThroatAndIndexerSubsystem extends SubsystemBase {
         public Command reverseMotorCommand() {
             return Commands.sequence ( Commands.runOnce(
                 () -> {
-                    reverseMotor(-0.5);
+                    reverseMotor(-0.4);
                 }
             ),
             Commands.waitSeconds(0.75),
