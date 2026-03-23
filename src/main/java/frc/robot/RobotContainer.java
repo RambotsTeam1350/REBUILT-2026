@@ -45,8 +45,8 @@ import frc.robot.LimelightHelpers.LimelightTarget_Detector;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 
 public class RobotContainer {
-    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.5; // 50% of top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond) * 0.5; // 50% max angular rate
+    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.8; // 80% of top speed
+    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond) * 0.8; // 80% max angular rate
                                                                                       // max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
