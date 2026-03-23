@@ -14,6 +14,8 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -43,8 +45,8 @@ import frc.robot.LimelightHelpers.LimelightTarget_Detector;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
 
 public class RobotContainer {
-    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.8; // 80% of top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond) * 0.8; // 80% max angular rate
+    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 0.5; // 50% of top speed
+    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond) * 0.5; // 50% max angular rate
                                                                                       // max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -70,6 +72,8 @@ public class RobotContainer {
     //private final ShooterAimSubsystem shooterAimSubsystem;
     private final SendableChooser<Command> autoChooser;
     private LimelightTarget_Detector limelight = new LimelightTarget_Detector();
+    // Notifier to update the dashboard match-time widget periodically
+    private final Notifier matchTimeNotifier;
     
     //private final SparkFlex motor = new SparkFlex(16, MotorType.kBrushless);
 
@@ -85,7 +89,12 @@ public class RobotContainer {
         // subsystems share the same turret-corrected distance to hub.
             //shooterAimSubsystem = new ShooterAimSubsystem(turretSubsystem);
 
-        configureBindings();
+    configureBindings();
+
+    // Start a background notifier to update the match time on the dashboard
+    matchTimeNotifier = new Notifier(this::updateMatchTimeOnDashboard);
+    // update twice per second
+    matchTimeNotifier.startPeriodic(0.5);
 
         NamedCommands.registerCommand("TurretAutoAimToHub", turretSubsystem.TurretAutoAimToHub());
         NamedCommands.registerCommand("runMotorCommand",
@@ -204,6 +213,28 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
+    }
+
+    /**
+     * Periodically called by the matchTime Notifier to update SmartDashboard.
+     */
+    private void updateMatchTimeOnDashboard() {
+        double matchSeconds = DriverStation.getMatchTime();
+        // DriverStation may return negative if match info not available
+        if (Double.isNaN(matchSeconds) || matchSeconds < 0) {
+            SmartDashboard.putString("Match Time", "--:--");
+            SmartDashboard.putNumber("Match Time (s)", -1);
+            return;
+        }
+
+        // Round up so display shows remaining whole seconds intuitively
+        int secondsLeft = (int) Math.ceil(matchSeconds);
+        int mins = secondsLeft / 60;
+        int secs = secondsLeft % 60;
+        String formatted = String.format("%02d:%02d", mins, secs);
+
+        SmartDashboard.putString("Match Time", formatted);
+        SmartDashboard.putNumber("Match Time (s)", matchSeconds);
     }
 
 }
