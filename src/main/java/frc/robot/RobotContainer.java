@@ -40,6 +40,9 @@ import frc.robot.subsystems.Shooter.ShooterPowerSubsystem;
 import frc.robot.subsystems.TestPIDMotorSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.commands.AlignToHub;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import frc.robot.LimelightHelpers.LimelightTarget_Detector;
 import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
@@ -90,6 +93,33 @@ public class RobotContainer {
             //shooterAimSubsystem = new ShooterAimSubsystem(turretSubsystem);
 
     configureBindings();
+
+    //////////////////////////////////////////
+    /// Path planner autos
+    /// 
+    autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Chooser", autoChooser);
+
+    NamedCommands.registerCommand("runIntakeWheel", intakeWheelSubsystem.runMotorCommand());
+    NamedCommands.registerCommand("stopIntakeWheel", intakeWheelSubsystem.stopMotorCommand());
+    NamedCommands.registerCommand("IntakeDownCommand", intaketestSubsystem.IntakeDownCommand());
+    NamedCommands.registerCommand("IntakeUpCommand", intaketestSubsystem.IntakeUpCommand());
+    NamedCommands.registerCommand("TurretAutoAimToHub", turretSubsystem.TurretAutoAimToHub());
+    NamedCommands.registerCommand(
+        "stopMotorCommand",
+        Commands.parallel(
+            ThroatAndIndexerSubsystem.stopMotorCommand(),
+            ShooterSubsystem.stopMotorCommand()
+        )
+    );
+    NamedCommands.registerCommand(
+        "runMotorCommand",
+        Commands.parallel(
+            ThroatAndIndexerSubsystem.runMotorCommand(),
+            ShooterSubsystem.runMotorCommand()
+            )
+    );  
+    ///////////////////////////////////////////////////////////////
 
     // Start a background notifier to update the match time on the dashboard
     matchTimeNotifier = new Notifier(this::updateMatchTimeOnDashboard);
