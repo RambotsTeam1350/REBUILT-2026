@@ -61,7 +61,7 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    private final IntakeLevelSubsystem intaketestSubsytem = new IntakeLevelSubsystem();
+    private final IntakeLevelSubsystem intaketestSubsystem = new IntakeLevelSubsystem();
     private final IntakeWheelSubsystem IntakeWheelSubsystem = new IntakeWheelSubsystem();
     private final ShooterPowerSubsystem ShooterSubsystem = new ShooterPowerSubsystem();
 
@@ -97,11 +97,10 @@ public class RobotContainer {
     //////////////////////////////////////////
     /// Path planner autos
     /// 
-    autoChooser = AutoBuilder.buildAutoChooser();
-    SmartDashboard.putData("Auto Chooser", autoChooser);
+    
 
-    NamedCommands.registerCommand("runIntakeWheel", intakeWheelSubsystem.runMotorCommand());
-    NamedCommands.registerCommand("stopIntakeWheel", intakeWheelSubsystem.stopMotorCommand());
+    NamedCommands.registerCommand("runIntakeWheel", IntakeWheelSubsystem.runMotorCommand());
+    NamedCommands.registerCommand("stopIntakeWheel", IntakeWheelSubsystem.stopMotorCommand());
     NamedCommands.registerCommand("IntakeDownCommand", intaketestSubsystem.IntakeDownCommand());
     NamedCommands.registerCommand("IntakeUpCommand", intaketestSubsystem.IntakeUpCommand());
     NamedCommands.registerCommand("TurretAutoAimToHub", turretSubsystem.TurretAutoAimToHub());
@@ -215,12 +214,12 @@ public class RobotContainer {
 
         copilotController.x().onTrue(
             Commands.sequence(IntakeWheelSubsystem.runMotorCommand(),
-            intaketestSubsytem.IntakeDownCommand())
+            intaketestSubsystem.IntakeDownCommand())
         );
         
         copilotController.y().onTrue(
                 Commands.sequence(IntakeWheelSubsystem.stopMotorCommand(),
-                intaketestSubsytem.IntakeUpCommand()
+                intaketestSubsystem.IntakeUpCommand()
                 )
         );  
 
