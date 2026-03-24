@@ -1,0 +1,116 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.235,
+        "y": 5.574
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.84474060822898,
+        "y": 6.9312343470483
+      },
+      "isLocked": false,
+      "linkedName": "left main distance"
+    },
+    {
+      "anchor": {
+        "x": 4.505706618962432,
+        "y": 7.417996422182468
+      },
+      "prevControl": {
+        "x": 1.3417531305903396,
+        "y": 7.466672629695886
+      },
+      "nextControl": {
+        "x": 7.735646789483359,
+        "y": 7.368305034943684
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.572307692307692,
+        "y": 5.6981037567084085
+      },
+      "prevControl": {
+        "x": 7.620983899821111,
+        "y": 7.120239713774598
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.6096256684491984,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 1.0213903743315507,
+      "rotationDegrees": 0.0
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.9423728813559323,
+      "maxWaypointRelativePos": 2.0,
+      "constraints": {
+        "maxVelocity": 2.0,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 360.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "IntakeDownCommand",
+      "waypointRelativePos": 0.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeDownCommand"
+        }
+      }
+    },
+    {
+      "name": "runIntakeMotor",
+      "waypointRelativePos": 1.3647058823529408,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "runIntakeMotor"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -92.17326541094145
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 135.0
+  },
+  "useDefaultConstraints": true
+}
