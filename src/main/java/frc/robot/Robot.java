@@ -5,13 +5,16 @@
 package frc.robot;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private final RobotContainer m_robotContainer;
+  private final PowerDistribution m_pdp = new PowerDistribution();
 
   public Robot() {
     m_robotContainer = new RobotContainer();
@@ -25,6 +28,11 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+
+    SmartDashboard.putNumber("PDP/Voltage", m_pdp.getVoltage());
+    SmartDashboard.putNumber("PDP/Temperature (F)", m_pdp.getTemperature() * 9.0 / 5.0 + 32.0);
+    SmartDashboard.putNumber("PDP/Total Current (A)", m_pdp.getTotalCurrent());
+    SmartDashboard.putNumber("PDP/Total Power (W)", m_pdp.getTotalPower());
   }
 
   @Override
