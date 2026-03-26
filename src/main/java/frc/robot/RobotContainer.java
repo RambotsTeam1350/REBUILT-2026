@@ -99,11 +99,10 @@ public class RobotContainer {
     /// 
     
 
-    NamedCommands.registerCommand("runIntakeWheel", IntakeWheelSubsystem.runMotorCommand());
-    NamedCommands.registerCommand("stopIntakeWheel", IntakeWheelSubsystem.stopMotorCommand());
+    NamedCommands.registerCommand("runIntakeMotor", IntakeWheelSubsystem.runMotorCommand());
+    NamedCommands.registerCommand("stopIntakeMotor", IntakeWheelSubsystem.stopMotorCommand());
     NamedCommands.registerCommand("IntakeDownCommand", intaketestSubsystem.IntakeDownCommand());
     NamedCommands.registerCommand("IntakeUpCommand", intaketestSubsystem.IntakeUpCommand());
-    NamedCommands.registerCommand("TurretAutoAimToHub", turretSubsystem.TurretAutoAimToHub());
     NamedCommands.registerCommand(
         "stopMotorCommand",
         Commands.parallel(
