@@ -48,8 +48,8 @@ public class ShooterPowerSubsystem extends SubsystemBase{
         public Command runMotorCommand() {
             return Commands.runOnce(
             () -> {
-                runMotor1(0.8);
-                runMotor2(-0.8);
+                runMotor1(1);
+                runMotor2(-1);
             }
         );
     }
