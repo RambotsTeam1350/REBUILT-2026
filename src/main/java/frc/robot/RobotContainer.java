@@ -201,8 +201,8 @@ public class RobotContainer {
                 Commands.repeatingSequence(
                     Commands.waitSeconds(2.0),
                     ThroatAndIndexerSubsystem.reverseMotorCommand()
-                ),
-                intaketestSubsystem.IntakeOcilateCommand()
+                )
+
             )
         );
 
