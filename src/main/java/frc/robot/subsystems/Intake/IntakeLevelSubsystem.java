@@ -61,8 +61,8 @@ TalonFXConfiguration cfg = new TalonFXConfiguration();
         final MotionMagicVoltage m_request = new MotionMagicVoltage(0);
         return Commands.sequence(
           Commands.runOnce(() -> {
-              intakeMotor.setNeutralMode(NeutralModeValue.Coast);
-              intakeMotor.setControl(m_request.withPosition(-8.76));
+              intakeMotor.setNeutralMode(NeutralModeValue.Brake);
+              intakeMotor.setControl(m_request.withPosition(-8.4));
           })
         );
     }
