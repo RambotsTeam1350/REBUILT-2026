@@ -57,6 +57,18 @@ TalonFXConfiguration cfg = new TalonFXConfiguration();
         );
     }
 
+
+    public Command intakeHalfWayCommand()
+    {
+        final MotionMagicVoltage m_request = new MotionMagicVoltage(0);
+        return Commands.sequence(
+            Commands.runOnce(() -> {
+                intakeMotor.setNeutralMode(NeutralModeValue.Brake);
+                intakeMotor.setControl(m_request.withPosition(-3.1));
+            })
+        );
+    }
+
     public Command IntakeDownCommand() {
         final MotionMagicVoltage m_request = new MotionMagicVoltage(0);
         return Commands.sequence(

@@ -220,6 +220,12 @@ public class RobotContainer {
         
         copilotController.y().onTrue(
                 Commands.sequence(IntakeWheelSubsystem.stopMotorCommand(),
+                intaketestSubsystem.intakeHalfWayCommand()
+                )
+        );  
+
+        copilotController.b().onTrue(
+                Commands.sequence(IntakeWheelSubsystem.stopMotorCommand(),
                 intaketestSubsystem.IntakeUpCommand()
                 )
         );  
