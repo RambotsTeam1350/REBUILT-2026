@@ -16,16 +16,24 @@
     },
     {
       "anchor": {
+<<<<<<< Updated upstream
         "x": 1.118,
         "y": 4.05
       },
       "prevControl": {
         "x": 2.1180000000000003,
+=======
+        "x": 1.74244,
+        "y": 4.05
+      },
+      "prevControl": {
+        "x": 2.74244,
+>>>>>>> Stashed changes
         "y": 4.05
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "middle distance"
+      "linkedName": "middle updated distance"
     }
   ],
   "rotationTargets": [],

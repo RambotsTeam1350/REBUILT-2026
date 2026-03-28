@@ -30,9 +30,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "IntakeDownCommand"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeDownCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "stopMotorCommand"
+                }
+              }
+            ]
           }
         },
         {
@@ -42,21 +55,35 @@
           }
         },
         {
-          "type": "wait",
+          "type": "sequential",
           "data": {
-            "waitTime": 0.5
+            "commands": [
+              {
+                "type": "parallel",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.5
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "IntakeUpCommand"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "simple left depot 3"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "IntakeUpCommand"
           }
         },
         {

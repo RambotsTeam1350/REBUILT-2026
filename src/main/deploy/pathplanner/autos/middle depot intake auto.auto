@@ -30,6 +30,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "stopMotorCommand"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "simple middle depot 2"

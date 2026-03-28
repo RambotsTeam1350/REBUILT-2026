@@ -3,6 +3,7 @@
   "waypoints": [
     {
       "anchor": {
+<<<<<<< Updated upstream
         "x": 0.76,
         "y": 5.944911111111111
       },
@@ -10,22 +11,39 @@
       "nextControl": {
         "x": 2.836851419311701,
         "y": 6.00981596139202
+=======
+        "x": 0.6758297413793111,
+        "y": 5.970193965517242
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.7674030172413797,
+        "y": 5.960420258620689
+>>>>>>> Stashed changes
       },
       "isLocked": false,
       "linkedName": "left simple depot"
     },
     {
       "anchor": {
+<<<<<<< Updated upstream
         "x": 1.118,
         "y": 4.05
       },
       "prevControl": {
         "x": 1.1352898032200356,
+=======
+        "x": 1.74244,
+        "y": 4.05
+      },
+      "prevControl": {
+        "x": 1.7597298032200355,
+>>>>>>> Stashed changes
         "y": 6.233542039355992
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "middle distance"
+      "linkedName": "middle updated distance"
     }
   ],
   "rotationTargets": [],

@@ -3,25 +3,34 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.235,
-        "y": 5.574
+        "x": 2.752,
+        "y": 6.1970158
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.282826475849731,
-        "y": 6.152415026833632
+        "x": 2.669665948275863,
+        "y": 5.813814655172414
       },
       "isLocked": false,
-      "linkedName": "left main distance"
+      "linkedName": "left updated distance"
     },
     {
       "anchor": {
+<<<<<<< Updated upstream
         "x": 0.76,
         "y": 5.944911111111111
       },
       "prevControl": {
         "x": 2.463667262969591,
         "y": 5.928685708606638
+=======
+        "x": 0.6758297413793111,
+        "y": 5.970193965517242
+      },
+      "prevControl": {
+        "x": 2.3794970043488997,
+        "y": 5.953968563012769
+>>>>>>> Stashed changes
       },
       "nextControl": null,
       "isLocked": false,
@@ -53,7 +62,11 @@
       "minWaypointRelativePos": 0.83,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
+<<<<<<< Updated upstream
         "maxVelocity": 0.5,
+=======
+        "maxVelocity": 2.5,
+>>>>>>> Stashed changes
         "maxAcceleration": 3.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 360.0,
@@ -92,7 +105,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 135.0
+    "rotation": 130.0
   },
   "useDefaultConstraints": true
 }
