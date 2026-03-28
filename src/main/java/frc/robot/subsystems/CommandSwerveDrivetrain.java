@@ -240,7 +240,7 @@ private SwerveModulePosition[] getModulePositions() {
 
     // Configure AutoBuilder last
     AutoBuilder.configure(
-            () -> getState().Pose, // Robot pose supplier
+            () -> poseEstimator.getEstimatedPosition(), // Robot pose supplier //getState().Pose
             this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
             () -> getState().Speeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
             (speeds, feedforwards) -> setControl(
