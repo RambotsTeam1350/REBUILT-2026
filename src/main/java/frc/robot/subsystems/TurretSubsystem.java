@@ -36,8 +36,8 @@ public class TurretSubsystem extends SubsystemBase {
 
     // Turret physical limits (degrees relative to robot front)
     // The turret can rotate approximately 180 degrees, centered on the back of the robot
-    private static final double TURRET_MIN_ANGLE = -90.0; // 90 degrees left of back = right side
-    private static final double TURRET_MAX_ANGLE = 90.0;  // 90 degrees right of back = left side
+    private static final double TURRET_MIN_ANGLE = -20.0; // 90 degrees left of back = right side
+    private static final double TURRET_MAX_ANGLE = 20.0;  // 90 degrees right of back = left side
 
     public double TargetXposition = 4.625594; //Xₜ 182.11 in inches
     public double TargetYposition = 4.03479; //Yₜ 158.85 in inches 
@@ -69,7 +69,7 @@ public class TurretSubsystem extends SubsystemBase {
 
             
             MotionMagicConfigs mm = cfg.MotionMagic;
-            mm.MotionMagicCruiseVelocity = 7; 
+            mm.MotionMagicCruiseVelocity = 2; // 7
             mm.MotionMagicAcceleration = 80;
             mm.MotionMagicJerk = 1600; 
             motor.getConfigurator().apply(cfg);

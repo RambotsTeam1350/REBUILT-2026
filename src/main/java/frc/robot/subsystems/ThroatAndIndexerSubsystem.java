@@ -39,8 +39,8 @@ public class ThroatAndIndexerSubsystem extends SubsystemBase {
      }
 
      public void runMotor() {
-        motorThroat.set(0.4);
-        motorIndexer.set(0.4);
+        motorThroat.set(0.6);
+        motorIndexer.set(0.4); //changed at UNH
     }
 
     public void stopMotorThroat() {

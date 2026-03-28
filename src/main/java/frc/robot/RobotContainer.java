@@ -179,8 +179,8 @@ public class RobotContainer {
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        joystick.a().whileTrue(turretSubsystem.aimAtHubViaPose());    // Aim via pose estimator
-        joystick.b().whileTrue(turretSubsystem.aimAtHubViaVision());  // Aim via Limelight vision
+        //joystick.a().whileTrue(turretSubsystem.aimAtHubViaPose());    // Aim via pose estimator
+        //joystick.b().whileTrue(turretSubsystem.aimAtHubViaVision());  // Aim via Limelight vision
 
         joystick.leftTrigger().onTrue(turretSubsystem.TurretToZero());
 
@@ -198,7 +198,7 @@ public class RobotContainer {
                     ShooterSubsystem
                 ),
                 Commands.repeatingSequence(
-                    Commands.waitSeconds(2.0),
+                    Commands.waitSeconds(5.0),
                     ThroatAndIndexerSubsystem.reverseMotorCommand()
                 )
 
@@ -213,8 +213,11 @@ public class RobotContainer {
         copilotController.povDown().onTrue(climberSubsystem.ClimbDownCommand());
 
         copilotController.x().onTrue(
-            Commands.sequence(IntakeWheelSubsystem.runMotorCommand(),
-            intaketestSubsystem.IntakeDownCommand())
+            Commands.sequence(
+                intaketestSubsystem.IntakeDownCommand(),
+                Commands.waitSeconds(0.5),
+                IntakeWheelSubsystem.runMotorCommand()
+            )
         );
         
         copilotController.y().onTrue(
