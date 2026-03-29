@@ -7,13 +7,20 @@
         {
           "type": "path",
           "data": {
-            "pathName": "test path"
+            "pathName": "ball buster left"
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "test path 2"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "runMotorCommand"
+                }
+              }
+            ]
           }
         }
       ]
