@@ -84,7 +84,7 @@ public class ThroatAndIndexerSubsystem extends SubsystemBase {
                     reverseMotor(-0.4);
                 }
             ),
-            Commands.waitSeconds(1.0),
+            Commands.waitSeconds(0.2),
             Commands.runOnce( () -> {
                     runMotor();
                 }

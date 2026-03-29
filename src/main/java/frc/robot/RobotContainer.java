@@ -198,7 +198,7 @@ public class RobotContainer {
                     ShooterSubsystem
                 ),
                 Commands.repeatingSequence(
-                    Commands.waitSeconds(5.0),
+                    Commands.waitSeconds(1),
                     ThroatAndIndexerSubsystem.reverseMotorCommand()
                 )
 
