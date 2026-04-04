@@ -7,31 +7,6 @@
         {
           "type": "path",
           "data": {
-            "pathName": "simple right "
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "runMotorCommand"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 2.0
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
             "pathName": "ball blower right"
           }
         }
