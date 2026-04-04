@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.506594827586207,
-        "y": 6.908469827586207
+        "x": 1.7311627906976743,
+        "y": 7.304418604651163
       },
       "isLocked": false,
       "linkedName": "simple depot 5"
     },
     {
       "anchor": {
-        "x": 2.511,
-        "y": 6.197
+        "x": 2.098,
+        "y": 4.05
       },
       "prevControl": {
-        "x": 1.7501349565277926,
-        "y": 6.606859838193855
+        "x": 2.119295807802525,
+        "y": 4.299091325762335
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "left updated"
+      "linkedName": "middle updated"
     }
   ],
   "rotationTargets": [],
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 130.0
+    "rotation": 180.0
   },
   "reversed": false,
   "folder": null,

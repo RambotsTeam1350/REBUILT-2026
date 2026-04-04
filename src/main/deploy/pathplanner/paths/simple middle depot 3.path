@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.65,
-        "y": 5.944911111111111
+        "x": 0.4901293103448283,
+        "y": 4.85438282647585
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.7268514193117017,
-        "y": 6.00981596139202
+        "x": 2.56698072965653,
+        "y": 4.919287676756759
       },
       "isLocked": false,
       "linkedName": "left simple depot"
@@ -71,7 +71,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 90.0
   },
   "useDefaultConstraints": true
 }

@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 0.4901293103448283,
-        "y": 4.758254310344828
+        "y": 4.85438282647585
       },
       "prevControl": null,
       "nextControl": {
         "x": 0.49768671233450146,
-        "y": 5.008140055586861
+        "y": 5.104268571717883
       },
       "isLocked": false,
       "linkedName": "left simple depot"

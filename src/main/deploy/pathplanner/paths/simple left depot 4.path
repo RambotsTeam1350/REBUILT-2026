@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.65,
-        "y": 5.944911111111111
+        "x": 0.4901293103448283,
+        "y": 7.328739224137931
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7126058945424139,
-        "y": 5.786610783452712
+        "x": 1.506594827586207,
+        "y": 6.908469827586207
       },
       "isLocked": false,
-      "linkedName": "left simple depot"
+      "linkedName": "simple depot 5"
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 6.197
       },
       "prevControl": {
-        "x": 1.5851341681574236,
-        "y": 6.119948421824687
+        "x": 1.7501349565277926,
+        "y": 6.606859838193855
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,19 +31,7 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "stopIntakeMotor",
-      "waypointRelativePos": 0.0,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "stopIntakeMotor"
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
@@ -60,7 +48,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 90.0
   },
   "useDefaultConstraints": true
 }

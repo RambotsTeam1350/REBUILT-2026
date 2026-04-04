@@ -16,30 +16,39 @@
     },
     {
       "anchor": {
-        "x": 0.655,
-        "y": 5.944911111111111
+        "x": 0.4901293103448283,
+        "y": 4.85438282647585
       },
       "prevControl": {
-        "x": 2.358667262969591,
-        "y": 5.928685708606638
+        "x": 3.012969588550984,
+        "y": 4.821932021466905
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "left simple depot"
     }
   ],
-  "rotationTargets": [
+  "rotationTargets": [],
+  "constraintZones": [
     {
-      "waypointRelativePos": 0.4732620320855614,
-      "rotationDegrees": 180.0
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 2.0,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 360.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
     }
   ],
-  "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
       "name": "runIntakeMotor",
-      "waypointRelativePos": 0.6271186440677947,
+      "waypointRelativePos": 0.65,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -59,7 +68,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 90.0
   },
   "reversed": false,
   "folder": null,
