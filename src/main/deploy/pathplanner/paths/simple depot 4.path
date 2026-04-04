@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.685885509838998,
-        "y": 2.193416815742397
+        "x": 0.4901293103448283,
+        "y": 7.328739224137931
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.474955277280859,
-        "y": 2.031162790697674
+        "x": 1.506594827586207,
+        "y": 6.908469827586207
       },
       "isLocked": false,
-      "linkedName": "right main feeder"
+      "linkedName": "simple depot 5"
     },
     {
       "anchor": {
-        "x": 6.112021466905188,
-        "y": 0.7169051878354196
+        "x": 2.511,
+        "y": 6.197
       },
       "prevControl": {
-        "x": 5.862997216731541,
-        "y": 0.7389715157005861
+        "x": 1.7501349565277926,
+        "y": 6.606859838193855
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "left updated"
     }
   ],
   "rotationTargets": [],
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 130.0
   },
   "reversed": false,
   "folder": null,
