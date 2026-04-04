@@ -51,7 +51,7 @@ public class IntakeWheelSubsystem extends SubsystemBase {
         public Command runMotorCommand() {
         return Commands.runOnce(
             () -> {
-                runMotor(0.7);
+                runMotor(0.5);
             }
         );
     }

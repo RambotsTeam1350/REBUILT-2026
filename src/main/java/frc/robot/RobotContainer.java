@@ -182,7 +182,7 @@ public class RobotContainer {
         //joystick.a().whileTrue(turretSubsystem.aimAtHubViaPose());    // Aim via pose estimator
         //joystick.b().whileTrue(turretSubsystem.aimAtHubViaVision());  // Aim via Limelight vision
 
-        joystick.leftTrigger().onTrue(turretSubsystem.TurretToZero());
+         // joystick.leftTrigger().onTrue(turretSubsystem.TurretToZero());
 
         // Original rightTrigger binding — uncomment to restore:
         joystick.rightTrigger().whileTrue(
@@ -193,7 +193,7 @@ public class RobotContainer {
                     ThroatAndIndexerSubsystem
                 ),
                 Commands.startEnd(
-                    () -> { ShooterSubsystem.runMotor1(0.8); ShooterSubsystem.runMotor2(-0.8); },
+                    () -> { ShooterSubsystem.runMotor1(0.8); ShooterSubsystem.runMotor2(-0.8); ShooterSubsystem.runBackspinMotor(0.8); },
                     () -> ShooterSubsystem.stopMotor(),
                     ShooterSubsystem
                 ),

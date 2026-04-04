@@ -17,10 +17,12 @@ public class ShooterPowerSubsystem extends SubsystemBase{
     
         private final TalonFX motor1;
         private final TalonFX motor2;
+        private final TalonFX backspinMotor;
 
         public ShooterPowerSubsystem() {
            motor1 = new TalonFX(40);
            motor2 = new TalonFX(41);
+           backspinMotor = new TalonFX(42);
 
            TalonFXConfiguration cfg = new TalonFXConfiguration();
            cfg.CurrentLimits = new CurrentLimitsConfigs()
@@ -30,6 +32,7 @@ public class ShooterPowerSubsystem extends SubsystemBase{
                .withSupplyCurrentLimitEnable(true);
            motor1.getConfigurator().apply(cfg);
            motor2.getConfigurator().apply(cfg);
+           backspinMotor.getConfigurator().apply(cfg);
         }
     
         public void runMotor1(double speed) {
@@ -40,9 +43,14 @@ public class ShooterPowerSubsystem extends SubsystemBase{
             motor2.set(speed);
         }
     
+        public void runBackspinMotor(double speed) {
+            backspinMotor.set(speed);
+        }
+
         public void stopMotor() {
             motor1.set(0);
             motor2.set(0);
+            backspinMotor.set(0);
         }
 
         public Command runMotorCommand() {
@@ -50,6 +58,7 @@ public class ShooterPowerSubsystem extends SubsystemBase{
             () -> {
                 runMotor1(1);
                 runMotor2(-1);
+                runBackspinMotor(-1);
             }
         );
     }
