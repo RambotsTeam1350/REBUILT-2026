@@ -53,6 +53,59 @@ public class ShooterPowerSubsystem extends SubsystemBase{
             backspinMotor.set(0);
         }
 
+        /**
+         * Default assumed max RPM for the shooter motor (Falcon 500 free speed).
+         * If your motor or gearing differs, pass a different maxRPM into rpmToPercent.
+         */
+        private static final double DEFAULT_SHOOTER_MAX_RPM = 6000.0;
+
+        /**
+         * Convert an RPM target into a normalized percent output for {@code motor.set(percent)}.
+         * Linear mapping: percent = rpm / maxRPM, clamped to [-1, 1].
+         * This is open-loop — for accurate speed control use a closed-loop velocity API.
+         *
+         * @param rpm desired rotations per minute (positive forward)
+         * @param maxRPM the RPM that corresponds to 100% output (motor free speed * gear ratio)
+         * @return normalized percent in range [-1.0, 1.0]
+         */
+        public double rpmToPercent(double rpm, double maxRPM) {
+            if (maxRPM == 0) {
+                return 0.0;
+            }
+            double pct = rpm / maxRPM;
+            if (pct > 1.0) return 1.0;
+            if (pct < -1.0) return -1.0;
+            return pct;
+        }
+
+        /**
+         * Convenience overload using a reasonable default motor free-speed.
+         * @param rpm target RPM
+         * @return percent output [-1,1]
+         */
+        public double rpmToPercent(double rpm) {
+            return rpmToPercent(rpm, DEFAULT_SHOOTER_MAX_RPM);
+        }
+
+        /**
+         * Command both shooter motors to an approximate open-loop RPM target.
+         * motor2 is inverted relative to motor1 on this robot (see existing runMotorCommand).
+         * @param rpm target RPM (positive forward)
+         */
+        public void setShooterRPM(double rpm) {
+            double pct = rpmToPercent(rpm);
+            motor1.set(pct);
+            motor2.set(-pct);
+        }
+
+        /**
+         * Set the backspin motor approximate RPM using the same conversion.
+         * @param rpm target RPM for backspin motor
+         */
+        public void setBackspinRPM(double rpm) {
+            backspinMotor.set(rpmToPercent(rpm));
+        }
+
         public Command runMotorCommand() {
             return Commands.runOnce(
             () -> {

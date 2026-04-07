@@ -193,7 +193,7 @@ public class RobotContainer {
                     ThroatAndIndexerSubsystem
                 ),
                 Commands.startEnd(
-                    () -> { ShooterSubsystem.runMotor1(0.8); ShooterSubsystem.runMotor2(-0.8); ShooterSubsystem.runBackspinMotor(0.8); },
+                    () -> { ShooterSubsystem.runMotor1(ShooterSubsystem.rpmToPercent(6000)); ShooterSubsystem.runMotor2(ShooterSubsystem.rpmToPercent(-6000)); ShooterSubsystem.runBackspinMotor(ShooterSubsystem.rpmToPercent(6000)); }, // positive, negative, positive
                     () -> ShooterSubsystem.stopMotor(),
                     ShooterSubsystem
                 ),
