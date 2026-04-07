@@ -3,13 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.55,
-        "y": 1.6579785330948118
+        "x": 7.7994633273703045,
+        "y": 2.1771914132379244
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.7665780930979285,
-        "y": 1.9212760868881438
+        "x": 7.053094812164579,
+        "y": 0.5708765652951695
+      },
+      "isLocked": false,
+      "linkedName": "royally skrew them 3"
+    },
+    {
+      "anchor": {
+        "x": 4.4894812164579605,
+        "y": 0.6520035778175304
+      },
+      "prevControl": {
+        "x": 6.176923076923077,
+        "y": 0.6682289803220032
+      },
+      "nextControl": {
+        "x": 2.8938825579046887,
+        "y": 0.6366612830237482
       },
       "isLocked": false,
       "linkedName": null
@@ -20,15 +36,20 @@
         "y": 1.872
       },
       "prevControl": {
-        "x": 2.7071135668530983,
-        "y": 1.7169533331665738
+        "x": 2.3477280858676206,
+        "y": 1.0414132379248655
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "right updated"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.0106951871657766,
+      "rotationDegrees": -90.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -48,7 +69,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

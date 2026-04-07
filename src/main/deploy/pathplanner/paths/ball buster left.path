@@ -16,15 +16,15 @@
     },
     {
       "anchor": {
-        "x": 7.55608228980322,
+        "x": 8.497155635062612,
         "y": 7.093488372093023
       },
       "prevControl": {
-        "x": 7.507053256018674,
+        "x": 8.448126601278066,
         "y": 7.338633541015753
       },
       "nextControl": {
-        "x": 7.605111323587765,
+        "x": 8.546184668847157,
         "y": 6.848343203170293
       },
       "isLocked": false,
@@ -32,16 +32,16 @@
     },
     {
       "anchor": {
-        "x": 6.436529516994633,
-        "y": 0.6357781753130587
+        "x": 8.302450805008945,
+        "y": 0.6520035778175304
       },
       "prevControl": {
-        "x": 7.939329578471779,
-        "y": 0.6850503084762438
+        "x": 8.55092173867735,
+        "y": 0.679611459336243
       },
       "nextControl": {
-        "x": 4.457030411449016,
-        "y": 0.5708765652951693
+        "x": 6.334001671885504,
+        "y": 0.4332870074704736
       },
       "isLocked": false,
       "linkedName": null
@@ -52,7 +52,7 @@
         "y": 1.872
       },
       "prevControl": {
-        "x": 2.023220035778175,
+        "x": 2.0232200357781744,
         "y": 0.4572987477638639
       },
       "nextControl": null,
@@ -101,10 +101,15 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "",
-      "waypointRelativePos": 0,
+      "name": "IntakeUpCommand",
+      "waypointRelativePos": 0.0,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeUpCommand"
+        }
+      }
     }
   ],
   "globalConstraints": {
@@ -117,7 +122,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -134.0
+    "rotation": -135.0
   },
   "reversed": false,
   "folder": null,
