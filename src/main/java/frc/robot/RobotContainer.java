@@ -197,11 +197,14 @@ public class RobotContainer {
                     () -> ShooterSubsystem.stopMotor(),
                     ShooterSubsystem
                 ),
+                Commands.startEnd(
+                    () -> { intaketestSubsystem.IntakeOcilateCommand(); },
+                    () -> intaketestSubsystem.IntakeUpCommand(),
+                    intaketestSubsystem),
                 Commands.repeatingSequence(
                     Commands.waitSeconds(1),
                     ThroatAndIndexerSubsystem.reverseMotorCommand()
                 )
-
             )
         );
 
