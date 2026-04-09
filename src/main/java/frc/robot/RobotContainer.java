@@ -124,6 +124,8 @@ public class RobotContainer {
     // update twice per second
     matchTimeNotifier.startPeriodic(0.5);
 
+    
+
         NamedCommands.registerCommand("TurretAutoAimToHub", turretSubsystem.TurretAutoAimToHub());
         NamedCommands.registerCommand("runMotorCommand",
                 Commands.parallel(ShooterSubsystem.runMotorCommand(), ThroatAndIndexerSubsystem.runMotorCommand()));
@@ -131,6 +133,8 @@ public class RobotContainer {
 
         autoChooser = AutoBuilder.buildAutoChooser("middle boring");
         SmartDashboard.putData("Auto Chooser", autoChooser);
+        SmartDashboard.putNumber("lower motor speed", ShooterSubsystem.lowerWheelSpeed);
+        SmartDashboard.putNumber("backspin motor speed", ShooterSubsystem.backspinWheelSpeed);
     }
 
     
@@ -181,8 +185,12 @@ public class RobotContainer {
 
         //joystick.a().whileTrue(turretSubsystem.aimAtHubViaPose());    // Aim via pose estimator
         //joystick.b().whileTrue(turretSubsystem.aimAtHubViaVision());  // Aim via Limelight vision
+        //joystick.a().onTrue(turretSubsystem.TurretToZero());
 
-         // joystick.leftTrigger().onTrue(turretSubsystem.TurretToZero());
+        joystick.x().onTrue(ShooterSubsystem.decreaseBackspinWheelSpeed());
+        joystick.y().onTrue(ShooterSubsystem.increaseBackspinWheelSpeed());
+        joystick.a().onTrue(ShooterSubsystem.decreaseLowerWheelSpeed());
+        joystick.b().onTrue(ShooterSubsystem.increaseLowerWheelSpeed());
 
         // Original rightTrigger binding — uncomment to restore:
         joystick.rightTrigger().whileTrue(
@@ -193,7 +201,7 @@ public class RobotContainer {
                     ThroatAndIndexerSubsystem
                 ),
                 Commands.startEnd(
-                    () -> { ShooterSubsystem.runMotor1(ShooterSubsystem.rpmToPercent(6000)); ShooterSubsystem.runMotor2(ShooterSubsystem.rpmToPercent(-6000)); ShooterSubsystem.runBackspinMotor(ShooterSubsystem.rpmToPercent(6000)); }, // positive, negative, positive
+                    () -> { ShooterSubsystem.runMotor1(1); ShooterSubsystem.runMotor2(-1); ShooterSubsystem.runBackspinMotor(1); }, // positive, negative, positive
                     () -> ShooterSubsystem.stopMotor(),
                     ShooterSubsystem
                 ),
@@ -211,9 +219,6 @@ public class RobotContainer {
 //////////////////////////////////////////////////////////////////////////////
 /// COPILOT CONTROLS
 //////////////////////////////////////////////////////////////////////////////
- 
-        copilotController.povUp().onTrue(climberSubsystem.ClimbUpCommand());
-        copilotController.povDown().onTrue(climberSubsystem.ClimbDownCommand());
 
         copilotController.x().onTrue(
             Commands.sequence(
@@ -235,13 +240,12 @@ public class RobotContainer {
                 )
         );  
 
-        copilotController.a().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
         //copilotController.leftBumper().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
-        copilotController.rightBumper().onTrue(ThroatAndIndexerSubsystem.reverseMotorCommand());
+        //copilotController.rightBumper().onTrue(ThroatAndIndexerSubsystem.reverseMotorCommand());
         copilotController.rightTrigger().whileTrue(
             Commands.startEnd(
                 () -> IntakeWheelSubsystem.runMotor(-0.2),
-                () -> IntakeWheelSubsystem.stopMotor(),
+                () -> IntakeWheelSubsystem.runMotorCommand(),
                 IntakeWheelSubsystem
             )
         );

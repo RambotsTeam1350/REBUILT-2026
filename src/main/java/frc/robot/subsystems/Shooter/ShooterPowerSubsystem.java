@@ -11,18 +11,26 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.*;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 
 public class ShooterPowerSubsystem extends SubsystemBase{
     
         private final TalonFX motor1;
         private final TalonFX motor2;
         private final TalonFX backspinMotor;
+        public double lowerWheelSpeed;
+        public double backspinWheelSpeed;
+        private final Notifier speedNotifier;
 
         public ShooterPowerSubsystem() {
            motor1 = new TalonFX(40);
            motor2 = new TalonFX(41);
            backspinMotor = new TalonFX(42);
+           lowerWheelSpeed = 0.8;
+           backspinWheelSpeed = -0.8;
 
            TalonFXConfiguration cfg = new TalonFXConfiguration();
            cfg.CurrentLimits = new CurrentLimitsConfigs()
@@ -33,18 +41,28 @@ public class ShooterPowerSubsystem extends SubsystemBase{
            motor1.getConfigurator().apply(cfg);
            motor2.getConfigurator().apply(cfg);
            backspinMotor.getConfigurator().apply(cfg);
+
+            speedNotifier = new Notifier(this::updateMotorSpeed);
+    // update twice per second
+            speedNotifier.startPeriodic(0.5);
+
         }
     
+        private void updateMotorSpeed() {
+            SmartDashboard.putNumber("Lower Wheel Speed", lowerWheelSpeed);
+            SmartDashboard.putNumber("Backspin Wheel Speed", backspinWheelSpeed);
+        }
+
         public void runMotor1(double speed) {
-            motor1.set(speed);
+            motor1.set(lowerWheelSpeed);
         }
 
         public void runMotor2(double speed) {
-            motor2.set(speed);
+            motor2.set(-lowerWheelSpeed);
         }
     
         public void runBackspinMotor(double speed) {
-            backspinMotor.set(speed);
+            backspinMotor.set(backspinWheelSpeed);
         }
 
         public void stopMotor() {
@@ -106,6 +124,50 @@ public class ShooterPowerSubsystem extends SubsystemBase{
             backspinMotor.set(rpmToPercent(rpm));
         }
 
+        public Command increaseLowerWheelSpeed() {
+            return Commands.runOnce(() -> {
+                lowerWheelSpeed += 0.1;
+            });
+        }
+
+        public Command decreaseLowerWheelSpeed() {
+            return Commands.runOnce(() -> {
+                lowerWheelSpeed -= 0.1;
+            });
+        }
+
+        public void setLowerWheelSpeed(double speed) {
+            lowerWheelSpeed = speed;
+            if (lowerWheelSpeed > 1.0) {
+                lowerWheelSpeed = 1.0;
+            }
+            if (lowerWheelSpeed < 0.1) {
+                lowerWheelSpeed = 0.1;
+            }
+        }
+
+        public Command increaseBackspinWheelSpeed() {
+            return Commands.runOnce(() -> {
+                backspinWheelSpeed -= 0.1;
+            });
+        }
+
+        public Command decreaseBackspinWheelSpeed() {
+            return Commands.runOnce(() -> {
+                backspinWheelSpeed += 0.1;
+            });
+        }
+
+        public void setBackspinWheelSpeed(double speed) {
+            backspinWheelSpeed = speed;
+            if (backspinWheelSpeed < -1.0) {
+                backspinWheelSpeed = -1.0;
+            }
+            if (backspinWheelSpeed > -0.1) {
+                backspinWheelSpeed = -0.1;
+            }
+        }
+
         public Command runMotorCommand() {
             return Commands.runOnce(
             () -> {
@@ -115,6 +177,8 @@ public class ShooterPowerSubsystem extends SubsystemBase{
             }
         );
     }
+
+    
 
      public Command stopMotorCommand() {
         return Commands.runOnce(
