@@ -235,9 +235,8 @@ public class RobotContainer {
                 )
         );  
 
-        copilotController.a().onTrue(IntakeWheelSubsystem.stopMotorCommand());
-
-        copilotController.leftBumper().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
+        copilotController.a().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
+        //copilotController.leftBumper().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
         copilotController.rightBumper().onTrue(ThroatAndIndexerSubsystem.reverseMotorCommand());
         copilotController.rightTrigger().whileTrue(
             Commands.startEnd(

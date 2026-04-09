@@ -9,6 +9,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -44,7 +45,8 @@ TalonFXConfiguration cfg = new TalonFXConfiguration();
 
     public void periodic() {
         BaseStatusSignal.refreshAll(position);
-       //System.out.println(position.getValueAsDouble() + " Intake Level motor");
+       System.out.println(position.getValueAsDouble() + " Intake Level motor");
+        
     }
 
     public Command IntakeUpCommand() {
@@ -74,7 +76,7 @@ TalonFXConfiguration cfg = new TalonFXConfiguration();
         return Commands.sequence(
           Commands.runOnce(() -> {
               intakeMotor.setNeutralMode(NeutralModeValue.Brake);
-              intakeMotor.setControl(m_request.withPosition(-8.4));
+              intakeMotor.setControl(m_request.withPosition(-8.7));
           })
         );
     }
