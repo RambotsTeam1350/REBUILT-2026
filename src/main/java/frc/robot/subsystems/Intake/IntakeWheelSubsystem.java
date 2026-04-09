@@ -5,6 +5,7 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.*;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -22,6 +23,7 @@ public class IntakeWheelSubsystem extends SubsystemBase {
     public IntakeWheelSubsystem() {
         motor = new TalonFX(34);
 
+    
         velocity = motor.getVelocity();
         position = motor.getPosition();
 
@@ -80,5 +82,11 @@ public class IntakeWheelSubsystem extends SubsystemBase {
         );
       }
 
-   
+   public void booleanJammed() {
+        if (velocity.getValueAsDouble() < 0.5 && motor.getSupplyCurrent().getValueAsDouble() > 60) {
+            SmartDashboard.putBoolean("Intake Jammed", true);
+        } else {
+             SmartDashboard.putBoolean("Intake Jammed", false); 
+        }
+    }
 }

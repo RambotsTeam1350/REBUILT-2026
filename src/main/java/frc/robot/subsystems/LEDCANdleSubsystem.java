@@ -52,6 +52,32 @@ public class LEDCANdleSubsystem extends SubsystemBase {
         return Commands.runOnce(() -> {
             this.CANdle.setLEDs(0, 0, 0);
         });
+  
     }
- }
+    
+        public Command LEDRainbow() {
+        return Commands.runOnce(() -> {
+            this.CANdle.setLEDs(0, 0, 0, 255, 0, 0);
+        });
+    }
+    
+        public Command LEDLarson() {
+        return Commands.runOnce(() -> {
+            this.CANdle.setLEDs(0, 0, 255, 0, 0, 0);
+        });
+    }
+
+        public Command LEDTwinkle() {
+        return Commands.runOnce(() -> {
+            this.CANdle.setLEDs(255, 255, 0, 0, 255, 0);
+        });
+    }
+
+        public Command LEDTwinkleOff() {
+        return Commands.runOnce(() -> {
+            this.CANdle.setLEDs(255, 0, 255, 0, 0, 255);
+        });
+    }
+}
+    
 

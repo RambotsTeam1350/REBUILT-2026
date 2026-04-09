@@ -29,13 +29,15 @@ public class FieldAreaCheckerSubsystem extends SubsystemBase {
         return (x >= minX && x <= maxX) && (y >= minY && y <= maxY) && (a >= minA && a <= maxA);
     }
     // need to make this method repeat itself, so that the LED will update as the robot moves in and out of the area
-     public Command checkFieldArea(Pose2d robotpose) {
-            if (isRobotInArea(robotpose)) {
-                System.out.println("Robot is in the desired area, good to align and shoot.");
-                return Commands.runOnce(() -> ledSubsystem.LEDGreen());
-            } else {
-                System.out.println("Robot is outside the desired area, MOVE!");
-                return Commands.runOnce(() -> ledSubsystem.LEDRed());
-            }
+     
+     public void periodic(Pose2d robotpose) {
+        
+        if (isRobotInArea(robotpose)) {
+            System.out.println("Robot is in the desired area, good to align and shoot.");
+            ledSubsystem.LEDGreen();
+        } else {
+            System.out.println("Robot is outside the desired area, MOVE!");
+            ledSubsystem.LEDRed();
+        }
      }
 }
