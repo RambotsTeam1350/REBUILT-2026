@@ -9,21 +9,24 @@ import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.subsystems.TurretSubsystem;
 
 /**
- * Command that aligns the turret to the hub using AprilTag detection from the Limelight.
+ * Command that aligns the turret to the hub using AprilTag detection from the
+ * Limelight.
  * Automatically detects alliance color and looks for the correct hub AprilTags:
  * - Red Alliance: AprilTags 9 and 10
  * - Blue Alliance: AprilTags 24 and 25
  *
- * Uses vision data to calculate the angle from the turret to the hub and rotates the turret accordingly.
- * Accounts for the geometric offset between the camera and turret positions on the robot.
+ * Uses vision data to calculate the angle from the turret to the hub and
+ * rotates the turret accordingly.
+ * Accounts for the geometric offset between the camera and turret positions on
+ * the robot.
  */
 public class AlignToHub extends Command {
     private final TurretSubsystem turretSubsystem;
     private final String limelightName = "limelight-three";
 
     // Hub AprilTag IDs by alliance
-    private static final int[] RED_HUB_TAGS = {9, 10};
-    private static final int[] BLUE_HUB_TAGS = {24, 25};
+    private static final int[] RED_HUB_TAGS = { 9, 10 };
+    private static final int[] BLUE_HUB_TAGS = { 24, 25 };
 
     private static final double ALIGNMENT_TOLERANCE_DEGREES = 2.0;
     private int consecutiveOnTargetCount = 0;
@@ -31,7 +34,8 @@ public class AlignToHub extends Command {
 
     /**
      * Creates a new AlignToHub command.
-     * Automatically detects alliance color and targets the appropriate hub AprilTags.
+     * Automatically detects alliance color and targets the appropriate hub
+     * AprilTags.
      *
      * @param turretSubsystem The turret subsystem to control
      */
@@ -110,7 +114,8 @@ public class AlignToHub extends Command {
             Translation2d cameraToTurretOffset = turretPos.minus(cameraPos);
 
             // Calculate the angular offset caused by the camera-turret position difference
-            // This is the angle from the camera's line-of-sight to the turret's line-of-sight
+            // This is the angle from the camera's line-of-sight to the turret's
+            // line-of-sight
             // at the target distance
             double distanceToTarget = hubTag.distToRobot; // in meters
             double geometricAngleOffset = 0.0;
@@ -120,7 +125,7 @@ public class AlignToHub extends Command {
                 // The perpendicular offset depends on the camera viewing angle
                 double angleToTagRadians = Math.toRadians(angleToTagFromCamera);
                 double perpendicularOffset = cameraToTurretOffset.getX() * Math.sin(angleToTagRadians)
-                                            - cameraToTurretOffset.getY() * Math.cos(angleToTagRadians);
+                        - cameraToTurretOffset.getY() * Math.cos(angleToTagRadians);
                 geometricAngleOffset = Math.toDegrees(Math.atan2(perpendicularOffset, distanceToTarget));
             }
 

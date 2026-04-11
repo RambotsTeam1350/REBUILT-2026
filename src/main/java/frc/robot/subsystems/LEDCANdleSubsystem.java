@@ -35,7 +35,8 @@ public class LEDCANdleSubsystem extends SubsystemBase {
         candle.getConfigurator().apply(config);
     }
 
-    // If CANdle is Red, the bot is not in range to shoot, so the bot needs to move to the desired location
+    // If CANdle is Red, the bot is not in range to shoot, so the bot needs to move
+    // to the desired location
     public Command LEDRed() {
         return Commands.runOnce(() -> candle.setControl(redControl));
     }

@@ -28,29 +28,30 @@ import frc.robot.commands.GetTurretToHub;
     but right now for testing purposes it is only a motor running
 */
 public class TurretSubsystem extends SubsystemBase {
-    
 
     private final TalonFX motor;
-    //public double PoseEstimatorXposition = CommandSwerveDrivetrain.positiveXDistance; //Xᵣ
-    //public double PoseEstimatorYposition = 0; //Yᵣ
-    //public double PoseEstimatorRotation = 0; //θᵣ
+    // public double PoseEstimatorXposition =
+    // CommandSwerveDrivetrain.positiveXDistance; //Xᵣ
+    // public double PoseEstimatorYposition = 0; //Yᵣ
+    // public double PoseEstimatorRotation = 0; //θᵣ
 
     double gearBoxRatio = 9.0; // Assuming a 9:1 gear ratio for the turret
     private StatusSignal<Angle> motorPosition;
 
     // Turret physical limits (degrees relative to robot front)
-    // The turret can rotate approximately 180 degrees, centered on the back of the robot
+    // The turret can rotate approximately 180 degrees, centered on the back of the
+    // robot
     private static final double TURRET_MIN_ANGLE = -20.0; // 90 degrees left of back = right side
-    private static final double TURRET_MAX_ANGLE = 20.0;  // 90 degrees right of back = left side
+    private static final double TURRET_MAX_ANGLE = 20.0; // 90 degrees right of back = left side
 
     private double TurretMinimumAngle = -143.3;
     private double TurretMaximumAngle = 63.95;
 
-    public double TargetXposition = 4.625594; //Xₜ 182.11 in inches
-    public double TargetYposition = 4.03479; //Yₜ 158.85 in inches 
+    public double TargetXposition = 4.625594; // Xₜ 182.11 in inches
+    public double TargetYposition = 4.03479; // Yₜ 158.85 in inches
     public double TargetRotation;
 
-    public double XofTurretOnBot = -0.05; //XofTurretOnBot
+    public double XofTurretOnBot = -0.05; // XofTurretOnBot
     public double YofTurretOnBot = -0.05;
 
     // Limelight camera position relative to robot center (in meters)
@@ -69,29 +70,27 @@ public class TurretSubsystem extends SubsystemBase {
         this.poseEstimator = poseEstimator;
         motor = new TalonFX(18);
 
+        TalonFXConfiguration cfg = new TalonFXConfiguration();
+        cfg.Slot0.kP = 7; // orginally 4.8
+        cfg.Slot0.kI = 0;
+        cfg.Slot0.kD = 0.1;
+        cfg.Slot0.kV = .12;
+        cfg.Slot0.kA = .01;
+        cfg.Slot0.kS = .25;
+        // cfg.Slot0.kG = 0;
 
-         TalonFXConfiguration cfg = new TalonFXConfiguration();
-            cfg.Slot0.kP = 7; // orginally 4.8
-            cfg.Slot0.kI = 0;
-            cfg.Slot0.kD = 0.1;
-            cfg.Slot0.kV = .12;
-            cfg.Slot0.kA = .01;
-            cfg.Slot0.kS = .25;
-            //cfg.Slot0.kG = 0;
+        MotionMagicConfigs mm = cfg.MotionMagic;
+        mm.MotionMagicCruiseVelocity = 7; // 7
+        mm.MotionMagicAcceleration = 80;
+        mm.MotionMagicJerk = 1600;
+        motor.getConfigurator().apply(cfg);
 
-            
-            MotionMagicConfigs mm = cfg.MotionMagic;
-            mm.MotionMagicCruiseVelocity = 7; // 7
-            mm.MotionMagicAcceleration = 80;
-            mm.MotionMagicJerk = 1600; 
-            motor.getConfigurator().apply(cfg);
+        this.motorPosition = this.motor.getPosition();
 
-            this.motorPosition = this.motor.getPosition();
+        speedNotifier = new Notifier(this::updateTurretAngle);
+        speedNotifier2 = new Notifier(this::updateTurretAngle2);
 
-speedNotifier = new Notifier(this::updateTurretAngle);
-speedNotifier2 = new Notifier(this::updateTurretAngle2);
-
-    // update twice per second
+        // update twice per second
         speedNotifier.startPeriodic(0.5);
         speedNotifier2.startPeriodic(0.5);
 
@@ -101,7 +100,7 @@ speedNotifier2 = new Notifier(this::updateTurretAngle2);
         return degrees * (Math.PI / 180);
     }
 
-@Override
+    @Override
     public void periodic() {
         // Refresh cached signals first so all reads in this loop see current values.
         BaseStatusSignal.refreshAll(motorPosition);
@@ -110,53 +109,59 @@ speedNotifier2 = new Notifier(this::updateTurretAngle2);
         // turretAutoAimToHubImmediate();
         System.out.println("turret angle: " + motorPosition.getValueAsDouble());
     }
- 
-/* ------------------------------------------------------------------------------ */
-public double getPoseEstimatorY() {
-    return poseEstimator.getEstimatedPosition().getY();
-}
 
-public double getPoseEstimatorX() {
-    return poseEstimator.getEstimatedPosition().getX();
-}
+    /*
+     * -----------------------------------------------------------------------------
+     * -
+     */
+    public double getPoseEstimatorY() {
+        return poseEstimator.getEstimatedPosition().getY();
+    }
 
-public double getPoseEstimatorRotation() {
-    return poseEstimator.getEstimatedPosition().getRotation().getDegrees();
-}
+    public double getPoseEstimatorX() {
+        return poseEstimator.getEstimatedPosition().getX();
+    }
 
-public double getTurretRotation() {
-    return encoderUnitsToDegrees(motor.getPosition().getValueAsDouble());
-}
-/* ------------------------------------------------------------------------------ */
+    public double getPoseEstimatorRotation() {
+        return poseEstimator.getEstimatedPosition().getRotation().getDegrees();
+    }
 
-// Returns the field-absolute angle from the robot to the target, in degrees.
-public double getTargetRotation()
-{
-    return Math.toDegrees(Math.atan2((TargetYposition - getPoseEstimatorY()), (TargetXposition - getPoseEstimatorX())));
-}
+    public double getTurretRotation() {
+        return encoderUnitsToDegrees(motor.getPosition().getValueAsDouble());
+    }
+    /*
+     * -----------------------------------------------------------------------------
+     * -
+     */
 
-// Returns the robot-relative angle to the target, in degrees.
-public double getAngleToTarget() {
-    return normalizeAngle(getTargetRotation() - getPoseEstimatorRotation());
-}
-/* --------- v new calculations as of 3/7/26 v --------- */
+    // Returns the field-absolute angle from the robot to the target, in degrees.
+    public double getTargetRotation() {
+        return Math.toDegrees(
+                Math.atan2((TargetYposition - getPoseEstimatorY()), (TargetXposition - getPoseEstimatorX())));
+    }
 
-public Translation2d getDistanceBotonTurretFieldRelative() { //step 1 of the five step plan :)
-    return new Translation2d(XofTurretOnBot * Math.cos(degreesToRadians(getPoseEstimatorRotation())), 
-    YofTurretOnBot * Math.sin(degreesToRadians(getPoseEstimatorRotation())));
-}
+    // Returns the robot-relative angle to the target, in degrees.
+    public double getAngleToTarget() {
+        return normalizeAngle(getTargetRotation() - getPoseEstimatorRotation());
+    }
+    /* --------- v new calculations as of 3/7/26 v --------- */
 
-public Translation2d getPositionTurretonField() {
-    return new Translation2d();
-}
+    public Translation2d getDistanceBotonTurretFieldRelative() { // step 1 of the five step plan :)
+        return new Translation2d(XofTurretOnBot * Math.cos(degreesToRadians(getPoseEstimatorRotation())),
+                YofTurretOnBot * Math.sin(degreesToRadians(getPoseEstimatorRotation())));
+    }
 
-public double getTurretAngleBotRelative() {
-    return 3 - getPoseEstimatorRotation();
-}
+    public Translation2d getPositionTurretonField() {
+        return new Translation2d();
+    }
 
-/* --------- ^ new calculations as of 3/7/26 ^ --------- */
+    public double getTurretAngleBotRelative() {
+        return 3 - getPoseEstimatorRotation();
+    }
 
-private double degreesToEncoderUnits(double degrees) {
+    /* --------- ^ new calculations as of 3/7/26 ^ --------- */
+
+    private double degreesToEncoderUnits(double degrees) {
         // Assuming 2048 units per revolution and a gear ratio of 9:1
         double unitsPerRevolution = 2048;
         return ((degrees / 360.0)) * gearBoxRatio; // 8.58 is what full revolution actualy is, instead of 9
@@ -166,53 +171,53 @@ private double degreesToEncoderUnits(double degrees) {
         return (-0.0256402 * degrees) + 0.3256835;
     }
 
-private double encoderUnitsToDegrees(double encoderUnits) {
-    return ( 360 * ( encoderUnits /  (gearBoxRatio)));
-}
+    private double encoderUnitsToDegrees(double encoderUnits) {
+        return (360 * (encoderUnits / (gearBoxRatio)));
+    }
 
-/**
- * Normalizes an angle to the range [-180, 180] degrees.
- *
- * @param degrees The angle to normalize
- * @return The normalized angle in [-180, 180] range
- */
-private double normalizeAngle(double degrees) {
-    double angle = degrees;
-    while (angle > 180) angle -= 360;
-    while (angle < -180) angle += 360;
-    return angle;
-}
+    /**
+     * Normalizes an angle to the range [-180, 180] degrees.
+     *
+     * @param degrees The angle to normalize
+     * @return The normalized angle in [-180, 180] range
+     */
+    private double normalizeAngle(double degrees) {
+        double angle = degrees;
+        while (angle > 180)
+            angle -= 360;
+        while (angle < -180)
+            angle += 360;
+        return angle;
+    }
 
-/**
- * Clamps a turret angle to the physical limits of the turret mechanism.
- *
- * @param degrees The desired turret angle
- * @return The clamped angle within [TURRET_MIN_ANGLE, TURRET_MAX_ANGLE]
- */
-private double clampTurretAngle(double degrees) {
-    return Math.max(TURRET_MIN_ANGLE, Math.min(TURRET_MAX_ANGLE, degrees));
-}
+    /**
+     * Clamps a turret angle to the physical limits of the turret mechanism.
+     *
+     * @param degrees The desired turret angle
+     * @return The clamped angle within [TURRET_MIN_ANGLE, TURRET_MAX_ANGLE]
+     */
+    private double clampTurretAngle(double degrees) {
+        return Math.max(TURRET_MIN_ANGLE, Math.min(TURRET_MAX_ANGLE, degrees));
+    }
 
     public Command TurretToMaxPosition() {
         return Commands.sequence(
-                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(360))))
-            );
-       } 
-/* 
-       public Command TurretTestSpeed() {
-        return Commands.sequence(
-                Commands.runOnce(() -> motor.set(0.1))
-            );
-       }
-*/
-   
-       //_________________________________________________________________________________________________
+                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(360)))));
+    }
+    /*
+     * public Command TurretTestSpeed() {
+     * return Commands.sequence(
+     * Commands.runOnce(() -> motor.set(0.1))
+     * );
+     * }
+     */
 
-       public Command TurretTestStop() {
+    // _________________________________________________________________________________________________
+
+    public Command TurretTestStop() {
         return Commands.sequence(
-                Commands.runOnce(() -> motor.set(0))
-            );
-       }
+                Commands.runOnce(() -> motor.set(0)));
+    }
 
     /**
      * Imperative immediate stop for the turret motor.
@@ -225,14 +230,13 @@ private double clampTurretAngle(double degrees) {
         return Commands.runOnce(() -> {
             // Calculate vector from turret to hub in field frame
             Translation2d turretToHubVector = GetTurretToHub.calculateTurretToHubVector(
-                getPoseEstimatorX(),
-                getPoseEstimatorY(),
-                degreesToRadians(getPoseEstimatorRotation()),
-                XofTurretOnBot,
-                YofTurretOnBot,
-                TargetXposition,
-                TargetYposition
-            );
+                    getPoseEstimatorX(),
+                    getPoseEstimatorY(),
+                    degreesToRadians(getPoseEstimatorRotation()),
+                    XofTurretOnBot,
+                    YofTurretOnBot,
+                    TargetXposition,
+                    TargetYposition);
 
             // Get field-absolute angle to hub
             double fieldAngleToHub = turretToHubVector.getAngle().getDegrees();
@@ -251,13 +255,11 @@ private double clampTurretAngle(double degrees) {
             motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(robotRelativeAngle)));
         });
     }
-     
 
     public Command TurretToZero() {
         return Commands.sequence(
-                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(0))))
-            );
-       }
+                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(0)))));
+    }
 
     /**
      * Sets the turret to a specific angle in degrees using MotionMagic control.
@@ -268,29 +270,32 @@ private double clampTurretAngle(double degrees) {
         return Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(degrees))));
     }
 
-public Command setTurretPosition(double position) {
+    public Command setTurretPosition(double position) {
         return Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(position)));
     }
 
-public Command setTurretPositionVariable() {
-    double angle = GetTurretToHub.calculateTurretToHubVector(
-            getPoseEstimatorX(),
-            getPoseEstimatorY(),
-            degreesToRadians(getPoseEstimatorRotation()),
-            XofTurretOnBot,
-            YofTurretOnBot,
-            TargetXposition,
-            TargetYposition).getAngle().getDegrees() - getPoseEstimatorRotation() - 180;
+    public Command setTurretPositionVariable() {
+        double angle = GetTurretToHub.calculateTurretToHubVector(
+                getPoseEstimatorX(),
+                getPoseEstimatorY(),
+                degreesToRadians(getPoseEstimatorRotation()),
+                XofTurretOnBot,
+                YofTurretOnBot,
+                TargetXposition,
+                TargetYposition).getAngle().getDegrees() - getPoseEstimatorRotation() - 180;
 
-           /*  if (angle > TurretMaximumAngle) {
-             angle = TurretMaximumAngle;
-            } 
-            if (angle < TurretMinimumAngle) {
-             angle = TurretMinimumAngle;
-            } */
-                return Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(turretDegreesAndEncoderUnits(angle))));
-            
+        /*
+         * if (angle > TurretMaximumAngle) {
+         * angle = TurretMaximumAngle;
+         * }
+         * if (angle < TurretMinimumAngle) {
+         * angle = TurretMinimumAngle;
+         * }
+         */
+        return Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(turretDegreesAndEncoderUnits(angle))));
+
     }
+
     /**
      * Immediately set the turret to a specific angle (imperative API).
      * Use this from other commands when you want to directly command the motor
@@ -309,33 +314,33 @@ public Command setTurretPositionVariable() {
     private int[] getHubTagIDs() {
         var alliance = DriverStation.getAlliance();
         if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-            return new int[]{9, 10};
+            return new int[] { 9, 10 };
         }
-        return new int[]{24, 25};
+        return new int[] { 24, 25 };
     }
 
     private void updateTurretAngle() {
         SmartDashboard.putNumber("angle turret will turn to", GetTurretToHub.calculateTurretToHubVector(
-            getPoseEstimatorX(),
-            getPoseEstimatorY(),
-            degreesToRadians(getPoseEstimatorRotation()),
-            XofTurretOnBot,
-            YofTurretOnBot,
-            TargetXposition,
-            TargetYposition
-        ).getAngle().getDegrees() - getPoseEstimatorRotation() - 180);
+                getPoseEstimatorX(),
+                getPoseEstimatorY(),
+                degreesToRadians(getPoseEstimatorRotation()),
+                XofTurretOnBot,
+                YofTurretOnBot,
+                TargetXposition,
+                TargetYposition).getAngle().getDegrees() - getPoseEstimatorRotation() - 180);
     }
-private void updateTurretAngle2() {
-    SmartDashboard.putNumber("position turret will turn to", turretDegreesAndEncoderUnits(GetTurretToHub.calculateTurretToHubVector(
-            getPoseEstimatorX(),
-            getPoseEstimatorY(),
-            degreesToRadians(getPoseEstimatorRotation()),
-            XofTurretOnBot,
-            YofTurretOnBot,
-            TargetXposition,
-            TargetYposition
-        ).getAngle().getDegrees() - getPoseEstimatorRotation() - 180));
-}
+
+    private void updateTurretAngle2() {
+        SmartDashboard.putNumber("position turret will turn to",
+                turretDegreesAndEncoderUnits(GetTurretToHub.calculateTurretToHubVector(
+                        getPoseEstimatorX(),
+                        getPoseEstimatorY(),
+                        degreesToRadians(getPoseEstimatorRotation()),
+                        XofTurretOnBot,
+                        YofTurretOnBot,
+                        TargetXposition,
+                        TargetYposition).getAngle().getDegrees() - getPoseEstimatorRotation() - 180));
+    }
 
     /**
      * Aims the turret at the hub using the pose estimator.
@@ -344,27 +349,28 @@ private void updateTurretAngle2() {
      * addVisionMeasurement() in CommandSwerveDrivetrain, so the pose stays accurate
      * when AprilTags are visible. Using the pose estimator exclusively (rather than
      * directly reading txnc here) avoids jitter from:
-     *   - Limelight publishing at ~22 Hz while the robot loop runs at 50 Hz (stale txnc)
-     *   - Incremental getTurretRotation() + txnc accumulation between Limelight frames
-     *   - Path-switching jumps when tag visibility flickers between loops
+     * - Limelight publishing at ~22 Hz while the robot loop runs at 50 Hz (stale
+     * txnc)
+     * - Incremental getTurretRotation() + txnc accumulation between Limelight
+     * frames
+     * - Path-switching jumps when tag visibility flickers between loops
      */
     public void turretAutoAimToHubImmediate() {
         Translation2d turretToHubVector = GetTurretToHub.calculateTurretToHubVector(
-            getPoseEstimatorX(),
-            getPoseEstimatorY(),
-            degreesToRadians(getPoseEstimatorRotation()),
-            XofTurretOnBot,
-            YofTurretOnBot,
-            TargetXposition,
-            TargetYposition
-        );
+                getPoseEstimatorX(),
+                getPoseEstimatorY(),
+                degreesToRadians(getPoseEstimatorRotation()),
+                XofTurretOnBot,
+                YofTurretOnBot,
+                TargetXposition,
+                TargetYposition);
         double robotRelativeAngle = normalizeAngle(
-            (turretToHubVector.getAngle().getDegrees() - getPoseEstimatorRotation() - 180));
+                (turretToHubVector.getAngle().getDegrees() - getPoseEstimatorRotation() - 180));
         robotRelativeAngle = clampTurretAngle(robotRelativeAngle);
-        //double pidMotorPosition = Map(robotRelativeAngle, -90, 90, -1.8, 2.6);
-        
+        // double pidMotorPosition = Map(robotRelativeAngle, -90, 90, -1.8, 2.6);
+
         motor.setControl(new MotionMagicVoltage(turretDegreesAndEncoderUnits(robotRelativeAngle)));
-        //SmartDashboard.putNumber("position turret will turn to", robotRelativeAngle);
+        // SmartDashboard.putNumber("position turret will turn to", robotRelativeAngle);
     }
 
     /**
@@ -381,7 +387,8 @@ private void updateTurretAngle2() {
     }
 
     /**
-     * Command: continuously aim at the hub using the pose estimator (hold button A).
+     * Command: continuously aim at the hub using the pose estimator (hold button
+     * A).
      * Uses Commands.run() so the turret tracks every loop while the button is held.
      */
     public Command aimAtHubViaPose() {
@@ -389,7 +396,8 @@ private void updateTurretAngle2() {
     }
 
     /**
-     * Command: continuously aim at the hub using direct Limelight vision (hold button B).
+     * Command: continuously aim at the hub using direct Limelight vision (hold
+     * button B).
      * Uses txnc from the closest visible hub AprilTag for the current alliance.
      * Falls back to pose estimator if no hub tags are visible.
      */
@@ -427,19 +435,20 @@ private void updateTurretAngle2() {
 
     /**
      * Returns the straight-line distance from the turret to the hub in meters,
-     * accounting for the turret's actual field position (robot pose + heading + offset).
-     * Use this as the single authoritative distance for both turret and shooter angle.
+     * accounting for the turret's actual field position (robot pose + heading +
+     * offset).
+     * Use this as the single authoritative distance for both turret and shooter
+     * angle.
      */
     public double getDistanceToHub() {
         return GetTurretToHub.calculateTurretToHubVector(
-            getPoseEstimatorX(),
-            getPoseEstimatorY(),
-            degreesToRadians(getPoseEstimatorRotation()),
-            XofTurretOnBot,
-            YofTurretOnBot,
-            TargetXposition,
-            TargetYposition
-        ).getNorm();
+                getPoseEstimatorX(),
+                getPoseEstimatorY(),
+                degreesToRadians(getPoseEstimatorRotation()),
+                XofTurretOnBot,
+                YofTurretOnBot,
+                TargetXposition,
+                TargetYposition).getNorm();
     }
 
     /**

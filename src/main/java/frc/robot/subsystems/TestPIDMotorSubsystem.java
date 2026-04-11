@@ -16,55 +16,48 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+public class TestPIDMotorSubsystem extends SubsystemBase {
 
-public class TestPIDMotorSubsystem extends SubsystemBase{
-    
-     private final TalonFX motor = new TalonFX(999);
+    private final TalonFX motor = new TalonFX(999);
     private StatusSignal<Angle> motorPosition;
-        public TestPIDMotorSubsystem() {
-            
-            TalonFXConfiguration cfg = new TalonFXConfiguration();
-            cfg.Slot0.kP = 4.8;
-            cfg.Slot0.kI = 0;
-            cfg.Slot0.kD = 0.1;
-            cfg.Slot0.kV = .12;
-            cfg.Slot0.kA = .01;
-            cfg.Slot0.kS = .25;
 
-            this.motorPosition = this.motor.getPosition();
-            MotionMagicConfigs mm = cfg.MotionMagic;
-            mm.MotionMagicCruiseVelocity = 6; 
-            mm.MotionMagicAcceleration = 80;
-            mm.MotionMagicJerk = 1600; 
-            motor.getConfigurator().apply(cfg);
+    public TestPIDMotorSubsystem() {
 
-            }
-        
-        public Command MotionMagicCommand() {
-        return Commands.sequence(
-                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(-4)))
-            );
-       } 
+        TalonFXConfiguration cfg = new TalonFXConfiguration();
+        cfg.Slot0.kP = 4.8;
+        cfg.Slot0.kI = 0;
+        cfg.Slot0.kD = 0.1;
+        cfg.Slot0.kV = .12;
+        cfg.Slot0.kA = .01;
+        cfg.Slot0.kS = .25;
 
-        public Command MotorTest() {
-        return Commands.sequence(
-                Commands.runOnce(() -> motor.set(0.5))
-            );
-       }
+        this.motorPosition = this.motor.getPosition();
+        MotionMagicConfigs mm = cfg.MotionMagic;
+        mm.MotionMagicCruiseVelocity = 6;
+        mm.MotionMagicAcceleration = 80;
+        mm.MotionMagicJerk = 1600;
+        motor.getConfigurator().apply(cfg);
 
-        public Command StopMotorCommand() {
-        return Commands.sequence(
-                Commands.runOnce(() -> motor.set(0))
-            );
-       }
-
-       public Command StopMotionMagicCommand() {
-        return Commands.sequence(
-                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(0)))
-            );
-       }
-
-   
     }
 
+    public Command MotionMagicCommand() {
+        return Commands.sequence(
+                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(-4))));
+    }
 
+    public Command MotorTest() {
+        return Commands.sequence(
+                Commands.runOnce(() -> motor.set(0.5)));
+    }
+
+    public Command StopMotorCommand() {
+        return Commands.sequence(
+                Commands.runOnce(() -> motor.set(0)));
+    }
+
+    public Command StopMotionMagicCommand() {
+        return Commands.sequence(
+                Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(0))));
+    }
+
+}
