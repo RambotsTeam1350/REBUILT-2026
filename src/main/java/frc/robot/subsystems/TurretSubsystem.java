@@ -2,6 +2,8 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import java.util.Map;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -51,6 +53,8 @@ public class TurretSubsystem extends SubsystemBase {
     // Limelight camera position relative to robot center (in meters)
     public double XofCameraOnBot = 0.0; // TODO: Measure actual camera X offset
     public double YofCameraOnBot = 0.0; // TODO: Measure actual camera Y offset
+
+    public double turretPidControllerOffset = 0.38;
 
     public double AngleToTarget;
 
@@ -310,8 +314,23 @@ private double clampTurretAngle(double degrees) {
         double robotRelativeAngle = normalizeAngle(
             (turretToHubVector.getAngle().getDegrees() - getPoseEstimatorRotation() - 180));
         robotRelativeAngle = clampTurretAngle(robotRelativeAngle);
-        motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(-robotRelativeAngle)));
+        double pidMotorPosition = Map(robotRelativeAngle, -90, 90, -1.8, 2.6);
+        
+        motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(pidMotorPosition)));
         //SmartDashboard.putNumber("position turret will turn to", robotRelativeAngle);
+    }
+
+    /**
+     * Simple linear mapping helper: maps a value from one range to another.
+     *
+     * Note: method name matches original call (Map) to avoid further changes.
+     */
+    private double Map(double value, double inMin, double inMax, double outMin, double outMax) {
+        if (inMax == inMin) {
+            return outMin; // avoid division by zero
+        }
+        double scaled = (value - inMin) / (inMax - inMin);
+        return outMin + (scaled * (outMax - outMin));
     }
 
     /**
