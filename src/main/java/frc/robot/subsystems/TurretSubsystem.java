@@ -13,6 +13,8 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.LimelightHelpers;
@@ -53,6 +55,7 @@ public class TurretSubsystem extends SubsystemBase {
     public double AngleToTarget;
 
     private SwerveDrivePoseEstimator poseEstimator;
+    private final Notifier speedNotifier;
 
     public TurretSubsystem(SwerveDrivePoseEstimator poseEstimator) {
         this.poseEstimator = poseEstimator;
@@ -76,6 +79,10 @@ public class TurretSubsystem extends SubsystemBase {
 
             this.motorPosition = this.motor.getPosition();
 
+speedNotifier = new Notifier(this::updateTurretAngle);
+    // update twice per second
+        speedNotifier.startPeriodic(0.5);
+
     }
 
     public double degreesToRadians(double degrees) {
@@ -89,6 +96,7 @@ public class TurretSubsystem extends SubsystemBase {
 
         // Turret aiming is now driven by button commands (see RobotContainer).
         // turretAutoAimToHubImmediate();
+        System.out.println("turret angle: " + motorPosition.getValueAsDouble());
     }
  
 /* ------------------------------------------------------------------------------ */
@@ -266,6 +274,18 @@ private double clampTurretAngle(double degrees) {
         return new int[]{24, 25};
     }
 
+    private void updateTurretAngle() {
+        SmartDashboard.putNumber("angle turret will turn to", GetTurretToHub.calculateTurretToHubVector(
+            getPoseEstimatorX(),
+            getPoseEstimatorY(),
+            degreesToRadians(getPoseEstimatorRotation()),
+            XofTurretOnBot,
+            YofTurretOnBot,
+            TargetXposition,
+            TargetYposition
+        ).getAngle().getDegrees() - getPoseEstimatorRotation() - 180);
+    }
+
     /**
      * Aims the turret at the hub using the pose estimator.
      *
@@ -288,9 +308,10 @@ private double clampTurretAngle(double degrees) {
             TargetYposition
         );
         double robotRelativeAngle = normalizeAngle(
-            turretToHubVector.getAngle().getDegrees() - getPoseEstimatorRotation());
+            (turretToHubVector.getAngle().getDegrees() - getPoseEstimatorRotation() - 180));
         robotRelativeAngle = clampTurretAngle(robotRelativeAngle);
-        motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(robotRelativeAngle)));
+        motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(-robotRelativeAngle)));
+        //SmartDashboard.putNumber("position turret will turn to", robotRelativeAngle);
     }
 
     /**

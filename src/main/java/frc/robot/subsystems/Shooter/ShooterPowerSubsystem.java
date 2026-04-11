@@ -62,7 +62,7 @@ public class ShooterPowerSubsystem extends SubsystemBase{
         }
     
         public void runBackspinMotor(double speed) {
-            backspinMotor.set(backspinWheelSpeed);
+            backspinMotor.set(-backspinWheelSpeed);
         }
 
         public void stopMotor() {

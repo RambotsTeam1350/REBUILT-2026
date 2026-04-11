@@ -62,7 +62,7 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final IntakeLevelSubsystem intaketestSubsystem = new IntakeLevelSubsystem();
-    private final IntakeWheelSubsystem IntakeWheelSubsystem = new IntakeWheelSubsystem();
+    private final IntakeWheelSubsystem intakeWheelSubsystem = new IntakeWheelSubsystem();
     private final ShooterPowerSubsystem ShooterSubsystem = new ShooterPowerSubsystem();
 
     private final CommandXboxController joystick = new CommandXboxController(0);
@@ -99,8 +99,8 @@ public class RobotContainer {
     /// 
     
 
-    NamedCommands.registerCommand("runIntakeMotor", IntakeWheelSubsystem.runMotorCommand());
-    NamedCommands.registerCommand("stopIntakeMotor", IntakeWheelSubsystem.stopMotorCommand());
+    NamedCommands.registerCommand("runIntakeMotor", intakeWheelSubsystem.runMotorCommand());
+    NamedCommands.registerCommand("stopIntakeMotor", intakeWheelSubsystem.stopMotorCommand());
     NamedCommands.registerCommand("IntakeDownCommand", intaketestSubsystem.IntakeDownCommand());
     NamedCommands.registerCommand("IntakeUpCommand", intaketestSubsystem.IntakeUpCommand());
     NamedCommands.registerCommand(
@@ -124,7 +124,7 @@ public class RobotContainer {
     // update twice per second
     matchTimeNotifier.startPeriodic(0.5);
 
-    
+
 
         NamedCommands.registerCommand("TurretAutoAimToHub", turretSubsystem.TurretAutoAimToHub());
         NamedCommands.registerCommand("runMotorCommand",
@@ -183,7 +183,7 @@ public class RobotContainer {
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        //joystick.a().whileTrue(turretSubsystem.aimAtHubViaPose());    // Aim via pose estimator
+        joystick.a().whileTrue(turretSubsystem.aimAtHubViaPose());    // Aim via pose estimator
         //joystick.b().whileTrue(turretSubsystem.aimAtHubViaVision());  // Aim via Limelight vision
         //joystick.a().onTrue(turretSubsystem.TurretToZero());
 
@@ -224,31 +224,33 @@ public class RobotContainer {
             Commands.sequence(
                 intaketestSubsystem.IntakeDownCommand(),
                 Commands.waitSeconds(0.5),
-                IntakeWheelSubsystem.runMotorCommand()
+                intakeWheelSubsystem.runMotorCommand()
             )
         );
         
         copilotController.y().onTrue(
-                Commands.sequence(IntakeWheelSubsystem.stopMotorCommand(),
+                Commands.sequence(intakeWheelSubsystem.stopMotorCommand(),
                 intaketestSubsystem.intakeHalfWayCommand()
                 )
         );  
 
         copilotController.b().onTrue(
-                Commands.sequence(IntakeWheelSubsystem.stopMotorCommand(),
+                Commands.sequence(intakeWheelSubsystem.stopMotorCommand(),
                 intaketestSubsystem.IntakeUpCommand()
                 )
-        );  
+        ); 
 
-        //copilotController.leftBumper().onTrue(IntakeWheelSubsystem.reverseMotorCommand());
-        //copilotController.rightBumper().onTrue(ThroatAndIndexerSubsystem.reverseMotorCommand());
-        copilotController.rightTrigger().whileTrue(
+       copilotController.a().whileTrue(
             Commands.startEnd(
-                () -> IntakeWheelSubsystem.runMotor(-0.2),
-                () -> IntakeWheelSubsystem.runMotorCommand(),
-                IntakeWheelSubsystem
+                () -> intakeWheelSubsystem.runMotor(-0.2),
+                () -> intakeWheelSubsystem.runMotorCommand(),
+                intakeWheelSubsystem
             )
-        );
+        ); 
+        copilotController.leftBumper().whileTrue(turretSubsystem.aimAtHubViaVision());
+
+        copilotController.rightBumper().onTrue(turretSubsystem.TurretToZero());
+        
 
         // SmartDashboard.putData(autochooser);
 

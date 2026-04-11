@@ -502,7 +502,7 @@ private SwerveModulePosition[] getModulePositions() {
     }
 
 /**
- * Moves the swerve drive at a specific speed in a given direction, with an option for field-relative movement.
+ * Moves 3the swerve drive at a specific speed in a given direction, with an option for field-relative movement.
  *
  * @param speedMetersPerSecond The desired speed in meters per second.
  * @param direction The desired direction of movement as a Rotation2d.

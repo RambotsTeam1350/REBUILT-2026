@@ -5,6 +5,8 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.*;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -18,6 +20,7 @@ public class IntakeWheelSubsystem extends SubsystemBase {
 
     public double velocityDouble = 0.0;
     public static double positionDouble = 0.0;
+     private final Notifier speedNotifier;
 
     public IntakeWheelSubsystem() {
         motor = new TalonFX(34);
@@ -32,6 +35,10 @@ public class IntakeWheelSubsystem extends SubsystemBase {
             .withSupplyCurrentLimit(30)
             .withSupplyCurrentLimitEnable(true);
         motor.getConfigurator().apply(cfg);
+
+        speedNotifier = new Notifier(this::booleanJammed);
+    // update twice per second
+        speedNotifier.startPeriodic(0.5);
     }
 
      public void runMotor(double speed) {
@@ -80,5 +87,12 @@ public class IntakeWheelSubsystem extends SubsystemBase {
         );
       }
 
+       public void booleanJammed() {
+        if (velocity.getValueAsDouble() < 0.5 && motor.getSupplyCurrent().getValueAsDouble() > 60) {
+            SmartDashboard.putBoolean("Intake Jammed", false);
+        } else {
+             SmartDashboard.putBoolean("Intake Jammed", true); 
+        }
+    }
    
 }

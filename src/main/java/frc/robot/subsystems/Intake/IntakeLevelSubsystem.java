@@ -45,7 +45,7 @@ TalonFXConfiguration cfg = new TalonFXConfiguration();
 
     public void periodic() {
         BaseStatusSignal.refreshAll(position);
-       System.out.println(position.getValueAsDouble() + " Intake Level motor");
+       //System.out.println(position.getValueAsDouble() + " Intake Level motor");
         
     }
 
@@ -86,11 +86,11 @@ TalonFXConfiguration cfg = new TalonFXConfiguration();
         return Commands.sequence(
           Commands.runOnce(() -> {
               intakeMotor.setNeutralMode(NeutralModeValue.Brake);
-              intakeMotor.setControl(m_request.withPosition(-1)); //position a little bit down
+              intakeMotor.setControl(m_request.withPosition(-7)); //position a little bit down
           }),
-          Commands.waitSeconds(0.5),
+          Commands.waitSeconds(0.75),
           Commands.runOnce(() -> {
-              intakeMotor.setControl(m_request.withPosition(0)); // up position
+              intakeMotor.setControl(m_request.withPosition(-3.1)); // up position
           }),
           Commands.waitSeconds(0.5)
         ).repeatedly();
