@@ -275,7 +275,7 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public Command setTurretPositionVariable() {
-        double angle = GetTurretToHub.calculateTurretToHubVector(
+        double rawAngle = GetTurretToHub.calculateTurretToHubVector(
                 getPoseEstimatorX(),
                 getPoseEstimatorY(),
                 degreesToRadians(getPoseEstimatorRotation()),
@@ -284,16 +284,8 @@ public class TurretSubsystem extends SubsystemBase {
                 TargetXposition,
                 TargetYposition).getAngle().getDegrees() - getPoseEstimatorRotation() - 180;
 
-        /*
-         * if (angle > TurretMaximumAngle) {
-         * angle = TurretMaximumAngle;
-         * }
-         * if (angle < TurretMinimumAngle) {
-         * angle = TurretMinimumAngle;
-         * }
-         */
+        final double angle = Math.max(TurretMinimumAngle, Math.min(TurretMaximumAngle, rawAngle));
         return Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(turretDegreesAndEncoderUnits(angle))));
-
     }
 
     /**
