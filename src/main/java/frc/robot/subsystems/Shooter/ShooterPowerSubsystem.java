@@ -126,13 +126,13 @@ public class ShooterPowerSubsystem extends SubsystemBase{
 
         public Command increaseLowerWheelSpeed() {
             return Commands.runOnce(() -> {
-                lowerWheelSpeed += 0.1;
+                lowerWheelSpeed += 0.05;
             });
         }
 
         public Command decreaseLowerWheelSpeed() {
             return Commands.runOnce(() -> {
-                lowerWheelSpeed -= 0.1;
+                lowerWheelSpeed -= 0.05;
             });
         }
 
@@ -148,13 +148,13 @@ public class ShooterPowerSubsystem extends SubsystemBase{
 
         public Command increaseBackspinWheelSpeed() {
             return Commands.runOnce(() -> {
-                backspinWheelSpeed -= 0.1;
+                backspinWheelSpeed -= 0.05;
             });
         }
 
         public Command decreaseBackspinWheelSpeed() {
             return Commands.runOnce(() -> {
-                backspinWheelSpeed += 0.1;
+                backspinWheelSpeed += 0.05;
             });
         }
 

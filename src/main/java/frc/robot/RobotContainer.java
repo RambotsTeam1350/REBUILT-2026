@@ -202,7 +202,7 @@ public class RobotContainer {
                 ),
                 Commands.startEnd(
                     () -> { ShooterSubsystem.runMotor1(1); ShooterSubsystem.runMotor2(-1); ShooterSubsystem.runBackspinMotor(1); }, // positive, negative, positive
-                    () -> ShooterSubsystem.stopMotor(),
+                    () -> { ShooterSubsystem.runMotor1(0.5); ShooterSubsystem.runMotor2(-0.5); ShooterSubsystem.runBackspinMotor(0.5);},
                     ShooterSubsystem
                 ),
                 Commands.startEnd(
