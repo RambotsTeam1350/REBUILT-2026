@@ -35,13 +35,16 @@ public class TurretSubsystem extends SubsystemBase {
     //public double PoseEstimatorYposition = 0; //Yᵣ
     //public double PoseEstimatorRotation = 0; //θᵣ
 
-    double gearBoxRatio = 3.0; // Assuming a 9:1 gear ratio for the turret
+    double gearBoxRatio = 9.0; // Assuming a 9:1 gear ratio for the turret
     private StatusSignal<Angle> motorPosition;
 
     // Turret physical limits (degrees relative to robot front)
     // The turret can rotate approximately 180 degrees, centered on the back of the robot
     private static final double TURRET_MIN_ANGLE = -20.0; // 90 degrees left of back = right side
     private static final double TURRET_MAX_ANGLE = 20.0;  // 90 degrees right of back = left side
+
+    private double TurretMinimumAngle = -143.3;
+    private double TurretMaximumAngle = 63.95;
 
     public double TargetXposition = 4.625594; //Xₜ 182.11 in inches
     public double TargetYposition = 4.03479; //Yₜ 158.85 in inches 
@@ -60,6 +63,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     private SwerveDrivePoseEstimator poseEstimator;
     private final Notifier speedNotifier;
+    private final Notifier speedNotifier2;
 
     public TurretSubsystem(SwerveDrivePoseEstimator poseEstimator) {
         this.poseEstimator = poseEstimator;
@@ -67,16 +71,17 @@ public class TurretSubsystem extends SubsystemBase {
 
 
          TalonFXConfiguration cfg = new TalonFXConfiguration();
-            cfg.Slot0.kP = 4.8;
+            cfg.Slot0.kP = 7; // orginally 4.8
             cfg.Slot0.kI = 0;
             cfg.Slot0.kD = 0.1;
             cfg.Slot0.kV = .12;
             cfg.Slot0.kA = .01;
             cfg.Slot0.kS = .25;
+            //cfg.Slot0.kG = 0;
 
             
             MotionMagicConfigs mm = cfg.MotionMagic;
-            mm.MotionMagicCruiseVelocity = 2; // 7
+            mm.MotionMagicCruiseVelocity = 7; // 7
             mm.MotionMagicAcceleration = 80;
             mm.MotionMagicJerk = 1600; 
             motor.getConfigurator().apply(cfg);
@@ -84,8 +89,11 @@ public class TurretSubsystem extends SubsystemBase {
             this.motorPosition = this.motor.getPosition();
 
 speedNotifier = new Notifier(this::updateTurretAngle);
+speedNotifier2 = new Notifier(this::updateTurretAngle2);
+
     // update twice per second
         speedNotifier.startPeriodic(0.5);
+        speedNotifier2.startPeriodic(0.5);
 
     }
 
@@ -151,11 +159,15 @@ public double getTurretAngleBotRelative() {
 private double degreesToEncoderUnits(double degrees) {
         // Assuming 2048 units per revolution and a gear ratio of 9:1
         double unitsPerRevolution = 2048;
-        return ((degrees / 360.0) * (8.5810546875/9)) * gearBoxRatio; // 8.58 is what full revolution actualy is, instead of 9
+        return ((degrees / 360.0)) * gearBoxRatio; // 8.58 is what full revolution actualy is, instead of 9
+    }
+
+    public double turretDegreesAndEncoderUnits(double degrees) {
+        return (-0.0256402 * degrees) + 0.3256835;
     }
 
 private double encoderUnitsToDegrees(double encoderUnits) {
-    return ( 360 * ( encoderUnits / ((8.5810546875/9) * gearBoxRatio)));
+    return ( 360 * ( encoderUnits /  (gearBoxRatio)));
 }
 
 /**
@@ -180,6 +192,7 @@ private double normalizeAngle(double degrees) {
 private double clampTurretAngle(double degrees) {
     return Math.max(TURRET_MIN_ANGLE, Math.min(TURRET_MAX_ANGLE, degrees));
 }
+
     public Command TurretToMaxPosition() {
         return Commands.sequence(
                 Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(360))))
@@ -255,6 +268,29 @@ private double clampTurretAngle(double degrees) {
         return Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(degrees))));
     }
 
+public Command setTurretPosition(double position) {
+        return Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(position)));
+    }
+
+public Command setTurretPositionVariable() {
+    double angle = GetTurretToHub.calculateTurretToHubVector(
+            getPoseEstimatorX(),
+            getPoseEstimatorY(),
+            degreesToRadians(getPoseEstimatorRotation()),
+            XofTurretOnBot,
+            YofTurretOnBot,
+            TargetXposition,
+            TargetYposition).getAngle().getDegrees() - getPoseEstimatorRotation() - 180;
+
+           /*  if (angle > TurretMaximumAngle) {
+             angle = TurretMaximumAngle;
+            } 
+            if (angle < TurretMinimumAngle) {
+             angle = TurretMinimumAngle;
+            } */
+                return Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(turretDegreesAndEncoderUnits(angle))));
+            
+    }
     /**
      * Immediately set the turret to a specific angle (imperative API).
      * Use this from other commands when you want to directly command the motor
@@ -289,6 +325,17 @@ private double clampTurretAngle(double degrees) {
             TargetYposition
         ).getAngle().getDegrees() - getPoseEstimatorRotation() - 180);
     }
+private void updateTurretAngle2() {
+    SmartDashboard.putNumber("position turret will turn to", turretDegreesAndEncoderUnits(GetTurretToHub.calculateTurretToHubVector(
+            getPoseEstimatorX(),
+            getPoseEstimatorY(),
+            degreesToRadians(getPoseEstimatorRotation()),
+            XofTurretOnBot,
+            YofTurretOnBot,
+            TargetXposition,
+            TargetYposition
+        ).getAngle().getDegrees() - getPoseEstimatorRotation() - 180));
+}
 
     /**
      * Aims the turret at the hub using the pose estimator.
@@ -314,9 +361,9 @@ private double clampTurretAngle(double degrees) {
         double robotRelativeAngle = normalizeAngle(
             (turretToHubVector.getAngle().getDegrees() - getPoseEstimatorRotation() - 180));
         robotRelativeAngle = clampTurretAngle(robotRelativeAngle);
-        double pidMotorPosition = Map(robotRelativeAngle, -90, 90, -1.8, 2.6);
+        //double pidMotorPosition = Map(robotRelativeAngle, -90, 90, -1.8, 2.6);
         
-        motor.setControl(new MotionMagicVoltage(degreesToEncoderUnits(pidMotorPosition)));
+        motor.setControl(new MotionMagicVoltage(turretDegreesAndEncoderUnits(robotRelativeAngle)));
         //SmartDashboard.putNumber("position turret will turn to", robotRelativeAngle);
     }
 

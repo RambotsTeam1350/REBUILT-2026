@@ -247,11 +247,12 @@ public class RobotContainer {
                 intakeWheelSubsystem
             )
         ); 
-        copilotController.leftBumper().whileTrue(turretSubsystem.aimAtHubViaVision());
+        //copilotController.leftBumper().whileTrue(turretSubsystem.setTurretPosition(3));
+        copilotController.rightBumper().onTrue(turretSubsystem.setTurretPositionVariable());
+        copilotController.rightTrigger().onTrue(turretSubsystem.setTurretPosition(turretSubsystem.turretDegreesAndEncoderUnits(0)));
 
-        copilotController.rightBumper().onTrue(turretSubsystem.TurretToZero());
+        // copilotController.rightBumper().onTrue(turretSubsystem.aimAtHubViaPose());
         
-
         // SmartDashboard.putData(autochooser);
 
         drivetrain.registerTelemetry(logger::telemeterize);
