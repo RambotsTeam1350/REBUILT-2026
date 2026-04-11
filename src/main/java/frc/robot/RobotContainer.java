@@ -126,8 +126,8 @@ public class RobotContainer {
 
 		autoChooser = AutoBuilder.buildAutoChooser("middle boring");
 		SmartDashboard.putData("Auto Chooser", autoChooser);
-		SmartDashboard.putNumber("lower motor speed", ShooterSubsystem.lowerWheelSpeed);
-		SmartDashboard.putNumber("backspin motor speed", ShooterSubsystem.backspinWheelSpeed);
+		SmartDashboard.putNumber("lower motor speed", ShooterSubsystem.shooterTargetRPM);
+		SmartDashboard.putNumber("backspin motor speed", ShooterSubsystem.backspinTargetRPM);
 	}
 
 	private void configureBindings() {
