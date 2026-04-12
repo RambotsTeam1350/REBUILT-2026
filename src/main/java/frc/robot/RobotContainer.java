@@ -126,8 +126,8 @@ public class RobotContainer {
 
 		autoChooser = AutoBuilder.buildAutoChooser("middle boring");
 		SmartDashboard.putData("Auto Chooser", autoChooser);
-		SmartDashboard.putNumber("lower motor speed", ShooterSubsystem.lowerWheelSpeed);
-		SmartDashboard.putNumber("backspin motor speed", ShooterSubsystem.backspinWheelSpeed);
+		SmartDashboard.putNumber("lower motor speed", ShooterSubsystem.shooterTargetRPM);
+		SmartDashboard.putNumber("backspin motor speed", ShooterSubsystem.backspinTargetRPM);
 	}
 
 	private void configureBindings() {
@@ -186,9 +186,11 @@ public class RobotContainer {
 		joystick.a().onTrue(ShooterSubsystem.decreaseLowerWheelSpeed());
 		joystick.b().onTrue(ShooterSubsystem.increaseLowerWheelSpeed());
 
-		// Original rightTrigger binding — uncomment to restore:
-		joystick.rightTrigger().whileTrue(
+		// Left trigger: lob shot — aims turret toward alliance zone and fires.
+		// Use when collecting in mid-field and the hub is not lit.
+		joystick.leftTrigger().whileTrue(
 				Commands.parallel(
+						turretSubsystem.aimForLobShot(),
 						Commands.startEnd(
 								() -> ThroatAndIndexerSubsystem.runMotor(),
 								() -> {
@@ -197,16 +199,26 @@ public class RobotContainer {
 								},
 								ThroatAndIndexerSubsystem),
 						Commands.startEnd(
+								ShooterSubsystem::runShooter,
+								ShooterSubsystem::stopMotor,
+								ShooterSubsystem)));
+
+		// Right trigger: hub shot — aims turret at hub and fires.
+		// On release, flywheels drop to standby RPM rather than stopping so the
+		// heavy flywheels stay in motion and reach full speed faster on the next shot.
+		joystick.rightTrigger().whileTrue(
+				Commands.parallel(
+						turretSubsystem.aimAtHubViaPose(), // replace with zero positioning if turret aiming fails
+						Commands.startEnd(
+								() -> ThroatAndIndexerSubsystem.runMotor(),
 								() -> {
-									ShooterSubsystem.runMotor1(1);
-									ShooterSubsystem.runMotor2(-1);
-									ShooterSubsystem.runBackspinMotor(1);
-								}, // positive, negative, positive
-								() -> {
-									ShooterSubsystem.runMotor1(0.5);
-									ShooterSubsystem.runMotor2(-0.5);
-									ShooterSubsystem.runBackspinMotor(0.5);
+									ThroatAndIndexerSubsystem.stopMotorThroat();
+									ThroatAndIndexerSubsystem.stopMotorIndexer();
 								},
+								ThroatAndIndexerSubsystem),
+						Commands.startEnd(
+								ShooterSubsystem::runShooter,
+								ShooterSubsystem::standbyMotor,
 								ShooterSubsystem),
 						Commands.startEnd(
 								() -> {
