@@ -208,7 +208,7 @@ public class RobotContainer {
 		// heavy flywheels stay in motion and reach full speed faster on the next shot.
 		joystick.rightTrigger().whileTrue(
 				Commands.parallel(
-						turretSubsystem.aimAtHubViaPose(), // replace with zero positioning if turret aiming fails
+						turretSubsystem.setTurretPositionVariable(), // replace with zero positioning if turret aiming fails
 						Commands.startEnd(
 								() -> ThroatAndIndexerSubsystem.runMotor(),
 								() -> {
