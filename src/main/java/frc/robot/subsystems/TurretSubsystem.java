@@ -44,7 +44,7 @@ public class TurretSubsystem extends SubsystemBase {
     private static final double TURRET_MIN_ANGLE = -20.0; // 90 degrees left of back = right side
     private static final double TURRET_MAX_ANGLE = 20.0; // 90 degrees right of back = left side
 
-    private double TurretMinimumAngle = -143.3;
+    private double TurretMinimumAngle = -143.3; //physical min is -143.3
     private double TurretMaximumAngle = 63.95;
 
     public double TargetXposition = 4.625594; // Xₜ 182.11 in inches
@@ -226,6 +226,17 @@ public class TurretSubsystem extends SubsystemBase {
         motor.set(0);
     }
 
+    public double getRawAngle() {
+        return GetTurretToHub.calculateTurretToHubVector(
+                getPoseEstimatorX(),
+                getPoseEstimatorY(),
+                degreesToRadians(getPoseEstimatorRotation()),
+                XofTurretOnBot,
+                YofTurretOnBot,
+                TargetXposition,
+                TargetYposition).getAngle().getDegrees() - getPoseEstimatorRotation() - 180;
+    }
+
     public Command TurretAutoAimToHub() {
         return Commands.runOnce(() -> {
             // Calculate vector from turret to hub in field frame
@@ -275,17 +286,13 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public Command setTurretPositionVariable() {
-        double rawAngle = GetTurretToHub.calculateTurretToHubVector(
-                getPoseEstimatorX(),
-                getPoseEstimatorY(),
-                degreesToRadians(getPoseEstimatorRotation()),
-                XofTurretOnBot,
-                YofTurretOnBot,
-                TargetXposition,
-                TargetYposition).getAngle().getDegrees() - getPoseEstimatorRotation() - 180;
-
-        final double angle = Math.max(TurretMinimumAngle, Math.min(TurretMaximumAngle, rawAngle));
-        return Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(turretDegreesAndEncoderUnits(angle))));
+        // Clamp the computed angle to the turret physical limits before commanding.
+        //final double angle = Math.max(TurretMinimumAngle, Math.min(TurretMaximumAngle, rawAngle));
+        // Use the same degrees->encoder conversion used elsewhere when commanding MotionMagic
+       return Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(turretDegreesAndEncoderUnits(getRawAngle()))));
+            //return Commands.runOnce(() -> motor.setControl(new MotionMagicVoltage(turretDegreesAndEncoderUnits(rawAngle));
+                
+        
     }
 
     /**
@@ -311,27 +318,14 @@ public class TurretSubsystem extends SubsystemBase {
         return new int[] { 24, 25 };
     }
 
-    private void updateTurretAngle() {
-        SmartDashboard.putNumber("angle turret will turn to", GetTurretToHub.calculateTurretToHubVector(
-                getPoseEstimatorX(),
-                getPoseEstimatorY(),
-                degreesToRadians(getPoseEstimatorRotation()),
-                XofTurretOnBot,
-                YofTurretOnBot,
-                TargetXposition,
-                TargetYposition).getAngle().getDegrees() - getPoseEstimatorRotation() - 180);
+    public void updateTurretAngle() {
+        
+        SmartDashboard.putNumber("angle turret will turn to", getRawAngle());
     }
 
     private void updateTurretAngle2() {
         SmartDashboard.putNumber("position turret will turn to",
-                turretDegreesAndEncoderUnits(GetTurretToHub.calculateTurretToHubVector(
-                        getPoseEstimatorX(),
-                        getPoseEstimatorY(),
-                        degreesToRadians(getPoseEstimatorRotation()),
-                        XofTurretOnBot,
-                        YofTurretOnBot,
-                        TargetXposition,
-                        TargetYposition).getAngle().getDegrees() - getPoseEstimatorRotation() - 180));
+                turretDegreesAndEncoderUnits(getRawAngle()));
     }
 
     /**

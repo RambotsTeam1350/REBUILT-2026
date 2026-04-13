@@ -242,6 +242,12 @@ public class RobotContainer {
 						() -> intakeWheelSubsystem.runMotorCommand(),
 						intakeWheelSubsystem));
 		// copilotController.leftBumper().whileTrue(turretSubsystem.setTurretPosition(3));
+
+		/* copilotController.rightBumper().onTrue(Commands.parallel(
+				turretSubsystem.setTurretPositionVariable(),
+				Commands.runOnce(() -> turretSubsystem.updateTurretAngle())
+			)
+		);*/
 		copilotController.rightBumper().onTrue(turretSubsystem.setTurretPositionVariable());
 		copilotController.rightTrigger()
 				.onTrue(turretSubsystem.setTurretPosition(turretSubsystem.turretDegreesAndEncoderUnits(0)));
