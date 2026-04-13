@@ -166,9 +166,6 @@ public class RobotContainer {
 		joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
 		joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-		// joystick.rightBumper().whileTrue(new AlignToHub(drivetrain, limelight, 0));
-		// // Align to hub with no offset
-
 		//////////////////////////////////////////////////////////////////////////////
 		/// DRIVER CONTROLS
 		//////////////////////////////////////////////////////////////////////////////
@@ -176,9 +173,12 @@ public class RobotContainer {
 		// reset the field-centric heading on left bumper press
 		joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-		joystick.a().whileTrue(turretSubsystem.aimAtHubViaPose()); // Aim via pose estimator
+		// choose between pose aim test or center the turret
+		// joystick.rightBumper().whileTrue(turretSubsystem.aimAtHubViaPose());
+		joystick.rightBumper().whileTrue(turretSubsystem.TurretToZero());
+
+		// joystick.a().whileTrue(turretSubsystem.aimAtHubViaPose()); // Aim via pose estimator
 		// joystick.b().whileTrue(turretSubsystem.aimAtHubViaVision()); // Aim via
-		// Limelight vision
 		// joystick.a().onTrue(turretSubsystem.TurretToZero());
 
 		joystick.x().onTrue(ShooterSubsystem.decreaseBackspinWheelSpeed());
