@@ -51,6 +51,13 @@ public class TurretSubsystem extends SubsystemBase {
     public double TargetYposition = 4.03479; // Yₜ 158.85 in inches
     public double TargetRotation;
 
+    // Lob shot target coordinates (field frame, meters).
+    // Used when the hub is not lit and the robot is collecting in mid-field.
+    private static final double LOB_TARGET_BLUE_X = 1.5;
+    private static final double LOB_TARGET_BLUE_Y = 4.03479;
+    private static final double LOB_TARGET_RED_X = 15.0;
+    private static final double LOB_TARGET_RED_Y = 4.03479;
+
     public double XofTurretOnBot = -0.12; // XofTurretOnBot used to be -0.05
     public double YofTurretOnBot = -0.12;
 
@@ -383,6 +390,45 @@ public class TurretSubsystem extends SubsystemBase {
      */
     public Command aimAtHubViaPose() {
         return Commands.run(this::turretAutoAimToHubImmediate, this);
+    }
+
+    /**
+     * Returns the lob shot target for the current alliance.
+     * Blue shoots toward the blue end zone; Red toward the red end zone.
+     */
+    private double[] getLobShotTarget() {
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
+            return new double[] { LOB_TARGET_RED_X, LOB_TARGET_RED_Y };
+        }
+        return new double[] { LOB_TARGET_BLUE_X, LOB_TARGET_BLUE_Y };
+    }
+
+    /**
+     * Immediately aims the turret toward the alliance lob zone.
+     */
+    public void lobShotImmediate() {
+        double[] target = getLobShotTarget();
+        Translation2d toTargetVector = GetTurretToHub.calculateTurretToHubVector(
+                getPoseEstimatorX(),
+                getPoseEstimatorY(),
+                degreesToRadians(getPoseEstimatorRotation()),
+                XofTurretOnBot,
+                YofTurretOnBot,
+                target[0],
+                target[1]);
+        double robotRelativeAngle = normalizeAngle(
+                toTargetVector.getAngle().getDegrees() - getPoseEstimatorRotation() - 180);
+        robotRelativeAngle = clampTurretAngle(robotRelativeAngle);
+        motor.setControl(new MotionMagicVoltage(turretDegreesAndEncoderUnits(robotRelativeAngle)));
+    }
+
+    /**
+     * Command: hold to continuously aim at the alliance lob zone.
+     * Use when the hub is not lit and the robot is collecting in mid-field.
+     */
+    public Command aimForLobShot() {
+        return Commands.run(this::lobShotImmediate, this);
     }
 
     /**
