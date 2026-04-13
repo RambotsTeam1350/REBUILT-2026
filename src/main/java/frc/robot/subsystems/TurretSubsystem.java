@@ -227,14 +227,20 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public double getRawAngle() {
-        return GetTurretToHub.calculateTurretToHubVector(
+        double fieldTurretAngleToTarget = GetTurretToHub.calculateTurretToHubVector(
                 getPoseEstimatorX(),
                 getPoseEstimatorY(),
                 degreesToRadians(getPoseEstimatorRotation()),
                 XofTurretOnBot,
                 YofTurretOnBot,
                 TargetXposition,
-                TargetYposition).getAngle().getDegrees() - getPoseEstimatorRotation() - 180;
+                TargetYposition).getAngle().getDegrees();
+        // Use modulus to make sure you get a value that's between 0 and 360
+        double relativeTurretAngleToTarget = (fieldTurretAngleToTarget - getPoseEstimatorRotation() - 180) % 360;
+        // We want a value between -180 and 180...
+        if(relativeTurretAngleToTarget > 180.0)
+            relativeTurretAngleToTarget -= 360;
+        return relativeTurretAngleToTarget;
     }
 
     public Command TurretAutoAimToHub() {
