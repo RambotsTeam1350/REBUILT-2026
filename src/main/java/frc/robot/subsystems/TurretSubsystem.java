@@ -183,6 +183,7 @@ public class TurretSubsystem extends SubsystemBase {
      */
     private double normalizeAngle(double degrees) {
         double angle = degrees;
+        angle %= 360; // just in case angle is something crazy
         while (angle > 180)
             angle -= 360;
         while (angle < -180)
@@ -235,12 +236,9 @@ public class TurretSubsystem extends SubsystemBase {
                 YofTurretOnBot,
                 TargetXposition,
                 TargetYposition).getAngle().getDegrees();
-        // Use modulus to make sure you get a value that's between 0 and 360
-        double relativeTurretAngleToTarget = (fieldTurretAngleToTarget - getPoseEstimatorRotation() - 180) % 360;
-        // We want a value between -180 and 180...
-        if(relativeTurretAngleToTarget > 180.0)
-            relativeTurretAngleToTarget -= 360;
-        return relativeTurretAngleToTarget;
+
+        // Normalize to [-180, 180] range using the helper method
+        return normalizeAngle(fieldTurretAngleToTarget - getPoseEstimatorRotation() - 180);
     }
 
     public Command TurretAutoAimToHub() {
