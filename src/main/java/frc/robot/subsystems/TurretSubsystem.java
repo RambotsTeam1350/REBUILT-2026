@@ -47,12 +47,12 @@ public class TurretSubsystem extends SubsystemBase {
     private double TurretMinimumAngle = -143.3; //physical min is -143.3
     private double TurretMaximumAngle = 63.95;
 
-    public double TargetXposition = 4.625594; // Xₜ 182.11 in inches
+    public double TargetXposition = 11.915394; // Xₜ 182.11 in inches
     public double TargetYposition = 4.03479; // Yₜ 158.85 in inches
     public double TargetRotation;
 
-    public double XofTurretOnBot = -0.05; // XofTurretOnBot
-    public double YofTurretOnBot = -0.05;
+    public double XofTurretOnBot = -0.12; // XofTurretOnBot used to be -0.05
+    public double YofTurretOnBot = -0.12;
 
     // Limelight camera position relative to robot center (in meters)
     public double XofCameraOnBot = 0.0; // TODO: Measure actual camera X offset
