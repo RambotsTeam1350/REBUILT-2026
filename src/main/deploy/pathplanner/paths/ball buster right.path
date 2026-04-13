@@ -33,15 +33,15 @@
     {
       "anchor": {
         "x": 8.497155635062612,
-        "y": 7.207066189624329
+        "y": 6.978544935805992
       },
       "prevControl": {
-        "x": 8.513381037567084,
-        "y": 6.720304114490161
+        "x": 8.502895863052782,
+        "y": 6.555943796110337
       },
       "nextControl": {
-        "x": 8.488826927504451,
-        "y": 7.456927416369119
+        "x": 8.493760176563127,
+        "y": 7.228521876465681
       },
       "isLocked": false,
       "linkedName": null
@@ -52,8 +52,8 @@
         "y": 6.197
       },
       "prevControl": {
-        "x": 2.526207513416815,
-        "y": 8.050787119856887
+        "x": 1.9947503566333804,
+        "y": 8.285349500713266
       },
       "nextControl": null,
       "isLocked": false,
@@ -81,6 +81,17 @@
         "type": "named",
         "data": {
           "name": "IntakeUpCommand"
+        }
+      }
+    },
+    {
+      "name": "IntakeDownCommand",
+      "waypointRelativePos": 2.033760972315992,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeDownCommand"
         }
       }
     }

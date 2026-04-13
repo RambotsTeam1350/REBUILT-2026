@@ -246,6 +246,32 @@ public class RobotContainer {
             )
         );
 
+        copilotController.rightTrigger().whileTrue(
+             Commands.parallel(
+                Commands.startEnd(
+                    () -> ThroatAndIndexerSubsystem.runMotor(),
+                    () -> { ThroatAndIndexerSubsystem.stopMotorThroat(); ThroatAndIndexerSubsystem.stopMotorIndexer(); },
+                    ThroatAndIndexerSubsystem
+                ),
+            Commands.sequence(
+                turretSubsystem.aimAtHubViaPose(),
+                Commands.startEnd(
+                    () -> { ShooterSubsystem.runMotor1(ShooterSubsystem.rpmToPercent(6000)); ShooterSubsystem.runMotor2(ShooterSubsystem.rpmToPercent(-6000)); ShooterSubsystem.runBackspinMotor(ShooterSubsystem.rpmToPercent(6000)); }, // positive, negative, positive
+                    () -> ShooterSubsystem.stopMotor(),
+                    ShooterSubsystem
+                )
+            ),
+                Commands.startEnd(
+                    () -> { intaketestSubsystem.IntakeOcilateCommand(); },
+                    () -> intaketestSubsystem.IntakeUpCommand(),
+                    intaketestSubsystem),
+                Commands.repeatingSequence(
+                    Commands.waitSeconds(1),
+                    ThroatAndIndexerSubsystem.reverseMotorCommand()
+                )
+            )
+        );
+
         // SmartDashboard.putData(autochooser);
 
         drivetrain.registerTelemetry(logger::telemeterize);
