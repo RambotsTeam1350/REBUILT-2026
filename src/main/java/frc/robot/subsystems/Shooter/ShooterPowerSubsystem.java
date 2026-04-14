@@ -7,6 +7,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -31,6 +32,13 @@ public class ShooterPowerSubsystem extends SubsystemBase {
 
     // RPM step used by increase/decrease tuning commands
     private static final double RPM_STEP = 100.0;
+
+    // How long a peak RPM error is held on the dashboard before resetting (seconds)
+    private static final double PEAK_HOLD_SECONDS = 6.0;
+
+    // Peak RPM error tracking — index 0 = motor1, 1 = motor2, 2 = backspin
+    private final double[] peakErrors     = new double[3];
+    private final double[] peakTimestamps = new double[3];
 
     // Reusable velocity request — slot 0 is configured below
     private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
@@ -80,11 +88,42 @@ public class ShooterPowerSubsystem extends SubsystemBase {
     }
 
     private void updateDashboard() {
-        SmartDashboard.putNumber("Shooter Target RPM", shooterTargetRPM);
-        SmartDashboard.putNumber("Backspin Target RPM", backspinTargetRPM);
-        SmartDashboard.putNumber("Motor1 Actual RPM", motor1.getVelocity().getValueAsDouble() * 60.0);
-        SmartDashboard.putNumber("Motor2 Actual RPM", motor2.getVelocity().getValueAsDouble() * 60.0);
-        SmartDashboard.putNumber("Backspin Actual RPM", backspinMotor.getVelocity().getValueAsDouble() * 60.0);
+        double now = Timer.getFPGATimestamp();
+
+        // Motor2 is commanded inverted, so its velocity signal is negative — use abs
+        // for all three so errors are on the same scale (positive = under target).
+        double actual1       = Math.abs(motor1.getVelocity().getValueAsDouble()       * 60.0);
+        double actual2       = Math.abs(motor2.getVelocity().getValueAsDouble()       * 60.0);
+        double actualBackspin = Math.abs(backspinMotor.getVelocity().getValueAsDouble() * 60.0);
+
+        double[] errors = {
+            shooterTargetRPM  - actual1,
+            shooterTargetRPM  - actual2,
+            backspinTargetRPM - actualBackspin
+        };
+
+        // Update peaks: promote if larger, or reset after the hold window expires.
+        for (int i = 0; i < 3; i++) {
+            if (Math.abs(errors[i]) > Math.abs(peakErrors[i])) {
+                peakErrors[i]     = errors[i];
+                peakTimestamps[i] = now;
+            } else if (now - peakTimestamps[i] > PEAK_HOLD_SECONDS) {
+                peakErrors[i]     = errors[i];
+                peakTimestamps[i] = now;
+            }
+        }
+
+        SmartDashboard.putNumber("Shooter Target RPM",    shooterTargetRPM);
+        SmartDashboard.putNumber("Backspin Target RPM",   backspinTargetRPM);
+        SmartDashboard.putNumber("Motor1 Actual RPM",     actual1);
+        SmartDashboard.putNumber("Motor2 Actual RPM",     actual2);
+        SmartDashboard.putNumber("Backspin Actual RPM",   actualBackspin);
+        SmartDashboard.putNumber("Motor1 RPM Error",      errors[0]);
+        SmartDashboard.putNumber("Motor2 RPM Error",      errors[1]);
+        SmartDashboard.putNumber("Backspin RPM Error",    errors[2]);
+        SmartDashboard.putNumber("Motor1 Peak RPM Error",   peakErrors[0]);
+        SmartDashboard.putNumber("Motor2 Peak RPM Error",   peakErrors[1]);
+        SmartDashboard.putNumber("Backspin Peak RPM Error", peakErrors[2]);
     }
 
     /**
