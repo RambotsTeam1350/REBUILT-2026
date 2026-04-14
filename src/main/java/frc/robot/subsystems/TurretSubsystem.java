@@ -47,9 +47,10 @@ public class TurretSubsystem extends SubsystemBase {
     private double TurretMinimumAngle = -143.3; //physical min is -143.3
     private double TurretMaximumAngle = 63.95;
 
-    public double TargetXposition = 11.915394; // Xₜ 182.11 in inches
-    public double TargetYposition = 4.03479; // Yₜ 158.85 in inches
-    public double TargetRotation;
+    // Hub target coordinates (field frame, meters). Alliance-specific — do not hardcode one side.
+    private static final double HUB_BLUE_X = 4.625594; // blue hub X
+    private static final double HUB_RED_X  = 11.915394; // red hub X
+    private static final double HUB_Y      = 4.03479;   // same for both alliances
 
     // Lob shot target coordinates (field frame, meters).
     // Used when the hub is not lit and the robot is collecting in mid-field.
@@ -143,8 +144,9 @@ public class TurretSubsystem extends SubsystemBase {
 
     // Returns the field-absolute angle from the robot to the target, in degrees.
     public double getTargetRotation() {
+        double[] hub = getHubTarget();
         return Math.toDegrees(
-                Math.atan2((TargetYposition - getPoseEstimatorY()), (TargetXposition - getPoseEstimatorX())));
+                Math.atan2((hub[1] - getPoseEstimatorY()), (hub[0] - getPoseEstimatorX())));
     }
 
     // Returns the robot-relative angle to the target, in degrees.
@@ -235,14 +237,15 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public double getRawAngle() {
+        double[] hub = getHubTarget();
         double fieldTurretAngleToTarget = GetTurretToHub.calculateTurretToHubVector(
                 getPoseEstimatorX(),
                 getPoseEstimatorY(),
                 degreesToRadians(getPoseEstimatorRotation()),
                 XofTurretOnBot,
                 YofTurretOnBot,
-                TargetXposition,
-                TargetYposition).getAngle().getDegrees();
+                hub[0],
+                hub[1]).getAngle().getDegrees();
 
         // Normalize to [-180, 180] range using the helper method
         return normalizeAngle(fieldTurretAngleToTarget - getPoseEstimatorRotation() - 180);
@@ -250,6 +253,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     public Command TurretAutoAimToHub() {
         return Commands.runOnce(() -> {
+            double[] hub = getHubTarget();
             // Calculate vector from turret to hub in field frame
             Translation2d turretToHubVector = GetTurretToHub.calculateTurretToHubVector(
                     getPoseEstimatorX(),
@@ -257,8 +261,8 @@ public class TurretSubsystem extends SubsystemBase {
                     degreesToRadians(getPoseEstimatorRotation()),
                     XofTurretOnBot,
                     YofTurretOnBot,
-                    TargetXposition,
-                    TargetYposition);
+                    hub[0],
+                    hub[1]);
 
             // Get field-absolute angle to hub
             double fieldAngleToHub = turretToHubVector.getAngle().getDegrees();
@@ -353,14 +357,15 @@ public class TurretSubsystem extends SubsystemBase {
      * - Path-switching jumps when tag visibility flickers between loops
      */
     public void turretAutoAimToHubImmediate() {
+        double[] hub = getHubTarget();
         Translation2d turretToHubVector = GetTurretToHub.calculateTurretToHubVector(
                 getPoseEstimatorX(),
                 getPoseEstimatorY(),
                 degreesToRadians(getPoseEstimatorRotation()),
                 XofTurretOnBot,
                 YofTurretOnBot,
-                TargetXposition,
-                TargetYposition);
+                hub[0],
+                hub[1]);
         double robotRelativeAngle = normalizeAngle(
                 (turretToHubVector.getAngle().getDegrees() - getPoseEstimatorRotation() - 180));
         robotRelativeAngle = clampTurretAngle(robotRelativeAngle);
@@ -390,6 +395,18 @@ public class TurretSubsystem extends SubsystemBase {
      */
     public Command aimAtHubViaPose() {
         return Commands.run(this::turretAutoAimToHubImmediate, this);
+    }
+
+    /**
+     * Returns the hub coordinates for the current alliance.
+     * Falls back to blue if alliance is not yet determined.
+     */
+    private double[] getHubTarget() {
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
+            return new double[] { HUB_RED_X, HUB_Y };
+        }
+        return new double[] { HUB_BLUE_X, HUB_Y };
     }
 
     /**
@@ -477,14 +494,15 @@ public class TurretSubsystem extends SubsystemBase {
      * angle.
      */
     public double getDistanceToHub() {
+        double[] hub = getHubTarget();
         return GetTurretToHub.calculateTurretToHubVector(
                 getPoseEstimatorX(),
                 getPoseEstimatorY(),
                 degreesToRadians(getPoseEstimatorRotation()),
                 XofTurretOnBot,
                 YofTurretOnBot,
-                TargetXposition,
-                TargetYposition).getNorm();
+                hub[0],
+                hub[1]).getNorm();
     }
 
     /**
