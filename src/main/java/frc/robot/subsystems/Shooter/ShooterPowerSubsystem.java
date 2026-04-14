@@ -7,6 +7,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -31,6 +32,13 @@ public class ShooterPowerSubsystem extends SubsystemBase {
 
     // RPM step used by increase/decrease tuning commands
     private static final double RPM_STEP = 100.0;
+
+    // How long a peak RPM error is held on the dashboard before resetting (seconds)
+    private static final double PEAK_HOLD_SECONDS = 6.0;
+
+    // Peak RPM error tracking — index 0 = motor1, 1 = motor2, 2 = backspin
+    private final double[] peakErrors     = new double[3];
+    private final double[] peakTimestamps = new double[3];
 
     // Reusable velocity request — slot 0 is configured below
     private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
@@ -80,11 +88,42 @@ public class ShooterPowerSubsystem extends SubsystemBase {
     }
 
     private void updateDashboard() {
-        SmartDashboard.putNumber("Shooter Target RPM", shooterTargetRPM);
-        SmartDashboard.putNumber("Backspin Target RPM", backspinTargetRPM);
-        SmartDashboard.putNumber("Motor1 Actual RPM", motor1.getVelocity().getValueAsDouble() * 60.0);
-        SmartDashboard.putNumber("Motor2 Actual RPM", motor2.getVelocity().getValueAsDouble() * 60.0);
-        SmartDashboard.putNumber("Backspin Actual RPM", backspinMotor.getVelocity().getValueAsDouble() * 60.0);
+        double now = Timer.getFPGATimestamp();
+
+        // Motor2 is commanded inverted, so its velocity signal is negative — use abs
+        // for all three so errors are on the same scale (positive = under target).
+        double actual1       = Math.abs(motor1.getVelocity().getValueAsDouble()       * 60.0);
+        double actual2       = Math.abs(motor2.getVelocity().getValueAsDouble()       * 60.0);
+        double actualBackspin = Math.abs(backspinMotor.getVelocity().getValueAsDouble() * 60.0);
+
+        double[] errors = {
+            shooterTargetRPM  - actual1,
+            shooterTargetRPM  - actual2,
+            backspinTargetRPM - actualBackspin
+        };
+
+        // Update peaks: promote if larger, or reset after the hold window expires.
+        for (int i = 0; i < 3; i++) {
+            if (Math.abs(errors[i]) > Math.abs(peakErrors[i])) {
+                peakErrors[i]     = errors[i];
+                peakTimestamps[i] = now;
+            } else if (now - peakTimestamps[i] > PEAK_HOLD_SECONDS) {
+                peakErrors[i]     = errors[i];
+                peakTimestamps[i] = now;
+            }
+        }
+
+        SmartDashboard.putNumber("Shooter Target RPM",    shooterTargetRPM);
+        SmartDashboard.putNumber("Backspin Target RPM",   backspinTargetRPM);
+        SmartDashboard.putNumber("Motor1 Actual RPM",     actual1);
+        SmartDashboard.putNumber("Motor2 Actual RPM",     actual2);
+        SmartDashboard.putNumber("Backspin Actual RPM",   actualBackspin);
+        SmartDashboard.putNumber("Motor1 RPM Error",      errors[0]);
+        SmartDashboard.putNumber("Motor2 RPM Error",      errors[1]);
+        SmartDashboard.putNumber("Backspin RPM Error",    errors[2]);
+        SmartDashboard.putNumber("Motor1 Peak RPM Error",   peakErrors[0]);
+        SmartDashboard.putNumber("Motor2 Peak RPM Error",   peakErrors[1]);
+        SmartDashboard.putNumber("Backspin Peak RPM Error", peakErrors[2]);
     }
 
     /**
@@ -95,6 +134,22 @@ public class ShooterPowerSubsystem extends SubsystemBase {
         motor1.setControl(velocityRequest.withVelocity(rpmToRps(shooterTargetRPM)));
         motor2.setControl(velocityRequest.withVelocity(-rpmToRps(shooterTargetRPM)));
         backspinMotor.setControl(velocityRequest.withVelocity(rpmToRps(backspinTargetRPM)));
+    }
+
+    /**
+     * Runs all three shooter motors at speeds calculated from the given distance to
+     * the hub. RPMs come from the interpolation table in updateRPMForDistance() and
+     * are passed directly to the motor controllers — shooterTargetRPM and
+     * backspinTargetRPM are not modified.
+     *
+     * @param distanceMeters straight-line distance from turret to hub
+     *                       (use TurretSubsystem.getDistanceToHub())
+     */
+    public void runShooterWithAutoVelocity(double distanceMeters) {
+        double[] rpms = updateRPMForDistance(distanceMeters);
+        motor1.setControl(velocityRequest.withVelocity(rpmToRps(rpms[0])));
+        motor2.setControl(velocityRequest.withVelocity(-rpmToRps(rpms[0])));
+        backspinMotor.setControl(velocityRequest.withVelocity(rpmToRps(rpms[1])));
     }
 
     public void stopMotor() {
@@ -115,36 +170,29 @@ public class ShooterPowerSubsystem extends SubsystemBase {
     }
 
     /**
-     * WIP: Updates shooterTargetRPM and backspinTargetRPM based on the robot's
-     * current distance to the target (meters). Call this before runShooter() once
-     * the lookup table is calibrated with real shot data.
+     * Returns the desired shooter and backspin RPMs for a given distance to the
+     * hub, interpolated from the measured shot data tables below.
      *
-     * How to collect data:
+     * How to populate the tables:
      *   1. Place the robot at a known distance from the hub (measure in meters).
      *   2. Tune shooterTargetRPM manually until shots land consistently on target.
      *   3. Record the (distance, RPM) pair in the tables below.
      *   4. Repeat at several distances across the robot's expected shooting range.
-     *   5. Uncomment the interpolation code and remove the flat fallback.
      *
-     * @param distanceMeters straight-line distance from turret to target
+     * @param distanceMeters straight-line distance from turret to hub
      *                       (use TurretSubsystem.getDistanceToHub())
+     * @return double[] { shooterRPM, backspinRPM }
      */
-    public void updateRPMForDistance(double distanceMeters) {
-        // TODO: populate these tables with measured (distance → RPM) pairs.
-        // Distances in meters; RPMs at those distances from real shot testing.
-        // Add more rows as you collect data across the full shooting range.
-        //
-        // double[] distanceBreakpoints = { 2.0, 3.0, 4.0, 5.0, 6.0 };
-        // double[] shooterRPMPoints    = { 3000, 3600, 4100, 4500, 4900 };
-        // double[] backspinRPMPoints   = { 2500, 3000, 3400, 3800, 4200 };
-        //
-        // // Linear interpolation between the two nearest breakpoints.
-        // // Clamps to the first/last value outside the measured range.
-        // shooterTargetRPM = interpolate(distanceBreakpoints, shooterRPMPoints, distanceMeters);
-        // backspinTargetRPM = interpolate(distanceBreakpoints, backspinRPMPoints, distanceMeters);
+    public double[] updateRPMForDistance(double distanceMeters) {
+        // TODO: replace with measured (distance → RPM) pairs from real shot testing.
+        double[] distanceBreakpoints = { 2.0, 3.0, 4.0, 5.0, 6.0 };
+        double[] shooterRPMPoints    = { 3000, 3600, 4100, 4500, 4900 };
+        double[] backspinRPMPoints   = { 2500, 3000, 3400, 3800, 4200 };
 
-        // Flat fallback until the table above is filled in:
-        // shooterTargetRPM and backspinTargetRPM are left at their current values.
+        return new double[] {
+            interpolate(distanceBreakpoints, shooterRPMPoints, distanceMeters),
+            interpolate(distanceBreakpoints, backspinRPMPoints, distanceMeters)
+        };
     }
 
     /**
@@ -156,17 +204,17 @@ public class ShooterPowerSubsystem extends SubsystemBase {
      * @param x  the input value to look up
      * @return interpolated (or clamped) output value
      */
-    // private static double interpolate(double[] xs, double[] ys, double x) {
-    //     if (x <= xs[0]) return ys[0];
-    //     if (x >= xs[xs.length - 1]) return ys[ys.length - 1];
-    //     for (int i = 0; i < xs.length - 1; i++) {
-    //         if (x >= xs[i] && x <= xs[i + 1]) {
-    //             double t = (x - xs[i]) / (xs[i + 1] - xs[i]);
-    //             return ys[i] + t * (ys[i + 1] - ys[i]);
-    //         }
-    //     }
-    //     return ys[ys.length - 1];
-    // }
+    private static double interpolate(double[] xs, double[] ys, double x) {
+        if (x <= xs[0]) return ys[0];
+        if (x >= xs[xs.length - 1]) return ys[ys.length - 1];
+        for (int i = 0; i < xs.length - 1; i++) {
+            if (x >= xs[i] && x <= xs[i + 1]) {
+                double t = (x - xs[i]) / (xs[i + 1] - xs[i]);
+                return ys[i] + t * (ys[i + 1] - ys[i]);
+            }
+        }
+        return ys[ys.length - 1];
+    }
 
     public void setShooterRPM(double rpm) {
         shooterTargetRPM = rpm;
