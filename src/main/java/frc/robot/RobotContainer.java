@@ -186,6 +186,18 @@ public class RobotContainer {
 		joystick.a().onTrue(ShooterSubsystem.decreaseLowerWheelSpeed());
 		joystick.b().onTrue(ShooterSubsystem.increaseLowerWheelSpeed());
 
+		// D-pad up: auto-velocity hub shot — aim first, then shoot after 0.25 s.
+		// RPMs are calculated from live distance each loop cycle once shooting starts.
+		// Use this once the interpolation table is calibrated.
+		joystick.povUp().whileTrue(
+				Commands.sequence(
+						turretSubsystem.setTurretPositionVariable(),
+						Commands.waitSeconds(0.25),
+						Commands.run(
+								() -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
+								ShooterSubsystem)
+				).finallyDo(interrupted -> ShooterSubsystem.standbyMotor()));
+
 		// Left trigger: lob shot — aims turret toward alliance zone and fires.
 		// Use when collecting in mid-field and the hub is not lit.
 		joystick.leftTrigger().whileTrue(
