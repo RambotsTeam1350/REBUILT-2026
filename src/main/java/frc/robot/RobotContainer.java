@@ -126,8 +126,8 @@ public class RobotContainer {
 
 		autoChooser = AutoBuilder.buildAutoChooser("middle boring");
 		SmartDashboard.putData("Auto Chooser", autoChooser);
-		SmartDashboard.putNumber("lower motor speed", ShooterSubsystem.lowerWheelSpeed);
-		SmartDashboard.putNumber("backspin motor speed", ShooterSubsystem.backspinWheelSpeed);
+		SmartDashboard.putNumber("lower motor speed", ShooterSubsystem.shooterTargetRPM);
+		SmartDashboard.putNumber("backspin motor speed", ShooterSubsystem.backspinTargetRPM);
 	}
 
 	private void configureBindings() {
@@ -166,9 +166,6 @@ public class RobotContainer {
 		joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
 		joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-		// joystick.rightBumper().whileTrue(new AlignToHub(drivetrain, limelight, 0));
-		// // Align to hub with no offset
-
 		//////////////////////////////////////////////////////////////////////////////
 		/// DRIVER CONTROLS
 		//////////////////////////////////////////////////////////////////////////////
@@ -176,9 +173,12 @@ public class RobotContainer {
 		// reset the field-centric heading on left bumper press
 		joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-		joystick.a().whileTrue(turretSubsystem.aimAtHubViaPose()); // Aim via pose estimator
+		// choose between pose aim test or center the turret
+		// joystick.rightBumper().whileTrue(turretSubsystem.aimAtHubViaPose());
+		joystick.rightBumper().whileTrue(turretSubsystem.TurretToZero());
+
+		// joystick.a().whileTrue(turretSubsystem.aimAtHubViaPose()); // Aim via pose estimator
 		// joystick.b().whileTrue(turretSubsystem.aimAtHubViaVision()); // Aim via
-		// Limelight vision
 		// joystick.a().onTrue(turretSubsystem.TurretToZero());
 
 		joystick.x().onTrue(ShooterSubsystem.decreaseBackspinWheelSpeed());
@@ -186,9 +186,11 @@ public class RobotContainer {
 		joystick.a().onTrue(ShooterSubsystem.decreaseLowerWheelSpeed());
 		joystick.b().onTrue(ShooterSubsystem.increaseLowerWheelSpeed());
 
-		// Original rightTrigger binding — uncomment to restore:
-		joystick.rightTrigger().whileTrue(
+		// Left trigger: lob shot — aims turret toward alliance zone and fires.
+		// Use when collecting in mid-field and the hub is not lit.
+		joystick.leftTrigger().whileTrue(
 				Commands.parallel(
+						turretSubsystem.aimForLobShot(),
 						Commands.startEnd(
 								() -> ThroatAndIndexerSubsystem.runMotor(),
 								() -> {
@@ -197,16 +199,26 @@ public class RobotContainer {
 								},
 								ThroatAndIndexerSubsystem),
 						Commands.startEnd(
+								ShooterSubsystem::runShooter,
+								ShooterSubsystem::stopMotor,
+								ShooterSubsystem)));
+
+		// Right trigger: hub shot — aims turret at hub and fires.
+		// On release, flywheels drop to standby RPM rather than stopping so the
+		// heavy flywheels stay in motion and reach full speed faster on the next shot.
+		joystick.rightTrigger().whileTrue(
+				Commands.parallel(
+						turretSubsystem.setTurretPositionVariable(), // replace with zero positioning if turret aiming fails
+						Commands.startEnd(
+								() -> ThroatAndIndexerSubsystem.runMotor(),
 								() -> {
-									ShooterSubsystem.runMotor1(1);
-									ShooterSubsystem.runMotor2(-1);
-									ShooterSubsystem.runBackspinMotor(1);
-								}, // positive, negative, positive
-								() -> {
-									ShooterSubsystem.runMotor1(0.5);
-									ShooterSubsystem.runMotor2(-0.5);
-									ShooterSubsystem.runBackspinMotor(0.5);
+									ThroatAndIndexerSubsystem.stopMotorThroat();
+									ThroatAndIndexerSubsystem.stopMotorIndexer();
 								},
+								ThroatAndIndexerSubsystem),
+						Commands.startEnd(
+								ShooterSubsystem::runShooter,
+								ShooterSubsystem::standbyMotor,
 								ShooterSubsystem),
 						Commands.startEnd(
 								() -> {
