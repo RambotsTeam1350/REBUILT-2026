@@ -83,7 +83,7 @@ public class IntakeWheelSubsystem extends SubsystemBase {
     }
 
     public void booleanJammed() {
-        if (velocity.getValueAsDouble() < 0.5 && motor.getSupplyCurrent().getValueAsDouble() > 60) {
+        if (velocity.getValueAsDouble() < 0.5 /* && motor.getSupplyCurrent().getValueAsDouble() > 60*/) { //Only for testing to see if supply current is less than we expect
             SmartDashboard.putBoolean("Intake Jammed", false);
         } else {
             SmartDashboard.putBoolean("Intake Jammed", true);

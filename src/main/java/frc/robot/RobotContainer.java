@@ -182,17 +182,15 @@ private double[] getHubTarget() {
 		joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
 		// choose between pose aim test or center the turret
-		// joystick.rightBumper().whileTrue(turretSubsystem.aimAtHubViaPose());
-		joystick.rightBumper().whileTrue(turretSubsystem.TurretToZero());
+		copilotController.rightBumper()
+				.onTrue(turretSubsystem.setTurretPosition(turretSubsystem.turretDegreesAndEncoderUnits(0)));
 
-		// joystick.a().whileTrue(turretSubsystem.aimAtHubViaPose()); // Aim via pose estimator
-		// joystick.b().whileTrue(turretSubsystem.aimAtHubViaVision()); // Aim via
-		// joystick.a().onTrue(turretSubsystem.TurretToZero());
-
+	/* 
 		joystick.x().onTrue(ShooterSubsystem.decreaseBackspinWheelSpeed());
 		joystick.y().onTrue(ShooterSubsystem.increaseBackspinWheelSpeed());
 		joystick.a().onTrue(ShooterSubsystem.decreaseLowerWheelSpeed());
 		joystick.b().onTrue(ShooterSubsystem.increaseLowerWheelSpeed());
+	*/
 
 		// D-pad up: auto-velocity hub shot — aim first, then shoot after 0.25 s.
 		// RPMs are calculated from live distance each loop cycle once shooting starts.
@@ -204,7 +202,7 @@ private double[] getHubTarget() {
 						Commands.run(
 								() -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
 								ShooterSubsystem)
-				).finallyDo(interrupted -> ShooterSubsystem.standbyMotor()));
+				).finallyDo(interrupted -> ShooterSubsystem.standbyMotor())); //finallyDo interupted is a substitute for startEnd
 
 		// Left trigger: lob shot — aims turret toward alliance zone and fires.
 		// Use when collecting in mid-field and the hub is not lit.
@@ -280,7 +278,8 @@ private double[] getHubTarget() {
 				Commands.runOnce(() -> turretSubsystem.updateTurretAngle())
 			)
 		);*/
-		copilotController.rightBumper().onTrue(turretSubsystem.setTurretPositionVariable());
+		copilotController.rightBumper().onTrue(turretSubsystem.setTurretPositionVariable()); //for shooting
+		copilotController.leftBumper().onTrue(turretSubsystem.aimForLobShot()); //for feeding
 		copilotController.rightTrigger()
 				.onTrue(turretSubsystem.setTurretPosition(turretSubsystem.turretDegreesAndEncoderUnits(0)));
 
@@ -307,6 +306,34 @@ private double[] getHubTarget() {
 						Commands.repeatingSequence(
 								Commands.waitSeconds(1),
 								ThroatAndIndexerSubsystem.reverseMotorCommand())));
+
+				// ^ For Shooting at the hub
+			
+copilotController.leftTrigger().whileTrue(
+				Commands.parallel(
+						//turretSubsystem.setTurretPositionVariable(), // replace with zero positioning if turret aiming fails
+						Commands.startEnd(
+								() -> ThroatAndIndexerSubsystem.runMotor(),
+								() -> {
+									ThroatAndIndexerSubsystem.stopMotorThroat();
+									ThroatAndIndexerSubsystem.stopMotorIndexer();
+								},
+								ThroatAndIndexerSubsystem),
+						Commands.startEnd(
+								ShooterSubsystem::runShooter, //feeding, so auto-speed not required
+								ShooterSubsystem::standbyMotor,
+								ShooterSubsystem),
+						Commands.startEnd(
+								() -> {
+									intaketestSubsystem.IntakeOcilateCommand();
+								},
+								() -> intaketestSubsystem.IntakeUpCommand(),
+								intaketestSubsystem),
+						Commands.repeatingSequence(
+								Commands.waitSeconds(1),
+								ThroatAndIndexerSubsystem.reverseMotorCommand())));
+
+				//	^ For feeding
 
 		drivetrain.registerTelemetry(logger::telemeterize);
 	}
