@@ -130,6 +130,14 @@ public class RobotContainer {
 		SmartDashboard.putNumber("backspin motor speed", ShooterSubsystem.backspinTargetRPM);
 	}
 
+private double[] getHubTarget() {
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
+            return new double[] { turretSubsystem.HUB_RED_X, turretSubsystem.HUB_Y };
+        }
+        return new double[] { turretSubsystem.HUB_BLUE_X, turretSubsystem.HUB_Y };
+    }
+
 	private void configureBindings() {
 		// Note that X is defined as forward according to WPILib convention,
 		// and Y is defined as to the left according to WPILib convention.
@@ -220,7 +228,7 @@ public class RobotContainer {
 		// heavy flywheels stay in motion and reach full speed faster on the next shot.
 		joystick.rightTrigger().whileTrue(
 				Commands.parallel(
-						turretSubsystem.setTurretPositionVariable(), // replace with zero positioning if turret aiming fails
+						//turretSubsystem.setTurretPositionVariable(), // replace with zero positioning if turret aiming fails
 						Commands.startEnd(
 								() -> ThroatAndIndexerSubsystem.runMotor(),
 								() -> {
@@ -229,7 +237,7 @@ public class RobotContainer {
 								},
 								ThroatAndIndexerSubsystem),
 						Commands.startEnd(
-								ShooterSubsystem::runShooter,
+								ShooterSubsystem::runShooter, //runs at a set speed, josh will drive to aim, backup if data-table fails
 								ShooterSubsystem::standbyMotor,
 								ShooterSubsystem),
 						Commands.startEnd(
@@ -276,9 +284,29 @@ public class RobotContainer {
 		copilotController.rightTrigger()
 				.onTrue(turretSubsystem.setTurretPosition(turretSubsystem.turretDegreesAndEncoderUnits(0)));
 
-		// copilotController.rightBumper().onTrue(turretSubsystem.aimAtHubViaPose());
-
-		// SmartDashboard.putData(autochooser);
+	copilotController.rightTrigger().whileTrue(
+				Commands.parallel(
+						//turretSubsystem.setTurretPositionVariable(), // replace with zero positioning if turret aiming fails
+						Commands.startEnd(
+								() -> ThroatAndIndexerSubsystem.runMotor(),
+								() -> {
+									ThroatAndIndexerSubsystem.stopMotorThroat();
+									ThroatAndIndexerSubsystem.stopMotorIndexer();
+								},
+								ThroatAndIndexerSubsystem),
+						Commands.startEnd(
+								() -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()), //change this, should be on copilot controller
+								ShooterSubsystem::standbyMotor,
+								ShooterSubsystem),
+						Commands.startEnd(
+								() -> {
+									intaketestSubsystem.IntakeOcilateCommand();
+								},
+								() -> intaketestSubsystem.IntakeUpCommand(),
+								intaketestSubsystem),
+						Commands.repeatingSequence(
+								Commands.waitSeconds(1),
+								ThroatAndIndexerSubsystem.reverseMotorCommand())));
 
 		drivetrain.registerTelemetry(logger::telemeterize);
 	}

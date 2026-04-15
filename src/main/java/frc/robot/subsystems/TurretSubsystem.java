@@ -48,9 +48,9 @@ public class TurretSubsystem extends SubsystemBase {
     private double TurretMaximumAngle = 63.95;
 
     // Hub target coordinates (field frame, meters). Alliance-specific — do not hardcode one side.
-    private static final double HUB_BLUE_X = 4.625594; // blue hub X
-    private static final double HUB_RED_X  = 11.915394; // red hub X
-    private static final double HUB_Y      = 4.03479;   // same for both alliances
+    public static final double HUB_BLUE_X = 4.625594; // blue hub X
+    public static final double HUB_RED_X  = 11.915394; // red hub X
+    public static final double HUB_Y      = 4.03479;   // same for both alliances
 
     // Lob shot target coordinates (field frame, meters).
     // Used when the hub is not lit and the robot is collecting in mid-field.
