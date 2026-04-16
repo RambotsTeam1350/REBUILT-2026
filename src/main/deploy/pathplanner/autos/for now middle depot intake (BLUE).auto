@@ -11,7 +11,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "RevShooterMotor"
+                  "name": "runShooterCommand"
                 }
               },
               {
@@ -21,7 +21,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "simple middle (RED)"
+                        "pathName": "simple middle (BLUE)"
                       }
                     },
                     {
@@ -31,19 +31,19 @@
                       }
                     },
                     {
-                      "type": "parallel",
+                      "type": "sequential",
                       "data": {
                         "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "runMotorCommand"
-                            }
-                          },
                           {
                             "type": "wait",
                             "data": {
                               "waitTime": 1.5
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "runSpindexerCommand"
                             }
                           }
                         ]
@@ -62,7 +62,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "RevShooterMotor"
+                  "name": "runShooterCommand"
                 }
               },
               {
@@ -144,7 +144,7 @@
                           {
                             "type": "named",
                             "data": {
-                              "name": "runMotorCommand"
+                              "name": "runSpindexerCommand"
                             }
                           },
                           {

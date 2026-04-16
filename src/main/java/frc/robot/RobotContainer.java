@@ -104,17 +104,17 @@ public class RobotContainer {
 		NamedCommands.registerCommand("IntakeUpCommand", intaketestSubsystem.IntakeUpCommand());
 		NamedCommands.registerCommand("IntakeHalfUpCommand", intaketestSubsystem.intakeHalfWayCommand());
 		NamedCommands.registerCommand("AimTurret", turretSubsystem.setTurretPositionVariable());
-		NamedCommands.registerCommand(
+	/* 	NamedCommands.registerCommand(
 			"RevShooterMotor",
 			Commands.run(
 				() -> ShooterSubsystem.standbyMotor()
-			));
+			)); */
 		NamedCommands.registerCommand(
 				"stopMotorCommand",
 				Commands.parallel(
 						ThroatAndIndexerSubsystem.stopMotorCommand(),
 						ShooterSubsystem.stopMotorCommand()));
-		NamedCommands.registerCommand(
+	/* 	NamedCommands.registerCommand(
 				"runMotorCommand",
 				Commands.parallel(
 						ThroatAndIndexerSubsystem.runMotorCommand(),
@@ -124,6 +124,18 @@ public class RobotContainer {
 							)
 						) 
 					);
+	*/
+		NamedCommands.registerCommand(
+			"runSpindexerCommand",
+			ThroatAndIndexerSubsystem.runMotorCommand()
+		);
+		NamedCommands.registerCommand(
+			"runShooterCommand",
+			Commands.run(
+				() -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
+				turretSubsystem
+			)
+		);
 
 		///////////////////////////////////////////////////////////////
 

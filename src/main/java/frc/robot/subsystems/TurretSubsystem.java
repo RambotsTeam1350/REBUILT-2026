@@ -115,7 +115,7 @@ public class TurretSubsystem extends SubsystemBase {
 
         // Turret aiming is now driven by button commands (see RobotContainer).
         // turretAutoAimToHubImmediate();
-        System.out.println("turret angle: " + motorPosition.getValueAsDouble());
+        //System.out.println("turret angle: " + motorPosition.getValueAsDouble());
     }
 
     /*
