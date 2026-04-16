@@ -87,6 +87,11 @@ public class TurretSubsystem extends SubsystemBase {
         cfg.Slot0.kS = .25;
         // cfg.Slot0.kG = 0;
 
+        cfg.CurrentLimits.StatorCurrentLimit = 40;
+        cfg.CurrentLimits.StatorCurrentLimitEnable = true;
+        cfg.CurrentLimits.SupplyCurrentLimit = 30;
+        cfg.CurrentLimits.SupplyCurrentLimitEnable = true;
+
         MotionMagicConfigs mm = cfg.MotionMagic;
         mm.MotionMagicCruiseVelocity = 7; // 7
         mm.MotionMagicAcceleration = 80;

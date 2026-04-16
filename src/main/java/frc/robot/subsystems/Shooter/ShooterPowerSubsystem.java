@@ -185,7 +185,6 @@ public class ShooterPowerSubsystem extends SubsystemBase {
      * @return double[] { shooterRPM, backspinRPM }
      */
     public double[] updateRPMForDistance(double distanceMeters) {
-        // TODO: replace with measured (distance → RPM) pairs from real shot testing.
         double[] distanceBreakpoints = { 1.6764, 2.1336, 2.4384, 2.8956, 3.3528, 3.6576, 3.9624, 4.1148, 4.2672, 4.4196, 4.572 };
         double[] shooterRPMPoints    = { 1300.00, 1400.00, 1500.00, 1600.00, 1700.00, 1800.00, 1900.00, 2000.00, 2100.00, 2200.00, 2400.00 };
         double[] backspinRPMPoints   = { 4500.00, 4500.00, 4500.00, 4500.00, 4500.00, 4500.00, 4500.00, 4500.00, 4500.00, 4500.00, 4500.00 };
@@ -197,7 +196,7 @@ public class ShooterPowerSubsystem extends SubsystemBase {
     }
 
     /**
-     * WIP helper: linearly interpolates (or clamps) a value from a breakpoint
+     * Helper: linearly interpolates (or clamps) a value from a breakpoint
      * table. Used by updateRPMForDistance() once that method is calibrated.
      *
      * @param xs input breakpoints, must be sorted ascending
