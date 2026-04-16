@@ -1,281 +1,272 @@
-# FRC Team 1350 — 2026 Robot Code Evaluation
+# Competition Code Evaluation — FRC Team 1350 La Salle Robotics 2026
 
-**Evaluated by:** Claude Code (claude-sonnet-4-6)
-**Date:** 2026-03-16
-**Branch:** main
+**Evaluated:** 2026-04-15  
+**Branch:** aiming-fixes
 
----
-
-## Summary
-
-The codebase has a solid architectural foundation (command-based, Phoenix 6, PathPlanner, MegaTag2 vision) but contains several **critical bugs that will prevent the robot from functioning correctly at competition**. The most severe are duplicate hardware instantiations and a CAN ID conflict that will cause erratic behavior or an immediate brownout. These must be fixed before any practice matches.
+Issues are grouped by severity. Fix blockers before any match. High severity items should be addressed before eliminations.
 
 ---
 
-## Critical Issues (Fix Before Powering On)
+## BLOCKER — Will cause wrong behavior in competition
 
-### 1. Duplicate Drivetrain Instantiation
-**Files:** [Robot.java:26](src/main/java/frc/robot/Robot.java#L26), [RobotContainer.java:65](src/main/java/frc/robot/RobotContainer.java#L65)
+### 1. `IntakeOcilateCommand()` is silently discarded — intake never oscillates
 
-`TunerConstants.createDrivetrain()` is called **twice** — once in `Robot` and once in `RobotContainer`. This instantiates all 8 swerve TalonFX motors, 4 CANcoders, and the Pigeon2 twice. The two drivetrains have completely independent pose estimators. The turret in `Robot.java` uses `Robot.drivetrain.getPoseEstimator()` while all joystick bindings use `RobotContainer.drivetrain`. These will never agree on robot position. This also doubles CAN bus traffic during initialization and risks device configuration conflicts.
+**Files:** `RobotContainer.java` lines 249, 308, 334
 
-**Fix:** Remove `Robot.drivetrain` entirely. Pass `RobotContainer`'s drivetrain (or its pose estimator) to any subsystem that needs it. The canonical pattern is for `RobotContainer` to own all subsystems and the single drivetrain.
-
----
-
-### 2. Duplicate TurretSubsystem Instantiation
-**Files:** [Robot.java:33](src/main/java/frc/robot/Robot.java#L33), [RobotContainer.java:79](src/main/java/frc/robot/RobotContainer.java#L79)
-
-`TurretSubsystem` is instantiated in **both** `Robot` and `RobotContainer`, both controlling TalonFX ID 13. The instance in `Robot.java` is not even registered with the CommandScheduler (line 34 is commented out), so its `periodic()` runs but its commands cannot be properly scheduled. The `RobotContainer` instance is the one attached to joystick bindings. Two subsystems fighting over one motor will produce undefined behavior.
-
-**Fix:** Remove `turretSubsystem` from `Robot.java`. Only `RobotContainer` should own subsystems.
-
----
-
-### 3. Duplicate IntakeLevelSubsystem Instantiation
-**Files:** [Robot.java:27](src/main/java/frc/robot/Robot.java#L27), [RobotContainer.java:57](src/main/java/frc/robot/RobotContainer.java#L57)
-
-`IntakeLevelSubsystem` is instantiated twice (both use TalonFX ID 17). Both will register as separate `SubsystemBase` instances, the CommandScheduler will run `periodic()` twice per loop, and commands from each will conflict with each other.
-
-**Fix:** Remove `intakeLevelSubsystem` from `Robot.java`.
-
----
-
-### 4. CAN ID Conflict — Climber vs. Back-Left Drive Motor
-**Files:** [ClimberSubsystem.java:18](src/main/java/frc/robot/subsystems/ClimberSubsystem.java#L18), [TunerConstantsThorBot.java:151](src/main/java/frc/robot/generated/TunerConstantsThorBot.java#L151)
-
-`ClimberSubsystem` uses `new TalonFX(15)`. The back-left swerve drive motor (`kBackLeftDriveMotorId`) is also ID 15. **Two TalonFX devices on the same CAN bus with the same ID.** This will cause one or both motors to fail to configure, random control conflicts, and likely a brownout when both try to respond to the same CAN frames. The comment in `ClimberSubsystem.java` reads _"change the moter ID for the climber when we know what it is"_ — this was never resolved.
-
-**Fix:** Assign the climber motor a unique CAN ID (e.g., 20) and update the physical motor's ID using Phoenix Tuner X.
-
----
-
-### 5. Duplicate Pigeon2 Instantiation
-**Files:** [Robot.java:23](src/main/java/frc/robot/Robot.java#L23), [CommandSwerveDrivetrain.java:62](src/main/java/frc/robot/subsystems/CommandSwerveDrivetrain.java#L62)
-
-`new Pigeon2(0, "rio")` appears in both files. Two Java objects for the same physical IMU. `Robot.robotInit()` calls `pigeon.setYaw(0)` — but this affects Robot's own Pigeon instance, not the one used by the drivetrain, so the reset has no effect on the drivetrain's heading. Additionally, two Phoenix 6 objects for the same device causes duplicated signal subscriptions and wasted CAN bandwidth.
-
-**Fix:** Remove `pigeon` from `Robot.java` entirely. Use `drivetrain.getPigeon2()` (available from the CTRE base class) if you need gyro access outside the drivetrain.
-
----
-
-## High-Priority Bugs
-
-### 6. `TurretSubsystem.periodic()` Discards Command Object — Turret Never Continuously Aims
-**File:** [TurretSubsystem.java:110](src/main/java/frc/robot/subsystems/TurretSubsystem.java#L110)
+In three separate shooting commands (driver right trigger, copilot right trigger, copilot left trigger), `IntakeOcilateCommand()` is called inside a void lambda:
 
 ```java
-TurretAutoAimToHub(); // returns a Command — result is silently discarded
+Commands.startEnd(
+    () -> {
+        intaketestSubsystem.IntakeOcilateCommand(); // ← returns Command, discarded immediately
+    },
+    () -> intaketestSubsystem.IntakeUpCommand(),    // ← also discarded
+    intaketestSubsystem)
 ```
 
-`TurretAutoAimToHub()` returns a `Command`. Calling it without `.schedule()` creates and immediately discards a Command object every 20ms. The motor never moves from this call. If the intent is continuous auto-aiming in `periodic()`, use the imperative version:
+`IntakeOcilateCommand()` builds and returns a `Command` object using `Commands.sequence(...).repeatedly()`. Calling it inside a lambda that returns `void` creates the Command object and immediately throws it away — it is never scheduled. The intake motor receives no new commands during shooting. It holds whatever position it was in last.
+
+The end lambda has the same problem — `IntakeUpCommand()` is also discarded, so the intake does not return up on trigger release from within this command.
+
+**Fix:** Use `Commands.run(() -> intaketestSubsystem.setIntakePosition(-7.0), intaketestSubsystem)` for a continuous hold, or rework `IntakeOcilateCommand` to use imperative calls instead of building a command. Using a `Commands.repeatingSequence` with direct motor calls is the cleanest approach.
+
+---
+
+### 2. `NamedCommands.registerCommand("runMotorCommand", ...)` registered twice — second overwrites first
+
+**File:** `RobotContainer.java` lines 110–119 and 129–130
 
 ```java
-turretAutoAimToHubImmediate(); // directly commands the motor
+// Line 110 — first registration: continuous auto-velocity
+NamedCommands.registerCommand("runMotorCommand",
+    Commands.parallel(
+        ThroatAndIndexerSubsystem.runMotorCommand(),
+        Commands.run(
+            () -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
+            turretSubsystem)));
+
+// ...
+
+// Line 129 — second registration: overwrites with one-shot fixed speed
+NamedCommands.registerCommand("runMotorCommand",
+    Commands.parallel(ShooterSubsystem.runMotorCommand(), ThroatAndIndexerSubsystem.runMotorCommand()));
+```
+
+The second registration wins. `ShooterSubsystem.runMotorCommand()` is `Commands.runOnce(this::runShooter)` — it fires once at a fixed speed and immediately finishes. Every autonomous path that calls `"runMotorCommand"` gets a one-shot, fixed-speed command instead of the intended continuous auto-velocity control. PathPlanner will continue the path the moment this command finishes, likely before any ball leaves the robot.
+
+**Fix:** Delete the duplicate registration at lines 129–130.
+
+---
+
+### 3. `System.out.println` in `TurretSubsystem.periodic()` — runs 50x per second
+
+**File:** `TurretSubsystem.java` line 118
+
+```java
+System.out.println("turret angle: " + motorPosition.getValueAsDouble());
+```
+
+`periodic()` runs every 20ms. This will produce ~50 log lines per second, filling the console buffer and creating measurable CPU pressure in the robot loop. On a busy match day with poor radio, this can cause loop overruns that DS will flag.
+
+**Fix:** Remove this line or push to SmartDashboard via the existing Notifier at 0.5 Hz.
+
+---
+
+## HIGH — Significant risk of reduced performance
+
+### 4. Turret aiming is commented out of both shooting triggers
+
+**File:** `RobotContainer.java` lines 235, 294
+
+Both `joystick.rightTrigger()` and `copilotController.rightTrigger()` have the turret aim command commented out:
+
+```java
+//turretSubsystem.setTurretPositionVariable(), // replace with zero positioning if turret aiming fails
+```
+
+During a shot, the turret is not updated. The driver must pre-aim using the right bumper (`onTrue`) before pressing the trigger. If the robot moves between bumper press and trigger press, the turret is stale. This is a significant accuracy regression, especially for moving shots.
+
+**Fix:** Add `Commands.repeatingSequence(turretSubsystem.setTurretPositionVariable(), Commands.waitSeconds(0.5))` back into both trigger parallel groups, or use `Commands.run(turretSubsystem::turretAutoAimToHubImmediate, turretSubsystem)` for continuous tracking.
+
+---
+
+### 5. `"TurretAutoAimToHub"` NamedCommand aims once and finishes
+
+**File:** `RobotContainer.java` line 128
+
+```java
+NamedCommands.registerCommand("TurretAutoAimToHub", turretSubsystem.setTurretPositionVariable());
+```
+
+`setTurretPositionVariable()` is `Commands.runOnce(...)`. In autonomous paths, this aims once and immediately finishes. PathPlanner will proceed to the next action. If the robot is still moving when the shot fires, the turret will be stale.
+
+**Fix:** Register with a command that continuously tracks:
+```java
+NamedCommands.registerCommand("TurretAutoAimToHub",
+    Commands.run(turretSubsystem::turretAutoAimToHubImmediate, turretSubsystem));
 ```
 
 ---
 
-### 7. `AlignToHub` Misinterprets `txnc` — Wrong Angle Scale
-**File:** [AlignToHub.java:102-111](src/main/java/frc/robot/commands/AlignToHub.java#L102)
+### 6. Default auto `"middle boring"` does not exist
+
+**File:** `RobotContainer.java` line 133
 
 ```java
-double horizontalAngleOffset = hubTag.txnc;
-double angleToTagFromCamera = horizontalAngleOffset * (cameraHorizontalFOV / 2.0); // ← wrong
+autoChooser = AutoBuilder.buildAutoChooser("middle boring");
 ```
 
-`RawFiducial.txnc` is already the horizontal angle in **degrees** (not normalized to ±1). The code treats it as normalized `[-1, 1]` and multiplies by `FOV/2 = 31.65°`, producing an angle up to `~31°` when it should be at most `~31.65°` — but worse, at small angles (e.g., 5°) it outputs `5 × 31.65 = 158°`. The turret will command the wrong direction.
+No auto file named `"middle boring"` exists. Available autos are: `simple left auto`, `simple middle auto`, `simple right auto`, `ball buster left`, `ball buster right`, `left depot intake auto`, `left main feed auto`, `left main intake auto`, `right feed intake auto`, `right main feed auto`, `right main intake auto`, `royally skrew them over left auto`, `royally skrew them over right auto`, `middle depot intake auto`.
 
-**Fix:** Use `hubTag.txnc` directly as the angle offset in degrees. No multiplication needed:
+PathPlanner will log an error and fall back to the first auto alphabetically (`ball buster left`). If the driver doesn't explicitly select an auto in the chooser before the match, the robot will run the wrong routine.
 
-```java
-double angleToTagFromCamera = hubTag.txnc; // already in degrees
-```
+**Fix:** Change the default to an existing auto name such as `"simple middle auto"`.
 
 ---
 
-### 8. `ShooterAimSubsystem.degreesToEncoderUnits()` Uses Phoenix 5 Scale (2048) in Phoenix 6
-**File:** [ShooterAimSubsystem.java:84-88](src/main/java/frc/robot/subsystems/Shooter/ShooterAimSubsystem.java#L84)
+### 7. Shooter RPM interpolation table is not calibrated
+
+**File:** `ShooterPowerSubsystem.java` lines 188–190
 
 ```java
-double unitsPerRevolution = 2048; // ← Phoenix 5 constant, not applicable to Phoenix 6
-return (degrees / 360.0) * unitsPerRevolution * gearBoxRatio;
+double[] shooterRPMPoints = { 1300.00, 1400.00, 1500.00, 1600.00, 1700.00, 1800.00, 1900.00, 2000.00, 2100.00, 2200.00, 2400.00 };
 ```
 
-Phoenix 6 TalonFX position control uses **rotations**, not raw encoder counts. The factor of 2048 will send positions ~2048× too large, slamming the shooter angle mechanism into its hard stop immediately.
+The table has a TODO comment. Values are linearly spaced placeholders, not measured shot data. Any command using `runShooterWithAutoVelocity()` — including the copilot right trigger and the driver `povUp` sequence — will use these uncalibrated values.
 
-**Fix:**
-```java
-return (degrees / 360.0) * gearBoxRatio;
-```
-
-The same dead variable (`unitsPerRevolution = 2048`) also appears in `TurretSubsystem.degreesToEncoderUnits()` at [TurretSubsystem.java:164](src/main/java/frc/robot/subsystems/TurretSubsystem.java#L164) — it is declared but not used in the computation there, so the turret conversion is actually correct by accident.
+**Fix:** Measure and populate with actual (distance → RPM) pairs across the expected shooting range before competition.
 
 ---
 
-### 9. `getAngleToTarget()` Mixes Degrees and Radians
-**File:** [TurretSubsystem.java:142-144](src/main/java/frc/robot/subsystems/TurretSubsystem.java#L142)
+## MEDIUM — Potential issues that need attention
+
+### 8. `System.out.println` in command execute loops
+
+**Files:** `AlignToHub.java` line 152, `AlignToReefTagRelative.java` line 92, `FieldAreaCheckerSubsystem.java` lines 35/38
+
+These print every loop iteration when their commands are running. Same performance concern as issue #3.
+
+**Fix:** Remove these lines or move telemetry to SmartDashboard.
+
+---
+
+### 9. CAN ID 14 conflict between two subsystems
+
+**Files:** `IntakeLevelSubsystem.java` line 26, `ShooterAimSubsystem.java` line 34
+
+Both use `TalonFX(14)`. `ShooterAimSubsystem` is currently commented out in RobotContainer, so this doesn't bite today. However, if anyone uncomments the ShooterAim lines during a match scramble, two subsystems will fight over the same motor.
+
+**Fix:** Assign `ShooterAimSubsystem` a unique CAN ID or remove the class entirely.
+
+---
+
+### 10. Intake jam detection logic is inverted
+
+**File:** `IntakeWheelSubsystem.java` lines 86–90
 
 ```java
-public double getAngleToTarget() {
-    return (getPoseEstimatorRotation() - getTargetRotation()); // degrees - radians
+if (velocity.getValueAsDouble() < 0.5) {
+    SmartDashboard.putBoolean("Intake Jammed", false); // ← LOW velocity = NOT jammed??
+} else {
+    SmartDashboard.putBoolean("Intake Jammed", true);
 }
 ```
 
-`getPoseEstimatorRotation()` returns **degrees**; `getTargetRotation()` returns **radians** (raw output of `Math.atan2`). The result is meaningless. This method is called in `periodic()` but the return value is unused, so it has no runtime impact — but if it's ever used for control it will produce garbage.
+A velocity below 0.5 means the motor is barely moving — that is the jammed state. The boolean is backwards. The supply current check that would add a second condition is commented out.
 
-**Fix:** Either convert `getTargetRotation()` to degrees with `Math.toDegrees()`, or use the existing `GetTurretToHub` utility for angle calculation.
+**Fix:** Flip the condition: `< 0.5` should report `true` (jammed).
 
 ---
 
-## Medium-Priority Issues
+### 11. Two Notifiers in TurretSubsystem doing overlapping work
 
-### 10. Unconditional `setVisionMeasurementStdDevs(0.00001, ...)` in `periodic()`
-**File:** [CommandSwerveDrivetrain.java:386](src/main/java/frc/robot/subsystems/CommandSwerveDrivetrain.java#L386)
+**File:** `TurretSubsystem.java` lines 98–103
 
 ```java
-poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.00001, 0.00001, 9999));
+speedNotifier = new Notifier(this::updateTurretAngle);
+speedNotifier2 = new Notifier(this::updateTurretAngle2);
+speedNotifier.startPeriodic(0.5);
+speedNotifier2.startPeriodic(0.5);
 ```
 
-This is called **before** the vision measurement check. If no AprilTags are visible (and `addVisionMeasurement` is skipped), the estimator is left with X/Y standard deviations of 0.00001 m — effectively treating odometry as perfect. This will resist all future vision corrections until the next update cycle where tags are seen. The line should be removed; the per-measurement `setVisionMeasurementStdDevs` calls on lines 403 and 410 are correct and sufficient.
+Two background threads both writing to SmartDashboard at 0.5s intervals. Notifiers run on separate threads — simultaneous SmartDashboard writes can cause data races. If the two methods are doing similar work, consolidate into one Notifier.
 
 ---
 
-### 11. Gear Ratio Comment Mismatch — Turret
-**File:** [TurretSubsystem.java:47](src/main/java/frc/robot/subsystems/TurretSubsystem.java#L47)
+### 12. `Pose2d vision` field is dead code — evaluated once at construction, never read
+
+**File:** `CommandSwerveDrivetrain.java` line 73
 
 ```java
-double gearBoxRatio = 3.0; // Assuming a 9:1 gear ratio for the turret
+Pose2d vision = LimelightHelpers.getBotPose2d_wpiBlue("limelight-fifteen");
 ```
 
-The comment says 9:1 but the value is 3.0. Additionally, the conversion formula includes an empirical correction factor `(8.5810546875/9)`, suggesting the gear ratio was measured to be approximately 2.86 rotations per revolution instead of 3.0. The correct value should be measured physically with Phoenix Tuner X and set directly — not patched with a magic constant.
+This field is initialized once when the class is constructed and is never referenced again. It does nothing and calls the wrong Limelight method (not MegaTag2).
+
+**Fix:** Delete this field.
 
 ---
 
-### 12. Unfinished Geometry Methods in TurretSubsystem
-**File:** [TurretSubsystem.java:147-158](src/main/java/frc/robot/subsystems/TurretSubsystem.java#L147)
+### 13. `TestPIDMotorSubsystem` instantiated with CAN ID 999
 
-Three methods are broken/unfinished:
-
-- **`getPositionTurretonField()`** always returns `new Translation2d()` (0, 0). Never implemented.
-- **`getTurretAngleBotRelative()`** returns `3 - getPoseEstimatorRotation()` — subtracting degrees from what appears to be a radian constant. Meaningless.
-- **`getDistanceBotonTurretFieldRelative()`** applies an incomplete rotation matrix (missing cross terms). The correct transform is `x' = x·cos(θ) - y·sin(θ)`, `y' = x·sin(θ) + y·cos(θ)`.
-
-None of these are currently used in the active control path, but they should be fixed or removed before being hooked in.
-
----
-
-### 13. `System.out.println` in Periodic Loops
-**Files:** [CommandSwerveDrivetrain.java:413](src/main/java/frc/robot/subsystems/CommandSwerveDrivetrain.java#L413), [ShooterAimSubsystem.java:62](src/main/java/frc/robot/subsystems/Shooter/ShooterAimSubsystem.java#L62), [AlignToHub.java:153](src/main/java/frc/robot/commands/AlignToHub.java#L153)
-
-Three separate `System.out.println` calls in code that executes every loop cycle (50 Hz). On the roboRIO, stdout is buffered but still consumes CPU time and can cause loop overruns under load. Replace with `SmartDashboard.putString/putNumber` or WPILib's `DataLog` for diagnostics. Remove or comment out before competition.
-
----
-
-### 14. `ShooterAimSubsystem` Is Never Instantiated
-**File:** [ShooterAimSubsystem.java](src/main/java/frc/robot/subsystems/Shooter/ShooterAimSubsystem.java)
-
-The shooter angle subsystem exists with a full `AngleAdjust()` command and `getAngleAdjusterTheta()` calculation but is never instantiated in `RobotContainer` or `Robot`. Without it, the shooter angle is never controlled.
-
----
-
-### 15. No Software Limits on Turret TalonFX
-**File:** [TurretSubsystem.java:75-91](src/main/java/frc/robot/subsystems/TurretSubsystem.java#L75)
-
-The turret limits (±90°) are enforced only in `clampTurretAngle()` before commanding MotionMagic. If any code path sends an unclamped value to the motor (e.g., `TurretToMaxPosition()` at line 196 sends 360°), the turret can over-rotate and damage the wiring harness or mechanism. Configure `SoftwareLimitSwitchConfigs` in the TalonFX configuration as a hardware backstop:
+**File:** `RobotContainer.java` line 71
 
 ```java
-cfg.SoftwareLimitSwitch.ForwardSoftLimitThreshold = degreesToEncoderUnits(90);
-cfg.SoftwareLimitSwitch.ReverseSoftLimitThreshold = degreesToEncoderUnits(-90);
-cfg.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-cfg.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+private final TestPIDMotorSubsystem pidcontroler = new TestPIDMotorSubsystem();
 ```
 
----
+CAN ID 999 is a placeholder. CTRE will log an error for every periodic cycle trying to communicate with a nonexistent device, creating unnecessary CAN bus noise. `pidcontroler` is never used anywhere in RobotContainer.
 
-## Low-Priority / Code Quality
-
-### 16. Duplicate Import in RobotContainer
-**File:** [RobotContainer.java:28,38](src/main/java/frc/robot/RobotContainer.java#L28)
-
-`import frc.robot.commands.AlignToHub;` appears on both line 28 and line 38. Will generate a compiler warning; clean up.
-
-### 17. Unused Imports and Fields in RobotContainer
-**File:** [RobotContainer.java](src/main/java/frc/robot/RobotContainer.java)
-
-- `import edu.wpi.first.wpilibj.Joystick;` — unused
-- `import edu.wpi.first.math.estimator.PoseEstimator;` — unused
-- `import com.revrobotics.spark.SparkFlex;` — unused (motor commented out)
-- `private LimelightTarget_Detector limelight` (line 68) — instantiated but never referenced
-
-### 18. `TestPIDMotorSubsystem` Uses CAN Resources and Does Nothing
-**File:** [RobotContainer.java:63](src/main/java/frc/robot/RobotContainer.java#L63)
-
-`pidcontroler` is instantiated and registered with the scheduler but all commands are commented out. It occupies TalonFX ID 33 and runs `periodic()` every loop for no reason. Remove or leave only if actively needed for testing.
-
-### 19. Dead Code in `CommandSwerveDrivetrain`
-**File:** [CommandSwerveDrivetrain.java:450-480](src/main/java/frc/robot/subsystems/CommandSwerveDrivetrain.java#L450)
-
-The `drive()` method is never called anywhere in the codebase. Inside it, `adjustedTranslation` is computed but `translation` (not `adjustedTranslation`) is passed to `ChassisSpeeds.fromFieldRelativeSpeeds()`. The module state application block is commented out. Also `initialLeftDistance`, `initialRightDistance`, and the class-level `vision` field are all declared but never used.
-
-### 20. Alliance-Specific Hub Tag IDs May Not Match 2026 Game
-**File:** [AlignToHub.java:25-26](src/main/java/frc/robot/commands/AlignToHub.java#L25)
-
-```java
-private static final int[] RED_HUB_TAGS = {9, 10};
-private static final int[] BLUE_HUB_TAGS = {24, 25};
-```
-
-Verify these tag IDs against the [2026 Game Manual](https://firstfrc.blob.core.windows.net/frc2026/Manual/2026GameManual.pdf). AprilTag layouts change each season and 24/25 may not correspond to hub targets in the 2026 game.
-
-### 21. No Pose Reset at Autonomous Start
-**File:** [Robot.java:61-67](src/main/java/frc/robot/Robot.java#L61)
-
-`autonomousInit()` schedules the auto command but never seeds the pose estimator with the path's starting pose. PathPlanner will call `resetPose()` if the auto has a starting pose configured, but if paths don't define one, the robot will execute paths from whatever the current estimated position is. Ensure all competition autos define a starting pose, or explicitly reset in `autonomousInit()`.
-
-### 22. Only Example/Placeholder Paths in PathPlanner
-**File:** [src/main/deploy/pathplanner/autos/](src/main/deploy/pathplanner/autos/)
-
-The only deployed auto is "Example Auto" using placeholder paths. No competition-ready autonomous routines exist.
+**Fix:** Remove the instantiation and the class file.
 
 ---
 
-## CAN ID Summary
+## LOW — Code quality
 
-| ID | Device | Conflict? |
-|----|--------|-----------|
-| 0  | Pigeon2 (×2 instantiated) | Yes — two objects, one device |
-| 1  | Front Right CANcoder | OK |
-| 2  | Front Left CANcoder | OK |
-| 3  | Back Left CANcoder | OK |
-| 4  | Back Right CANcoder | OK |
-| 5  | Front Left Drive TalonFX | OK |
-| 6  | Front Right Drive TalonFX | OK |
-| 7  | Front Left Steer TalonFX | OK |
-| 8  | Back Right Drive TalonFX | OK |
-| 9  | Front Right Steer TalonFX | OK |
-| 10 | Back Right Steer TalonFX | OK |
-| 11 | Back Left Steer TalonFX | OK |
-| 13 | Turret TalonFX (×2 instantiated) | Yes — two subsystems |
-| 14 | Shooter Aim TalonFX | OK (never instantiated) |
-| **15** | **Back Left Drive TalonFX AND Climber TalonFX** | **CONFLICT** |
-| 16 | Shooter SparkFlex #1 | OK |
-| 17 | IntakeLevelSubsystem TalonFX (×2 instantiated) + Shooter SparkFlex #2 | TalonFX duplicated; SparkFlex and TalonFX share ID 17 but are different device types (OK) |
-| 18 | IntakeWheel TalonFX | OK |
-| 32 | Throat/Indexer TalonFX | OK |
-| 33 | TestPIDMotor TalonFX | OK |
+### 14. Commented-out control bindings remove in-match tuning ability
+
+**File:** `RobotContainer.java` lines 194–199
+
+Shooter RPM increment/decrement commands are commented out. If the distance table proves wrong mid-match, there is no way to adjust RPM without redeploying code.
+
+**Recommendation:** Bind at least one set of +/- RPM buttons (copilot D-pad suggested) before competition.
 
 ---
 
-## Recommended Fix Priority
+### 15. Large blocks of commented-out code reduce readability
 
-1. Fix CAN ID 15 conflict (climber vs. back-left drive) — assign climber a new ID in Tuner X
-2. Remove `Robot.java`'s `drivetrain`, `turretSubsystem`, `intakeLevelSubsystem`, and `pigeon` fields — `RobotContainer` should own all subsystems
-3. Fix `TurretSubsystem.periodic()` to call `turretAutoAimToHubImmediate()` instead of `TurretAutoAimToHub()`
-4. Fix `AlignToHub` to use `txnc` directly (already in degrees)
-5. Fix `ShooterAimSubsystem.degreesToEncoderUnits()` to remove the ×2048 multiplier
-6. Remove all `System.out.println` from periodic/execute methods
-7. Instantiate `ShooterAimSubsystem` in `RobotContainer` and bind it to a button
-8. Add TalonFX software limits to TurretSubsystem
-9. Fix `getAngleToTarget()` unit mismatch (or remove if unused)
-10. Build and deploy competition autonomous routines
+Throughout `RobotContainer.java` and `TurretSubsystem.java` there are multi-line commented blocks of alternative implementations. These obscure the active logic during match-day debugging.
+
+**Recommendation:** Delete stale alternatives and rely on git history.
+
+---
+
+## Summary Table
+
+| # | Severity | Issue | File |
+|---|----------|-------|------|
+| 1 | BLOCKER | `IntakeOcilateCommand` discarded in lambda — intake never oscillates | RobotContainer.java:249,308,334 |
+| 2 | BLOCKER | Duplicate `"runMotorCommand"` NamedCommand — autos get one-shot fixed speed | RobotContainer.java:129 |
+| 3 | BLOCKER | `System.out.println` in `periodic()` — 50x/sec loop pressure | TurretSubsystem.java:118 |
+| 4 | HIGH | Turret aiming commented out of both shooting triggers | RobotContainer.java:235,294 |
+| 5 | HIGH | `TurretAutoAimToHub` NamedCommand uses `runOnce` — aims once in auto | RobotContainer.java:128 |
+| 6 | HIGH | Default auto `"middle boring"` does not exist | RobotContainer.java:133 |
+| 7 | HIGH | Shooter RPM table is uncalibrated placeholders | ShooterPowerSubsystem.java:188 |
+| 8 | MEDIUM | `System.out.println` in command execute loops | AlignToHub.java:152, AlignToReefTagRelative.java:92 |
+| 9 | MEDIUM | CAN ID 14 conflict between IntakeLevelSubsystem and ShooterAimSubsystem | IntakeLevelSubsystem.java:26 |
+| 10 | MEDIUM | Intake jam detection logic is inverted | IntakeWheelSubsystem.java:86 |
+| 11 | MEDIUM | Two Notifiers in TurretSubsystem doing overlapping SmartDashboard writes | TurretSubsystem.java:98 |
+| 12 | MEDIUM | `Pose2d vision` field dead code — initialized once, never read | CommandSwerveDrivetrain.java:73 |
+| 13 | MEDIUM | `TestPIDMotorSubsystem` (CAN ID 999) instantiated but unused | RobotContainer.java:71 |
+| 14 | LOW | Shooter RPM tuning commands commented out | RobotContainer.java:194 |
+| 15 | LOW | Large commented-out code blocks obscure active logic | RobotContainer, TurretSubsystem |
+
+---
+
+## Before Next Match — Minimum Required Fixes
+
+1. Fix `IntakeOcilateCommand` lambda — intake doesn't move during shooting (issue #1)
+2. Delete duplicate `"runMotorCommand"` registration — autos shoot wrong (issue #2)
+3. Remove `System.out.println` from `periodic()` — loop overrun risk (issue #3)
+4. Change auto default to a real auto name (issue #6)
+5. Calibrate shooter RPM table with measured data (issue #7)
