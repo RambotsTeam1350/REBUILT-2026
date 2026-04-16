@@ -7,68 +7,29 @@ Issues are grouped by severity. Fix blockers before any match. High severity ite
 
 ---
 
-## BLOCKER — Will cause wrong behavior in competition
+## ~~BLOCKER~~ — All blockers resolved (commits fcb7b1d, b230672, 2c84ea3)
 
-### 1. `IntakeOcilateCommand()` is silently discarded — intake never oscillates
+### ~~1. `IntakeOcilateCommand()` is silently discarded — intake never oscillates~~ ✓ FIXED
 
-**Files:** `RobotContainer.java` lines 249, 308, 334
+**Fixed in:** `fcb7b1d`
 
-In three separate shooting commands (driver right trigger, copilot right trigger, copilot left trigger), `IntakeOcilateCommand()` is called inside a void lambda:
-
-```java
-Commands.startEnd(
-    () -> {
-        intaketestSubsystem.IntakeOcilateCommand(); // ← returns Command, discarded immediately
-    },
-    () -> intaketestSubsystem.IntakeUpCommand(),    // ← also discarded
-    intaketestSubsystem)
-```
-
-`IntakeOcilateCommand()` builds and returns a `Command` object using `Commands.sequence(...).repeatedly()`. Calling it inside a lambda that returns `void` creates the Command object and immediately throws it away — it is never scheduled. The intake motor receives no new commands during shooting. It holds whatever position it was in last.
-
-The end lambda has the same problem — `IntakeUpCommand()` is also discarded, so the intake does not return up on trigger release from within this command.
-
-**Fix:** Use `Commands.run(() -> intaketestSubsystem.setIntakePosition(-7.0), intaketestSubsystem)` for a continuous hold, or rework `IntakeOcilateCommand` to use imperative calls instead of building a command. Using a `Commands.repeatingSequence` with direct motor calls is the cleanest approach.
+`IntakeOcilateCommand()` was called inside a void lambda inside `Commands.startEnd()`, causing the returned Command to be immediately discarded and never scheduled. Fixed in three places (driver right trigger, copilot right trigger, copilot left trigger) by replacing the broken `startEnd` pattern with the command directly and using `finallyDo()` to schedule `IntakeUpCommand` on release. Also added `this` as a subsystem requirement to the first `runOnce` inside `IntakeOcilateCommand`.
 
 ---
 
-### 2. `NamedCommands.registerCommand("runMotorCommand", ...)` registered twice — second overwrites first
+### ~~2. `NamedCommands.registerCommand("runMotorCommand", ...)` registered twice~~ ✓ FIXED
 
-**File:** `RobotContainer.java` lines 110–119 and 129–130
+**Fixed in:** `b230672`
 
-```java
-// Line 110 — first registration: continuous auto-velocity
-NamedCommands.registerCommand("runMotorCommand",
-    Commands.parallel(
-        ThroatAndIndexerSubsystem.runMotorCommand(),
-        Commands.run(
-            () -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
-            turretSubsystem)));
-
-// ...
-
-// Line 129 — second registration: overwrites with one-shot fixed speed
-NamedCommands.registerCommand("runMotorCommand",
-    Commands.parallel(ShooterSubsystem.runMotorCommand(), ThroatAndIndexerSubsystem.runMotorCommand()));
-```
-
-The second registration wins. `ShooterSubsystem.runMotorCommand()` is `Commands.runOnce(this::runShooter)` — it fires once at a fixed speed and immediately finishes. Every autonomous path that calls `"runMotorCommand"` gets a one-shot, fixed-speed command instead of the intended continuous auto-velocity control. PathPlanner will continue the path the moment this command finishes, likely before any ball leaves the robot.
-
-**Fix:** Delete the duplicate registration at lines 129–130.
+The duplicate registration at line 129 overwrote the correct continuous auto-velocity registration with a one-shot fixed-speed command. Duplicate removed — autos now use the correct `Commands.run()` registration with live distance-based RPM.
 
 ---
 
-### 3. `System.out.println` in `TurretSubsystem.periodic()` — runs 50x per second
+### ~~3. `System.out.println` in `TurretSubsystem.periodic()` — runs 50x per second~~ ✓ FIXED
 
-**File:** `TurretSubsystem.java` line 118
+**Fixed in:** `2c84ea3`
 
-```java
-System.out.println("turret angle: " + motorPosition.getValueAsDouble());
-```
-
-`periodic()` runs every 20ms. This will produce ~50 log lines per second, filling the console buffer and creating measurable CPU pressure in the robot loop. On a busy match day with poor radio, this can cause loop overruns that DS will flag.
-
-**Fix:** Remove this line or push to SmartDashboard via the existing Notifier at 0.5 Hz.
+Removed the `println` from `periodic()`. Turret angle is already published to SmartDashboard by the existing Notifier.
 
 ---
 
@@ -121,20 +82,6 @@ No auto file named `"middle boring"` exists. Available autos are: `simple left a
 PathPlanner will log an error and fall back to the first auto alphabetically (`ball buster left`). If the driver doesn't explicitly select an auto in the chooser before the match, the robot will run the wrong routine.
 
 **Fix:** Change the default to an existing auto name such as `"simple middle auto"`.
-
----
-
-### 7. Shooter RPM interpolation table is not calibrated
-
-**File:** `ShooterPowerSubsystem.java` lines 188–190
-
-```java
-double[] shooterRPMPoints = { 1300.00, 1400.00, 1500.00, 1600.00, 1700.00, 1800.00, 1900.00, 2000.00, 2100.00, 2200.00, 2400.00 };
-```
-
-The table has a TODO comment. Values are linearly spaced placeholders, not measured shot data. Any command using `runShooterWithAutoVelocity()` — including the copilot right trigger and the driver `povUp` sequence — will use these uncalibrated values.
-
-**Fix:** Measure and populate with actual (distance → RPM) pairs across the expected shooting range before competition.
 
 ---
 
@@ -245,9 +192,9 @@ Throughout `RobotContainer.java` and `TurretSubsystem.java` there are multi-line
 
 | # | Severity | Issue | File |
 |---|----------|-------|------|
-| 1 | BLOCKER | `IntakeOcilateCommand` discarded in lambda — intake never oscillates | RobotContainer.java:249,308,334 |
-| 2 | BLOCKER | Duplicate `"runMotorCommand"` NamedCommand — autos get one-shot fixed speed | RobotContainer.java:129 |
-| 3 | BLOCKER | `System.out.println` in `periodic()` — 50x/sec loop pressure | TurretSubsystem.java:118 |
+| 1 | ~~BLOCKER~~ ✓ | `IntakeOcilateCommand` discarded in lambda — intake never oscillates | fcb7b1d |
+| 2 | ~~BLOCKER~~ ✓ | Duplicate `"runMotorCommand"` NamedCommand — autos get one-shot fixed speed | b230672 |
+| 3 | ~~BLOCKER~~ ✓ | `System.out.println` in `periodic()` — 50x/sec loop pressure | 2c84ea3 |
 | 4 | HIGH | Turret aiming commented out of both shooting triggers | RobotContainer.java:235,294 |
 | 5 | HIGH | `TurretAutoAimToHub` NamedCommand uses `runOnce` — aims once in auto | RobotContainer.java:128 |
 | 6 | HIGH | Default auto `"middle boring"` does not exist | RobotContainer.java:133 |
@@ -265,8 +212,8 @@ Throughout `RobotContainer.java` and `TurretSubsystem.java` there are multi-line
 
 ## Before Next Match — Minimum Required Fixes
 
-1. Fix `IntakeOcilateCommand` lambda — intake doesn't move during shooting (issue #1)
-2. Delete duplicate `"runMotorCommand"` registration — autos shoot wrong (issue #2)
-3. Remove `System.out.println` from `periodic()` — loop overrun risk (issue #3)
+1. ~~Fix `IntakeOcilateCommand` lambda — intake doesn't move during shooting (issue #1)~~ ✓
+2. ~~Delete duplicate `"runMotorCommand"` registration — autos shoot wrong (issue #2)~~ ✓
+3. ~~Remove `System.out.println` from `periodic()` — loop overrun risk (issue #3)~~ ✓
 4. Change auto default to a real auto name (issue #6)
 5. Calibrate shooter RPM table with measured data (issue #7)
