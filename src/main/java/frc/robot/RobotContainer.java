@@ -291,7 +291,9 @@ private double[] getHubTarget() {
 
 	copilotController.rightTrigger().whileTrue(
 				Commands.parallel(
-						//turretSubsystem.setTurretPositionVariable(), // replace with zero positioning if turret aiming fails
+						Commands.repeatingSequence(
+								turretSubsystem.setTurretPositionVariable(),
+								Commands.waitSeconds(0.5)), // re-aims every 0.5s while trigger held
 						Commands.startEnd(
 								() -> ThroatAndIndexerSubsystem.runMotor(),
 								() -> {
