@@ -17,16 +17,14 @@ Both files claim ID 14, but `ShooterAimSubsystem` is fully commented out in `Rob
 
 ---
 
-### 2. Invalid CAN ID 999 in TestPIDMotorSubsystem
+### 2. Invalid CAN ID 999 in TestPIDMotorSubsystem (Not Currently Active)
 **File:** `src/main/java/frc/robot/subsystems/TestPIDMotorSubsystem.java:21`
 
 ```java
 private final TalonFX motor = new TalonFX(999);
 ```
 
-CAN IDs are valid from 0–62. ID 999 is illegal and will throw a runtime exception on robot startup. This subsystem is instantiated in `RobotContainer.java:71` and will prevent the robot from initializing.
-
-**Fix:** Remove the instantiation from `RobotContainer.java` and delete or gate this class out of production builds.
+The import and instantiation in `RobotContainer.java` (lines 40, 71) are both commented out, so this does not affect runtime. The class file remains a hazard if re-enabled. Not a blocking issue.
 
 ---
 
@@ -144,7 +142,6 @@ This variable is assigned but never used. Minor, but could indicate incomplete v
 ## Pre-Competition Checklist
 
 ### Blocking — Fix Before Any Match
-- [ ] Remove `TestPIDMotorSubsystem` instantiation from `RobotContainer.java`
 - [ ] Calibrate shooter distance-to-RPM table from physical testing
 
 ### Strongly Recommended
