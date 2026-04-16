@@ -423,7 +423,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // loop
         // where a prior Limelight correction contaminates the heading fed back to the
         // Limelight.
-        double currentHeading = getPigeon2().getYaw().getValueAsDouble();
+        // Use field-relative heading from the pose estimator, not raw Pigeon2 yaw.
+        // Raw yaw has no knowledge of field-forward, so if the robot initializes at any
+        // heading other than 0° it introduces a permanent offset into MegaTag2's X/Y
+        // solve. The pose estimator heading is seeded correctly by PathPlanner's
+        // starting pose (or first vision hard-seed) and is safe to use here because
+        // the rotation stddev passed to addVisionMeasurement is effectively infinite
+        // (Math.toRadians(9999)), preventing any Limelight feedback into heading.
+        double currentHeading = poseEstimator.getEstimatedPosition().getRotation().getDegrees();
         LimelightHelpers.SetRobotOrientation("limelight-fifteen", currentHeading, 0, 0, 0, 0, 0);
         LimelightHelpers.SetRobotOrientation("limelight-three", currentHeading, 0, 0, 0, 0, 0);
 
