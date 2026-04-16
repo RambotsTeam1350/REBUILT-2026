@@ -244,12 +244,8 @@ private double[] getHubTarget() {
 								ShooterSubsystem::runShooter, //runs at a set speed, josh will drive to aim, backup if data-table fails
 								ShooterSubsystem::standbyMotor,
 								ShooterSubsystem),
-						Commands.startEnd(
-								() -> {
-									intaketestSubsystem.IntakeOcilateCommand();
-								},
-								() -> intaketestSubsystem.IntakeUpCommand(),
-								intaketestSubsystem),
+						intaketestSubsystem.IntakeOcilateCommand()
+								.finallyDo(interrupted -> intaketestSubsystem.IntakeUpCommand().schedule()),
 						Commands.repeatingSequence(
 								Commands.waitSeconds(1),
 								ThroatAndIndexerSubsystem.reverseMotorCommand())));
@@ -305,12 +301,8 @@ private double[] getHubTarget() {
 								() -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()), //change this, should be on copilot controller
 								ShooterSubsystem::standbyMotor,
 								ShooterSubsystem),
-						Commands.startEnd(
-								() -> {
-									intaketestSubsystem.IntakeOcilateCommand();
-								},
-								() -> intaketestSubsystem.IntakeUpCommand(),
-								intaketestSubsystem),
+						intaketestSubsystem.IntakeOcilateCommand()
+								.finallyDo(interrupted -> intaketestSubsystem.IntakeUpCommand().schedule()),
 						Commands.repeatingSequence(
 								Commands.waitSeconds(1),
 								ThroatAndIndexerSubsystem.reverseMotorCommand())));
@@ -331,12 +323,8 @@ copilotController.leftTrigger().whileTrue(
 								ShooterSubsystem::runShooter, //feeding, so auto-speed not required
 								ShooterSubsystem::standbyMotor,
 								ShooterSubsystem),
-						Commands.startEnd(
-								() -> {
-									intaketestSubsystem.IntakeOcilateCommand();
-								},
-								() -> intaketestSubsystem.IntakeUpCommand(),
-								intaketestSubsystem),
+						intaketestSubsystem.IntakeOcilateCommand()
+								.finallyDo(interrupted -> intaketestSubsystem.IntakeUpCommand().schedule()),
 						Commands.repeatingSequence(
 								Commands.waitSeconds(1),
 								ThroatAndIndexerSubsystem.reverseMotorCommand())));
