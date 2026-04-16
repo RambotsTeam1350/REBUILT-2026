@@ -38,7 +38,7 @@ import frc.robot.subsystems.Intake.IntakeWheelSubsystem;
 //import frc.robot.subsystems.Shooter.ShooterAimSubsystem;
 import frc.robot.subsystems.Shooter.ShooterPowerSubsystem;
 // import frc.robot.subsystems.TestPIDMotorSubsystem;
-import frc.robot.subsystems.ClimberSubsystem;
+// import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.commands.AlignToHub;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -69,7 +69,7 @@ public class RobotContainer {
 	private final CommandXboxController copilotController = new CommandXboxController(1);
 	private final ThroatAndIndexerSubsystem ThroatAndIndexerSubsystem = new ThroatAndIndexerSubsystem();
 	// private final TestPIDMotorSubsystem pidcontroler = new TestPIDMotorSubsystem();
-	private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+	// private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 	public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 	private final TurretSubsystem turretSubsystem;
 	// private final ShooterAimSubsystem shooterAimSubsystem;
@@ -177,7 +177,7 @@ public class RobotContainer {
 		matchTimeNotifier.startPeriodic(0.5);
 
 		NamedCommands.registerCommand("TurretAutoAimToHub", turretSubsystem.TurretAutoAimToHub());
-		NamedCommands.registerCommand("ClimbDownCommand", climberSubsystem.ClimbDownCommand());
+		// NamedCommands.registerCommand("ClimbDownCommand", climberSubsystem.ClimbDownCommand());
 
 		autoChooser = AutoBuilder.buildAutoChooser("middle boring");
 		SmartDashboard.putData("Auto Chooser", autoChooser);

@@ -43,9 +43,8 @@ The following subsystems do not configure explicit current limits on their Talon
 
 | Subsystem | Motor ID(s) | Risk |
 |-----------|-------------|------|
-| ClimberSubsystem | 17, 19 | Stall during climb could damage motor or trip breaker |
 | TurretSubsystem | 18 | Mechanical hard stop could cause over-current |
-| IntakeLevelSubsystem | 14 (after resolving conflict) | Positional hard limits not paired with current protection |
+| IntakeLevelSubsystem | 14 | Positional hard limits not paired with current protection |
 
 All subsystems should explicitly set `StatorCurrentLimitConfigs` and `SupplyCurrentLimitConfigs`.
 
@@ -105,9 +104,9 @@ This variable is assigned but never used. Minor, but could indicate incomplete v
 | 13 | Indexer (ThroatAndIndexer) | ✓ |
 | **14** | **IntakeLevelSubsystem AND ShooterAimSubsystem** | **CONFLICT** |
 | 15–16 | (unused) | available |
-| 17 | Climber Motor 1 | ✓ |
+| 17 | Climber Motor 1 (commented out) | — |
 | 18 | Turret Motor | ✓ |
-| 19 | Climber Motor 2 | ✓ |
+| 19 | Climber Motor 2 (commented out) | — |
 | 20–33 | (unused) | available |
 | 34 | Intake Wheel Motor | ✓ |
 | 35 | CANdle (LEDs) | ✓ |
@@ -139,7 +138,7 @@ This variable is assigned but never used. Minor, but could indicate incomplete v
 
 ### Strongly Recommended
 - [ ] Reassign CAN ID in `ShooterAimSubsystem` before re-enabling it (currently conflicts with ID 14)
-- [ ] Add explicit `StatorCurrentLimitConfigs` to Climber, Turret, and IntakeLevel motors
+- [ ] Add explicit `StatorCurrentLimitConfigs` to Turret and IntakeLevel motors
 - [ ] Confirm "middle boring" auto path file exists and runs correctly
 - [ ] Test intake oscillation command interrupt behavior on real hardware
 - [ ] Verify all physical offset constants match the actual robot
