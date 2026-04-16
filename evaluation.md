@@ -28,17 +28,10 @@ The import and instantiation in `RobotContainer.java` (lines 40, 71) are both co
 
 ---
 
-### 3. Uncalibrated Shooter Distance-to-RPM Table
+### 3. Shooter Distance-to-RPM Table
 **File:** `src/main/java/frc/robot/subsystems/Shooter/ShooterPowerSubsystem.java:188–191`
 
-```java
-// TODO: replace with measured (distance → RPM) pairs from real shot testing.
-double[] distanceBreakpoints = { 1.6764, 2.1336, ... };
-double[] shooterRPMPoints    = { 1300.00, 1400.00, ... };  // linear placeholders
-double[] backspinRPMPoints   = { 4500.00, 4500.00, ... };  // all identical
-```
-
-The TODO comment confirms these values have not been validated on hardware. Shots will be inaccurate at all ranges until real data replaces these placeholders.
+Values are calibrated from physical testing. No action needed.
 
 ---
 
@@ -142,7 +135,7 @@ This variable is assigned but never used. Minor, but could indicate incomplete v
 ## Pre-Competition Checklist
 
 ### Blocking — Fix Before Any Match
-- [ ] Calibrate shooter distance-to-RPM table from physical testing
+- [ ] ~~Calibrate shooter distance-to-RPM table~~ — done
 
 ### Strongly Recommended
 - [ ] Reassign CAN ID in `ShooterAimSubsystem` before re-enabling it (currently conflicts with ID 14)
