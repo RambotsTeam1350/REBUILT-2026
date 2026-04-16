@@ -125,7 +125,7 @@ public class RobotContainer {
 		// update twice per second
 		matchTimeNotifier.startPeriodic(0.5);
 
-		NamedCommands.registerCommand("TurretAutoAimToHub", turretSubsystem.TurretAutoAimToHub());
+		NamedCommands.registerCommand("TurretAutoAimToHub", turretSubsystem.setTurretPositionVariable());
 		NamedCommands.registerCommand("runMotorCommand",
 				Commands.parallel(ShooterSubsystem.runMotorCommand(), ThroatAndIndexerSubsystem.runMotorCommand()));
 		NamedCommands.registerCommand("ClimbDownCommand", climberSubsystem.ClimbDownCommand());
