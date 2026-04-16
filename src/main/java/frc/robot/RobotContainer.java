@@ -88,7 +88,7 @@ public class RobotContainer {
 		// Construct the turret after the drivetrain so we can pass the drivetrain's
 		// pose estimator into the turret constructor.
 		turretSubsystem = new TurretSubsystem(drivetrain.getPoseEstimator());
-		// ShooterAimSubsystem uses TurretSubsystem as its distance source so both
+		// ShooterAimSubsystem uses TurretSubsystem as its distance source so we both
 		// subsystems share the same turret-corrected distance to hub.
 		// shooterAimSubsystem = new ShooterAimSubsystem(turretSubsystem);
 
@@ -104,38 +104,70 @@ public class RobotContainer {
 		NamedCommands.registerCommand("IntakeUpCommand", intaketestSubsystem.IntakeUpCommand());
 		NamedCommands.registerCommand("IntakeHalfUpCommand", intaketestSubsystem.intakeHalfWayCommand());
 		NamedCommands.registerCommand("AimTurret", turretSubsystem.setTurretPositionVariable());
-	/* 	NamedCommands.registerCommand(
+	 	NamedCommands.registerCommand(
 			"RevShooterMotor",
-			Commands.run(
+			ShooterSubsystem.run(
 				() -> ShooterSubsystem.standbyMotor()
-			)); */
+			)); 
 		NamedCommands.registerCommand(
 				"stopMotorCommand",
 				Commands.parallel(
 						ThroatAndIndexerSubsystem.stopMotorCommand(),
 						ShooterSubsystem.stopMotorCommand()));
-	/* 	NamedCommands.registerCommand(
+	 	NamedCommands.registerCommand(
 				"runMotorCommand",
 				Commands.parallel(
 						ThroatAndIndexerSubsystem.runMotorCommand(),
 						Commands.run(
 							() -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
-							turretSubsystem
+						    ShooterSubsystem
 							)
 						) 
 					);
-	*/
+	
 		NamedCommands.registerCommand(
 			"runSpindexerCommand",
 			ThroatAndIndexerSubsystem.runMotorCommand()
 		);
+
 		NamedCommands.registerCommand(
+			"stopSpindexerCommand",
+			ThroatAndIndexerSubsystem.stopMotorCommand()
+		);
+
+		        // New: Aim at hub, run throat + auto-velocity shooter for 10s, then stop both
+        NamedCommands.registerCommand(
+            "AimAndShootEmptyHopper",
+            Commands.sequence(
+                // Aim first
+                turretSubsystem.setTurretPositionVariable(),
+                // Then run throat and shooter in parallel for N seconds
+                Commands.parallel(
+                    ThroatAndIndexerSubsystem.runMotorCommand(),
+                    Commands.run(
+                        () -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
+                        ShooterSubsystem
+                    )
+                ).withTimeout(7.0),
+                // Ensure both systems are stopped/put to standby afterwards
+                Commands.run(
+                    () -> {
+                        ThroatAndIndexerSubsystem.stopMotorThroat();
+                        ThroatAndIndexerSubsystem.stopMotorIndexer();
+                        ShooterSubsystem.standbyMotor();
+                    },
+                    ThroatAndIndexerSubsystem,
+                    ShooterSubsystem
+                )
+            )
+        );
+/* 		NamedCommands.registerCommand(
 			"runShooterCommand",
 			Commands.run(
 				() -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
 				turretSubsystem
 			)
-		);
+		); */
 
 		///////////////////////////////////////////////////////////////
 
@@ -246,16 +278,10 @@ private double[] getHubTarget() {
 								ShooterSubsystem)));
  */
 
- joystick.leftTrigger().whileTrue(
+	 joystick.leftTrigger().whileTrue(
 				Commands.parallel(
 						//turretSubsystem.setTurretPositionVariable(), // replace with zero positioning if turret aiming fails
-						Commands.startEnd(
-								() -> ThroatAndIndexerSubsystem.runMotor(),
-								() -> {
-									ThroatAndIndexerSubsystem.stopMotorThroat();
-									ThroatAndIndexerSubsystem.stopMotorIndexer();
-								},
-								ThroatAndIndexerSubsystem),
+						ThroatAndIndexerSubsystem.runMotorWithPeriodicReverseCommand(),
 						Commands.startEnd(
 								ShooterSubsystem::runShooter, //runs at a set speed, josh will drive to aim, backup if data-table fails
 								ShooterSubsystem::standbyMotor,
@@ -265,12 +291,7 @@ private double[] getHubTarget() {
 									intaketestSubsystem.IntakeOcilateCommand();
 								},
 								() -> intaketestSubsystem.IntakeUpCommand(),
-								intaketestSubsystem),
-						Commands.repeatingSequence(
-								Commands.waitSeconds(1),
-								ThroatAndIndexerSubsystem.reverseMotorCommand())));
-
-		// Right trigger: hub shot — aims turret at hub and fires.
+								intaketestSubsystem)));		// Right trigger: hub shot — aims turret at hub and fires.
 		// On release, flywheels drop to standby RPM rather than stopping so the
 		// heavy flywheels stay in motion and reach full speed faster on the next shot.
 		joystick.rightTrigger().whileTrue(
@@ -292,10 +313,8 @@ private double[] getHubTarget() {
 									intaketestSubsystem.IntakeOcilateCommand();
 								},
 								() -> intaketestSubsystem.IntakeUpCommand(),
-								intaketestSubsystem),
-						Commands.repeatingSequence(
-								Commands.waitSeconds(1),
-								ThroatAndIndexerSubsystem.reverseMotorCommand())));
+								intaketestSubsystem)
+						));
 
 		//////////////////////////////////////////////////////////////////////////////
 		/// COPILOT CONTROLS
@@ -379,10 +398,8 @@ copilotController.leftTrigger().whileTrue(
 									intaketestSubsystem.IntakeOcilateCommand();
 								},
 								() -> intaketestSubsystem.IntakeUpCommand(),
-								intaketestSubsystem),
-						Commands.repeatingSequence(
-								Commands.waitSeconds(1),
-								ThroatAndIndexerSubsystem.reverseMotorCommand())));
+								intaketestSubsystem)
+						));
 
 				//	^ For feeding
 
