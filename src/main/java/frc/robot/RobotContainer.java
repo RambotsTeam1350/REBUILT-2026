@@ -126,8 +126,6 @@ public class RobotContainer {
 		matchTimeNotifier.startPeriodic(0.5);
 
 		NamedCommands.registerCommand("TurretAutoAimToHub", turretSubsystem.setTurretPositionVariable());
-		NamedCommands.registerCommand("runMotorCommand",
-				Commands.parallel(ShooterSubsystem.runMotorCommand(), ThroatAndIndexerSubsystem.runMotorCommand()));
 		NamedCommands.registerCommand("ClimbDownCommand", climberSubsystem.ClimbDownCommand());
 
 		autoChooser = AutoBuilder.buildAutoChooser("middle boring");
