@@ -11,7 +11,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "runShooterCommand"
+                  "name": "RevShooterMotor"
                 }
               },
               {
@@ -25,13 +25,7 @@
                       }
                     },
                     {
-                      "type": "named",
-                      "data": {
-                        "name": "AimTurret"
-                      }
-                    },
-                    {
-                      "type": "sequential",
+                      "type": "deadline",
                       "data": {
                         "commands": [
                           {
@@ -43,126 +37,38 @@
                           {
                             "type": "named",
                             "data": {
-                              "name": "runSpindexerCommand"
+                              "name": "AimTurret"
                             }
                           }
                         ]
                       }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "runShooterCommand"
-                }
-              },
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
+                    },
+                    {
+                      "type": "sequential",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "runSpindexerCommand"
+                            }
+                          },
+                          {
+                            "type": "wait",
+                            "data": {
+                              "waitTime": 1.5
+                            }
+                          }
+                        ]
+                      }
+                    },
                     {
                       "type": "path",
                       "data": {
                         "pathName": "simple middle depot 2"
                       }
-                    },
-                    {
-                      "type": "parallel",
-                      "data": {
-                        "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "runIntakeMotor"
-                            }
-                          },
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "IntakeDownCommand"
-                            }
-                          },
-                          {
-                            "type": "wait",
-                            "data": {
-                              "waitTime": 0.5
-                            }
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "simple depot 3"
-                      }
-                    },
-                    {
-                      "type": "parallel",
-                      "data": {
-                        "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "stopIntakeMotor"
-                            }
-                          },
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "IntakeHalfUpCommand"
-                            }
-                          },
-                          {
-                            "type": "wait",
-                            "data": {
-                              "waitTime": 0.5
-                            }
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "simple middle depot 4"
-                      }
-                    },
-                    {
-                      "type": "parallel",
-                      "data": {
-                        "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "runSpindexerCommand"
-                            }
-                          },
-                          {
-                            "type": "wait",
-                            "data": {
-                              "waitTime": 5.0
-                            }
-                          }
-                        ]
-                      }
                     }
                   ]
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "stopMotorCommand"
                 }
               }
             ]
