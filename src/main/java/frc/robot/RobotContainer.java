@@ -111,7 +111,13 @@ public class RobotContainer {
 				"runMotorCommand",
 				Commands.parallel(
 						ThroatAndIndexerSubsystem.runMotorCommand(),
-						ShooterSubsystem.runMotorCommand()));
+						Commands.run(
+							() -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
+							turretSubsystem
+							)
+						)
+					);
+
 		///////////////////////////////////////////////////////////////
 
 		// Start a background notifier to update the match time on the dashboard
@@ -182,7 +188,7 @@ private double[] getHubTarget() {
 		joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
 		// choose between pose aim test or center the turret
-		copilotController.rightBumper()
+		joystick.rightBumper()
 				.onTrue(turretSubsystem.setTurretPosition(turretSubsystem.turretDegreesAndEncoderUnits(0)));
 
 	/* 
@@ -279,8 +285,8 @@ private double[] getHubTarget() {
 			)
 		);*/
 		copilotController.rightBumper().onTrue(turretSubsystem.setTurretPositionVariable()); //for shooting
-		copilotController.leftBumper().onTrue(turretSubsystem.aimForLobShot()); //for feeding
-		copilotController.rightTrigger()
+		//copilotController.leftBumper().onTrue(turretSubsystem.aimForLobShot()); //for feeding
+		copilotController.leftBumper()
 				.onTrue(turretSubsystem.setTurretPosition(turretSubsystem.turretDegreesAndEncoderUnits(0)));
 
 	copilotController.rightTrigger().whileTrue(
