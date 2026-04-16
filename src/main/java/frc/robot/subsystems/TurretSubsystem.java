@@ -110,12 +110,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Refresh cached signals first so all reads in this loop see current values.
         BaseStatusSignal.refreshAll(motorPosition);
-
-        // Turret aiming is now driven by button commands (see RobotContainer).
-        // turretAutoAimToHubImmediate();
-        System.out.println("turret angle: " + motorPosition.getValueAsDouble());
     }
 
     /*
