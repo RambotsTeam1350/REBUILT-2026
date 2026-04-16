@@ -5,89 +5,73 @@
     "data": {
       "commands": [
         {
-          "type": "path",
-          "data": {
-            "pathName": "simple middle (BLUE)"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "AimAndShootEmptyHopper"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "simple middle depot 2"
-          }
-        },
-        {
           "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "named",
                 "data": {
-                  "name": "runIntakeMotor"
+                  "name": "RevShooterMotor"
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "IntakeDownCommand"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 0.5
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "simple middle (BLUE)"
+                      }
+                    },
+                    {
+                      "type": "deadline",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "wait",
+                            "data": {
+                              "waitTime": 1.5
+                            }
+                          },
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "AimTurret"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "sequential",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "runSpindexerCommand"
+                            }
+                          },
+                          {
+                            "type": "wait",
+                            "data": {
+                              "waitTime": 1.5
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "simple middle depot 2"
+                      }
+                    }
+                  ]
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "simple depot 3"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "stopIntakeMotor"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "IntakeHalfUpCommand"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 0.5
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "simple middle depot 4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "AimAndShootEmptyHopper"
           }
         }
       ]
