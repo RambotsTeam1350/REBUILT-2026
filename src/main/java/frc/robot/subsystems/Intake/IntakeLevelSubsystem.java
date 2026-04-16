@@ -35,6 +35,11 @@ public class IntakeLevelSubsystem extends SubsystemBase {
         cfg.Slot0.kA = 0.01; // A value: Acceleration
         cfg.Slot0.kS = 0.25; // S value: Soft Limit
 
+        cfg.CurrentLimits.StatorCurrentLimit = 40;
+        cfg.CurrentLimits.StatorCurrentLimitEnable = true;
+        cfg.CurrentLimits.SupplyCurrentLimit = 30;
+        cfg.CurrentLimits.SupplyCurrentLimitEnable = true;
+
         MotionMagicConfigs mm = cfg.MotionMagic;
         mm.MotionMagicCruiseVelocity = 16; // Target cruise velocity of 80 rps
         mm.MotionMagicAcceleration = 160; // Target acceleration of 160 rps/s (0.5 seconds)

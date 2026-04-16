@@ -138,7 +138,7 @@ This variable is assigned but never used. Minor, but could indicate incomplete v
 
 ### Strongly Recommended
 - [ ] Reassign CAN ID in `ShooterAimSubsystem` before re-enabling it (currently conflicts with ID 14)
-- [ ] Add explicit `StatorCurrentLimitConfigs` to Turret and IntakeLevel motors
+- [x] Add explicit `StatorCurrentLimitConfigs` to Turret and IntakeLevel motors — 40 A stator / 30 A supply, matching IntakeWheel and Throat subsystems
 - [ ] Confirm "middle boring" auto path file exists and runs correctly
 - [ ] Test intake oscillation command interrupt behavior on real hardware
 - [ ] Verify all physical offset constants match the actual robot
