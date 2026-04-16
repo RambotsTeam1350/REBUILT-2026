@@ -6,8 +6,10 @@ import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.*;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ThroatAndIndexerSubsystem extends SubsystemBase {
@@ -36,6 +38,10 @@ public class ThroatAndIndexerSubsystem extends SubsystemBase {
         motorThroat.getConfigurator().apply(cfg);
         motorIndexer.getConfigurator().apply(cfg);
     }
+
+    private static final double DEFAULT_REVERSE_INTERVAL = 3.0;
+    private static final double DEFAULT_REVERSE_DURATION = 0.2;
+    private static final double DEFAULT_REVERSE_SPEED = -0.4;
 
     public void runMotor() {
         motorThroat.set(0.6);
@@ -85,5 +91,41 @@ public class ThroatAndIndexerSubsystem extends SubsystemBase {
                 Commands.runOnce(() -> {
                     runMotor();
                 }));
+    }
+
+    /** Runs motors forward, briefly reversing every DEFAULT_REVERSE_INTERVAL seconds to clear jams. */
+    public Command runMotorWithPeriodicReverseCommand() {
+        Timer timer = new Timer();
+        boolean[] reversing = {false};
+
+        return new FunctionalCommand(
+            () -> {
+                timer.restart();
+                reversing[0] = false;
+                runMotor();
+            },
+            () -> {
+                if (!reversing[0]) {
+                    if (timer.hasElapsed(DEFAULT_REVERSE_INTERVAL)) {
+                        reversing[0] = true;
+                        timer.restart();
+                        reverseMotor(DEFAULT_REVERSE_SPEED);
+                    }
+                } else {
+                    if (timer.hasElapsed(DEFAULT_REVERSE_DURATION)) {
+                        reversing[0] = false;
+                        timer.restart();
+                        runMotor();
+                    }
+                }
+            },
+            interrupted -> {
+                stopMotorThroat();
+                stopMotorIndexer();
+                timer.stop();
+            },
+            () -> false,
+            this
+        );
     }
 }
