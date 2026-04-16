@@ -9,7 +9,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
+import java.util.function.Supplier;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -23,13 +24,13 @@ public class ShooterAimSubsystem extends SubsystemBase {
     public double TargetYposition = 4.03479; // Yₜ 158.85 in inches
 
     public double heightForAiming = heightOfHub - heightOfBot; // in meters
-    private SwerveDrivePoseEstimator poseEstimator;
+    private final Supplier<Pose2d> poseSupplier;
     private final TalonFX motor;
     private StatusSignal<Angle> motorPosition;
     private double gearBoxRatio = 9.0; // Assuming a 9:1 gear ratio for the shooter angle adjuster
 
-    public ShooterAimSubsystem(SwerveDrivePoseEstimator poseEstimator) {
-        this.poseEstimator = poseEstimator;
+    public ShooterAimSubsystem(Supplier<Pose2d> poseSupplier) {
+        this.poseSupplier = poseSupplier;
         // constructor code here, if needed
         motor = new TalonFX(14);
 
@@ -64,15 +65,15 @@ public class ShooterAimSubsystem extends SubsystemBase {
     }
 
     public double getPoseEstimatorY() {
-        return poseEstimator.getEstimatedPosition().getY();
+        return poseSupplier.get().getY();
     }
 
     public double getPoseEstimatorX() {
-        return poseEstimator.getEstimatedPosition().getX();
+        return poseSupplier.get().getX();
     }
 
     public double getPoseEstimatorRotation() {
-        return poseEstimator.getEstimatedPosition().getRotation().getDegrees();
+        return poseSupplier.get().getRotation().getDegrees();
     }
 
     public double getAngleAdjusterTheta() {
