@@ -193,9 +193,9 @@ private double[] getHubTarget() {
 		joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
 		// choose between pose aim test or center the turret
-		copilotController.rightBumper()
+	/* 	copilotController.rightBumper()
 				.onTrue(turretSubsystem.setTurretPosition(turretSubsystem.turretDegreesAndEncoderUnits(0)));
-
+*/
 	/* 
 		joystick.x().onTrue(ShooterSubsystem.decreaseBackspinWheelSpeed());
 		joystick.y().onTrue(ShooterSubsystem.increaseBackspinWheelSpeed());
@@ -217,6 +217,7 @@ private double[] getHubTarget() {
 
 		// Left trigger: lob shot — aims turret toward alliance zone and fires.
 		// Use when collecting in mid-field and the hub is not lit.
+		/*
 		joystick.leftTrigger().whileTrue(
 				Commands.parallel(
 						turretSubsystem.aimForLobShot(),
@@ -231,6 +232,31 @@ private double[] getHubTarget() {
 								ShooterSubsystem::runShooter,
 								ShooterSubsystem::stopMotor,
 								ShooterSubsystem)));
+ */
+
+ joystick.leftTrigger().whileTrue(
+				Commands.parallel(
+						//turretSubsystem.setTurretPositionVariable(), // replace with zero positioning if turret aiming fails
+						Commands.startEnd(
+								() -> ThroatAndIndexerSubsystem.runMotor(),
+								() -> {
+									ThroatAndIndexerSubsystem.stopMotorThroat();
+									ThroatAndIndexerSubsystem.stopMotorIndexer();
+								},
+								ThroatAndIndexerSubsystem),
+						Commands.startEnd(
+								ShooterSubsystem::runShooter, //runs at a set speed, josh will drive to aim, backup if data-table fails
+								ShooterSubsystem::standbyMotor,
+								ShooterSubsystem),
+						Commands.startEnd(
+								() -> {
+									intaketestSubsystem.IntakeOcilateCommand();
+								},
+								() -> intaketestSubsystem.IntakeUpCommand(),
+								intaketestSubsystem),
+						Commands.repeatingSequence(
+								Commands.waitSeconds(1),
+								ThroatAndIndexerSubsystem.reverseMotorCommand())));
 
 		// Right trigger: hub shot — aims turret at hub and fires.
 		// On release, flywheels drop to standby RPM rather than stopping so the
@@ -246,7 +272,7 @@ private double[] getHubTarget() {
 								},
 								ThroatAndIndexerSubsystem),
 						Commands.startEnd(
-								ShooterSubsystem::runShooter, //runs at a set speed, josh will drive to aim, backup if data-table fails
+								() -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()), //runs at a set speed, josh will drive to aim, backup if data-table fails
 								ShooterSubsystem::standbyMotor,
 								ShooterSubsystem),
 						Commands.startEnd(
@@ -290,10 +316,10 @@ private double[] getHubTarget() {
 			)
 		);*/
 		copilotController.rightBumper().onTrue(turretSubsystem.setTurretPositionVariable()); //for shooting
-		copilotController.leftBumper().onTrue(turretSubsystem.aimForLobShot()); //for feeding
-		copilotController.rightTrigger()
+		copilotController.leftBumper().onTrue(turretSubsystem.setTurretPosition(turretSubsystem.turretDegreesAndEncoderUnits(0))); //for feeding
+		/*copilotController.rightTrigger()
 				.onTrue(turretSubsystem.setTurretPosition(turretSubsystem.turretDegreesAndEncoderUnits(0)));
-
+*/ /* 
 	copilotController.rightTrigger().whileTrue(
 				Commands.parallel(
 						Commands.repeatingSequence(
@@ -321,7 +347,7 @@ private double[] getHubTarget() {
 								ThroatAndIndexerSubsystem.reverseMotorCommand())));
 
 				// ^ For Shooting at the hub
-			
+			*/
 copilotController.leftTrigger().whileTrue(
 				Commands.parallel(
 						//turretSubsystem.setTurretPositionVariable(), // replace with zero positioning if turret aiming fails
