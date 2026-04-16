@@ -5,9 +5,28 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "RevShooterMotor"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "simple right "
+            "pathName": "simple left (RED)"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "AimTurret"
+                }
+              }
+            ]
           }
         },
         {
@@ -23,10 +42,16 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 5.0
+                  "waitTime": 3.0
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "RevShooterMotor"
           }
         }
       ]

@@ -5,9 +5,28 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "RevShooterMotor"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "simple right "
+            "pathName": "simple right (RED)"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "AimTurret"
+                }
+              }
+            ]
           }
         },
         {
@@ -23,10 +42,16 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 2.5
+                  "waitTime": 1.5
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "RevShooterMotor"
           }
         },
         {
@@ -42,9 +67,41 @@
           }
         },
         {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeDownCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "stopIntakeMotor"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "simple right main 3"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "AimTurret"
+                }
+              }
+            ]
           }
         },
         {
@@ -69,7 +126,7 @@
         {
           "type": "named",
           "data": {
-            "name": "runMotorCommand"
+            "name": "RevShooterMotor"
           }
         }
       ]

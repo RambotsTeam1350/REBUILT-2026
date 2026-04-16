@@ -5,9 +5,28 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "RevShooterMotor"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "simple left"
+            "pathName": "simple left (RED)"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "AimTurret"
+                }
+              }
+            ]
           }
         },
         {
@@ -23,7 +42,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 2.5
+                  "waitTime": 1.5
                 }
               }
             ]
@@ -32,7 +51,7 @@
         {
           "type": "named",
           "data": {
-            "name": "stopMotorCommand"
+            "name": "RevShooterMotor"
           }
         },
         {
@@ -85,6 +104,19 @@
               {
                 "type": "named",
                 "data": {
+                  "name": "AimTurret"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
                   "name": "runMotorCommand"
                 }
               },
@@ -100,7 +132,7 @@
         {
           "type": "named",
           "data": {
-            "name": "stopMotorCommand"
+            "name": "RevShooterMotor"
           }
         }
       ]

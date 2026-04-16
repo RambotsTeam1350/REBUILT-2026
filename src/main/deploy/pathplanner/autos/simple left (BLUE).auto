@@ -5,9 +5,28 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "RevShooterMotor"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "simple right "
+            "pathName": "simple left (BLUE)"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "AimTurret"
+                }
+              }
+            ]
           }
         },
         {
@@ -23,7 +42,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 2.5
+                  "waitTime": 3.0
                 }
               }
             ]
@@ -32,19 +51,7 @@
         {
           "type": "named",
           "data": {
-            "name": "IntakeDownCommand"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "  right feed 2"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "right feed 3"
+            "name": "RevShooterMotor"
           }
         }
       ]

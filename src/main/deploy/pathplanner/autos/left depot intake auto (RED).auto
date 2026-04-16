@@ -5,9 +5,21 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "RevShooterMotor"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "simple right "
+            "pathName": "simple left (RED)"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AimTurret"
           }
         },
         {
@@ -23,7 +35,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 2.5
+                  "waitTime": 1.5
                 }
               }
             ]
@@ -32,19 +44,44 @@
         {
           "type": "named",
           "data": {
-            "name": "stopMotorCommand"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "IntakeDownCommand"
+            "name": "RevShooterMotor"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "right feed 2"
+            "pathName": "simple left depot 2"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "IntakeDownCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "runIntakeMotor"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "simple depot 3"
           }
         },
         {
@@ -75,7 +112,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "right feed 3"
+            "pathName": "simple left depot 4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AimTurret"
           }
         },
         {
@@ -91,7 +134,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 5.0
+                  "waitTime": 3.5
                 }
               }
             ]
@@ -100,7 +143,31 @@
         {
           "type": "named",
           "data": {
-            "name": "stopMotorCommand"
+            "name": "RevShooterMotor"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeDownCommand"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "simple left depot 5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AimTurret"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "runMotorCommand"
           }
         }
       ]

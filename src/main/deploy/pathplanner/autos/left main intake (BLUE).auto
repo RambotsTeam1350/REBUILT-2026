@@ -7,19 +7,13 @@
         {
           "type": "named",
           "data": {
-            "name": "IntakeUpCommand"
+            "name": "RevShooterMotor"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "PainandSuffering left 1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "PainandSuffering left 2"
+            "pathName": "simple left (BLUE)"
           }
         },
         {
@@ -29,9 +23,53 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "runIntakeMotor"
+                  "name": "AimTurret"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "runMotorCommand"
                 }
               },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.5
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "RevShooterMotor"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeDownCommand"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "simple left main 2"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
               {
                 "type": "named",
                 "data": {
@@ -39,9 +77,9 @@
                 }
               },
               {
-                "type": "wait",
+                "type": "named",
                 "data": {
-                  "waitTime": 0.5
+                  "name": "stopIntakeMotor"
                 }
               }
             ]
@@ -50,7 +88,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "PainandSuffering left 3"
+            "pathName": "simple left main 3"
           }
         },
         {
@@ -60,28 +98,10 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "stopIntakeMotor"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "IntakeUpCommand"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 0.5
+                  "name": "AimTurret"
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "PainandSuffering left 4"
           }
         },
         {
@@ -101,6 +121,12 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "RevShooterMotor"
           }
         }
       ]

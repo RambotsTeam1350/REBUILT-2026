@@ -102,6 +102,13 @@ public class RobotContainer {
 		NamedCommands.registerCommand("stopIntakeMotor", intakeWheelSubsystem.stopMotorCommand());
 		NamedCommands.registerCommand("IntakeDownCommand", intaketestSubsystem.IntakeDownCommand());
 		NamedCommands.registerCommand("IntakeUpCommand", intaketestSubsystem.IntakeUpCommand());
+		NamedCommands.registerCommand("IntakeHalfUpCommand", intaketestSubsystem.intakeHalfWayCommand());
+		NamedCommands.registerCommand("AimTurret", turretSubsystem.setTurretPositionVariable());
+		NamedCommands.registerCommand(
+			"RevShooterMotor",
+			Commands.run(
+				() -> ShooterSubsystem.standbyMotor()
+			));
 		NamedCommands.registerCommand(
 				"stopMotorCommand",
 				Commands.parallel(
@@ -115,7 +122,7 @@ public class RobotContainer {
 							() -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
 							turretSubsystem
 							)
-						)
+						) 
 					);
 
 		///////////////////////////////////////////////////////////////
@@ -125,9 +132,7 @@ public class RobotContainer {
 		// update twice per second
 		matchTimeNotifier.startPeriodic(0.5);
 
-		NamedCommands.registerCommand("TurretAutoAimToHub", turretSubsystem.setTurretPositionVariable());
-		NamedCommands.registerCommand("runMotorCommand",
-				Commands.parallel(ShooterSubsystem.runMotorCommand(), ThroatAndIndexerSubsystem.runMotorCommand()));
+		NamedCommands.registerCommand("TurretAutoAimToHub", turretSubsystem.TurretAutoAimToHub());
 		NamedCommands.registerCommand("ClimbDownCommand", climberSubsystem.ClimbDownCommand());
 
 		autoChooser = AutoBuilder.buildAutoChooser("middle boring");
@@ -188,7 +193,7 @@ private double[] getHubTarget() {
 		joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
 		// choose between pose aim test or center the turret
-		joystick.rightBumper()
+		copilotController.rightBumper()
 				.onTrue(turretSubsystem.setTurretPosition(turretSubsystem.turretDegreesAndEncoderUnits(0)));
 
 	/* 
@@ -285,8 +290,8 @@ private double[] getHubTarget() {
 			)
 		);*/
 		copilotController.rightBumper().onTrue(turretSubsystem.setTurretPositionVariable()); //for shooting
-		//copilotController.leftBumper().onTrue(turretSubsystem.aimForLobShot()); //for feeding
-		copilotController.leftBumper()
+		copilotController.leftBumper().onTrue(turretSubsystem.aimForLobShot()); //for feeding
+		copilotController.rightTrigger()
 				.onTrue(turretSubsystem.setTurretPosition(turretSubsystem.turretDegreesAndEncoderUnits(0)));
 
 	copilotController.rightTrigger().whileTrue(

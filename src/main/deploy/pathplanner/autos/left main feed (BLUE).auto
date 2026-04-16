@@ -5,9 +5,28 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "RevShooterMotor"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "simple left"
+            "pathName": "simple left (BLUE)"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "AimTurret"
+                }
+              }
+            ]
           }
         },
         {
@@ -23,7 +42,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 2.5
+                  "waitTime": 1.5
                 }
               }
             ]
@@ -32,13 +51,19 @@
         {
           "type": "named",
           "data": {
-            "name": "stopMotorCommand"
+            "name": "RevShooterMotor"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeDownCommand"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "simple left depot 2"
+            "pathName": "simple left main 2"
           }
         },
         {
@@ -48,38 +73,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "IntakeDownCommand"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "runIntakeMotor"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 0.5
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "simple depot 3"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "IntakeUpCommand"
+                  "name": "IntakeHalfUpCommand"
                 }
               },
               {
@@ -100,7 +94,20 @@
         {
           "type": "path",
           "data": {
-            "pathName": "simple left depot 4"
+            "pathName": "left feed 3"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "AimTurret"
+                }
+              }
+            ]
           }
         },
         {
@@ -125,7 +132,7 @@
         {
           "type": "named",
           "data": {
-            "name": "stopMotorCommand"
+            "name": "RevShooterMotor"
           }
         }
       ]

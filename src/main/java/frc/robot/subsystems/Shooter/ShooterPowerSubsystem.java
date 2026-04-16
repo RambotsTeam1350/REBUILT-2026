@@ -162,6 +162,7 @@ public class ShooterPowerSubsystem extends SubsystemBase {
      * Holds the flywheels at a low idle speed between shots. Use this as the
      * "end" action on triggers so the heavy flywheels stay in motion and can
      * reach full speed faster on the next shot.
+     * @return 
      */
     public void standbyMotor() {
         motor1.setControl(velocityRequest.withVelocity(rpmToRps(STANDBY_RPM)));

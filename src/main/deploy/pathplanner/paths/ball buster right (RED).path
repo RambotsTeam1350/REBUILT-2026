@@ -1,0 +1,118 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 4.478406693927469,
+        "y": 0.47676869701116853
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 8.237549194991056,
+        "y": 0.7980322003577818
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.497155635062612,
+        "y": 1.4145974955277278
+      },
+      "prevControl": {
+        "x": 8.497155635062612,
+        "y": 0.5708765652951695
+      },
+      "nextControl": {
+        "x": 8.497155635062612,
+        "y": 3.1195005314500683
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.497155635062612,
+        "y": 6.752754919499105
+      },
+      "prevControl": {
+        "x": 8.470584093892784,
+        "y": 5.9290371432344715
+      },
+      "nextControl": {
+        "x": 8.513381037567084,
+        "y": 7.255742397137746
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.685885509838998,
+        "y": 7.271967799642218
+      },
+      "prevControl": {
+        "x": 8.464704830053668,
+        "y": 7.223291592128801
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.6898395721925108,
+      "rotationDegrees": 135.0
+    },
+    {
+      "waypointRelativePos": 1.8288770053475951,
+      "rotationDegrees": 135.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "IntakeUpCommand",
+      "waypointRelativePos": 0.2338983050847458,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeUpCommand"
+        }
+      }
+    },
+    {
+      "name": "IntakeUpCommand",
+      "waypointRelativePos": 1.433898305084746,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeUpCommand"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 20.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "useDefaultConstraints": false
+}

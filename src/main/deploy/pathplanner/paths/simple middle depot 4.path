@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7311627906976743,
-        "y": 7.304418604651163
+        "x": 1.4715563506261176,
+        "y": 7.174615384615384
       },
       "isLocked": false,
       "linkedName": "simple depot 5"
     },
     {
       "anchor": {
-        "x": 2.098,
-        "y": 4.05
+        "x": 1.5526833631484793,
+        "y": 5.925259391771019
       },
       "prevControl": {
-        "x": 2.119295807802525,
-        "y": 4.299091325762335
+        "x": 1.5040071556350623,
+        "y": 7.174615384615384
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "middle updated"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],

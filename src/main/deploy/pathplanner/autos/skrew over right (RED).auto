@@ -7,13 +7,13 @@
         {
           "type": "named",
           "data": {
-            "name": "IntakeUpCommand"
+            "name": "IntakeDownCommand"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "PainandSuffering right 1"
+            "pathName": "PainandSuffering right 1 (RED)"
           }
         },
         {
@@ -60,7 +60,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "IntakeUpCommand"
+                  "name": "IntakeDownCommand"
                 }
               },
               {
@@ -91,6 +91,31 @@
               {
                 "type": "named",
                 "data": {
+                  "name": "RevShooterMotor"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "AimTurret"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.0
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
                   "name": "runMotorCommand"
                 }
               },
@@ -106,7 +131,7 @@
         {
           "type": "named",
           "data": {
-            "name": "stopMotorCommand"
+            "name": "RevShooterMotor"
           }
         }
       ]
