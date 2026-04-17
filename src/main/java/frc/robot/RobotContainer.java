@@ -148,9 +148,9 @@ public class RobotContainer {
                         () -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
                         ShooterSubsystem
                     )
-                ).withTimeout(7.0),
+                ).withTimeout(5.0),
                 // Ensure both systems are stopped/put to standby afterwards
-                Commands.run(
+                Commands.runOnce(
                     () -> {
                         ThroatAndIndexerSubsystem.stopMotorThroat();
                         ThroatAndIndexerSubsystem.stopMotorIndexer();

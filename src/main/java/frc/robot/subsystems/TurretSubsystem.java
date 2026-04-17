@@ -120,7 +120,7 @@ public class TurretSubsystem extends SubsystemBase {
 
         // Turret aiming is now driven by button commands (see RobotContainer).
         // turretAutoAimToHubImmediate();
-        //System.out.println("turret angle: " + motorPosition.getValueAsDouble());
+        System.out.println("turret angle: " + motorPosition.getValueAsDouble());
     }
 
     /*
@@ -182,7 +182,7 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public double turretDegreesAndEncoderUnits(double degrees) {
-        return (-0.0256402 * degrees) + 0.3256835;
+        return (-0.0256402 * degrees);
     }
 
     private double encoderUnitsToDegrees(double encoderUnits) {

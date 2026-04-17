@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "simple middle (BLUE)"
+            "pathName": "simple middle (RED)"
           }
         },
         {
@@ -23,15 +23,9 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "sequential",
           "data": {
             "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "runIntakeMotor"
-                }
-              },
               {
                 "type": "named",
                 "data": {
@@ -42,6 +36,12 @@
                 "type": "wait",
                 "data": {
                   "waitTime": 0.5
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "runIntakeMotor"
                 }
               }
             ]

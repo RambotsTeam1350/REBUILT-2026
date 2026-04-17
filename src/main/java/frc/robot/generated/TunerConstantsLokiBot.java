@@ -61,8 +61,8 @@ public class TunerConstantsLokiBot {
     private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration()
             .withCurrentLimits(
                     new CurrentLimitsConfigs()
-                            .withStatorCurrentLimit(Amps.of(120))
-                            .withSupplyCurrentLimit(Amps.of(50))
+                            .withStatorCurrentLimit(Amps.of(60))
+                            .withSupplyCurrentLimit(Amps.of(40))
                             .withStatorCurrentLimitEnable(true)
                             .withSupplyCurrentLimitEnable(true));
     private static final TalonFXConfiguration steerInitialConfigs = new TalonFXConfiguration()
