@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "simple right (BLUE)"
+            "pathName": "simple left (BLUE)"
           }
         },
         {
@@ -25,19 +25,38 @@
         {
           "type": "path",
           "data": {
-            "pathName": "simple right main 2"
+            "pathName": "simple left main 2"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "stopIntakeMotor"
+                }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.5
+                }
+              }
+            ]
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "simple right main 3"
+            "pathName": "simple left main 3"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "RevShooterMotor"
+            "name": "AimAndShootEmptyHopper"
           }
         }
       ]

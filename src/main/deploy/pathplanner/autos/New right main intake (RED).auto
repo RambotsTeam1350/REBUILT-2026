@@ -1,0 +1,49 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "simple right (RED)"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AimAndShootEmptyPreload"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeDownCommand"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "simple right main 2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "simple right main 3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AimAndShootEmptyHopper"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
