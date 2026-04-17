@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 0.4901293103448283,
-        "y": 4.85438282647585
+        "x": 1.1470483005366723,
+        "y": 5.9577101967799635
       },
       "prevControl": {
-        "x": 2.4534030133859748,
-        "y": 4.821932021466906
+        "x": 2.477531305903399,
+        "y": 5.909033989266548
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "left simple depot"
+      "linkedName": "for now 2"
     }
   ],
   "rotationTargets": [],
@@ -56,7 +56,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 90.0
+    "rotation": -178.49256424122515
   },
   "reversed": false,
   "folder": null,

@@ -13,7 +13,13 @@
         {
           "type": "named",
           "data": {
-            "name": "AimAndShootEmptyHopper"
+            "name": "AimAndShootEmptyPreload"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeDownCommand"
           }
         },
         {
@@ -64,24 +70,12 @@
                 }
               },
               {
-                "type": "named",
-                "data": {
-                  "name": "IntakeHalfUpCommand"
-                }
-              },
-              {
                 "type": "wait",
                 "data": {
                   "waitTime": 0.5
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "simple middle depot 4"
           }
         },
         {
