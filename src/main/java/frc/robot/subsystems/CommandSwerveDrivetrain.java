@@ -72,6 +72,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     // jump filter is bypassed so an AprilTag can seed the initial position from
     // origin.
     private boolean hasReceivedVisionFix = false;
+    // Counts consecutive frames where all vision measurements were rejected by the
+    // jump filter. When it hits the threshold the flag is cleared so a 2-tag
+    // detection can re-seed the estimator and recover from a bad initial pose.
+    private int consecutiveVisionRejections = 0;
+    private static final int kVisionRecoveryThreshold = 30; // ~0.6 s at 50 Hz
 
     Pose2d vision = LimelightHelpers.getBotPose2d_wpiBlue("limelight-fifteen");
 
@@ -467,44 +472,65 @@ testMotor = new TalonFX(9);
         if (LimelightHelpers.validPoseEstimate(llEstimate5)
                 && llEstimate5.tagCount >= 1
                 && llEstimate5.avgTagDist < kMaxTagDistanceMeters) {
-            if (!hasReceivedVisionFix) {
-                // Hard-seed the estimator on first tag detection so wheel odometry
-                // drift doesn't need to be filtered away — we know exactly where we are.
+            double xyStdDev5 = (llEstimate5.tagCount >= 2)
+                    ? 0.1 * llEstimate5.avgTagDist * llEstimate5.avgTagDist
+                    : 0.3 * llEstimate5.avgTagDist * llEstimate5.avgTagDist;
+            if (!hasReceivedVisionFix && llEstimate5.tagCount >= 2) {
+                // Require 2+ tags for hard-seed: single-tag pose ambiguity is unreliable
+                // and can lock the estimator into a wrong position.
                 poseEstimator.resetPosition(
                         getPigeon2().getRotation2d(),
                         getModulePositions(),
                         llEstimate5.pose);
                 hasReceivedVisionFix = true;
-            } else if (llEstimate5.pose.getTranslation()
+                consecutiveVisionRejections = 0;
+            } else if (hasReceivedVisionFix && llEstimate5.pose.getTranslation()
                     .getDistance(currentPose.getTranslation()) < kMaxPoseJumpMeters) {
-                // Scale X/Y stdDevs by distance squared: close tags get high trust, far tags
-                // get low trust. At 1m with 2 tags → 0.1; at 2m → 0.4; at 4m → 1.6.
-                // High rotation stddev keeps heading governed by Pigeon2, not Limelight.
-                double xyStdDev = (llEstimate5.tagCount >= 2)
-                        ? 0.1 * llEstimate5.avgTagDist * llEstimate5.avgTagDist
-                        : 0.3 * llEstimate5.avgTagDist * llEstimate5.avgTagDist;
-                Matrix<N3, N1> stdDevs = VecBuilder.fill(xyStdDev, xyStdDev, Math.toRadians(9999));
-                addVisionMeasurement(llEstimate5.pose, llEstimate5.timestampSeconds, stdDevs);
+                consecutiveVisionRejections = 0;
+                addVisionMeasurement(llEstimate5.pose, llEstimate5.timestampSeconds,
+                        VecBuilder.fill(xyStdDev5, xyStdDev5, Math.toRadians(9999)));
+            } else if (hasReceivedVisionFix) {
+                consecutiveVisionRejections++;
+            } else {
+                // Single tag, no fix yet — soft-seed with high stdDev to nudge from origin
+                // without committing to a potentially ambiguous pose.
+                addVisionMeasurement(llEstimate5.pose, llEstimate5.timestampSeconds,
+                        VecBuilder.fill(xyStdDev5 * 3, xyStdDev5 * 3, Math.toRadians(9999)));
             }
         }
 
         if (LimelightHelpers.validPoseEstimate(llEstimate3)
                 && llEstimate3.tagCount >= 1
                 && llEstimate3.avgTagDist < kMaxTagDistanceMeters) {
-            if (!hasReceivedVisionFix) {
+            double xyStdDev3 = (llEstimate3.tagCount >= 2)
+                    ? 0.1 * llEstimate3.avgTagDist * llEstimate3.avgTagDist
+                    : 0.3 * llEstimate3.avgTagDist * llEstimate3.avgTagDist;
+            if (!hasReceivedVisionFix && llEstimate3.tagCount >= 2) {
                 poseEstimator.resetPosition(
                         getPigeon2().getRotation2d(),
                         getModulePositions(),
                         llEstimate3.pose);
                 hasReceivedVisionFix = true;
-            } else if (llEstimate3.pose.getTranslation()
+                consecutiveVisionRejections = 0;
+            } else if (hasReceivedVisionFix && llEstimate3.pose.getTranslation()
                     .getDistance(currentPose.getTranslation()) < kMaxPoseJumpMeters) {
-                double xyStdDev = (llEstimate3.tagCount >= 2)
-                        ? 0.1 * llEstimate3.avgTagDist * llEstimate3.avgTagDist
-                        : 0.3 * llEstimate3.avgTagDist * llEstimate3.avgTagDist;
-                Matrix<N3, N1> stdDevs = VecBuilder.fill(xyStdDev, xyStdDev, Math.toRadians(9999));
-                addVisionMeasurement(llEstimate3.pose, llEstimate3.timestampSeconds, stdDevs);
+                consecutiveVisionRejections = 0;
+                addVisionMeasurement(llEstimate3.pose, llEstimate3.timestampSeconds,
+                        VecBuilder.fill(xyStdDev3, xyStdDev3, Math.toRadians(9999)));
+            } else if (hasReceivedVisionFix) {
+                consecutiveVisionRejections++;
+            } else {
+                addVisionMeasurement(llEstimate3.pose, llEstimate3.timestampSeconds,
+                        VecBuilder.fill(xyStdDev3 * 3, xyStdDev3 * 3, Math.toRadians(9999)));
             }
+        }
+
+        // If both cameras have been consistently rejected by the jump filter for too
+        // long, the initial seed was likely bad. Clear the flag so a reliable 2-tag
+        // detection can re-seed the estimator.
+        if (consecutiveVisionRejections >= kVisionRecoveryThreshold) {
+            hasReceivedVisionFix = false;
+            consecutiveVisionRejections = 0;
         }
         // System.out.println("X: " + poseEstimator.getEstimatedPosition().getX() + " Y:
         // " + poseEstimator.getEstimatedPosition().getY() + " Angle: " +
