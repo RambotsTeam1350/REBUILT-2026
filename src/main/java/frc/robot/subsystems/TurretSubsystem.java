@@ -73,6 +73,7 @@ public class TurretSubsystem extends SubsystemBase {
     private SwerveDrivePoseEstimator poseEstimator;
     private final Notifier speedNotifier;
     private final Notifier speedNotifier2;
+    private final Notifier speedNotifier3;
 
     public TurretSubsystem(SwerveDrivePoseEstimator poseEstimator) {
         this.poseEstimator = poseEstimator;
@@ -102,10 +103,13 @@ public class TurretSubsystem extends SubsystemBase {
 
         speedNotifier = new Notifier(this::updateTurretAngle);
         speedNotifier2 = new Notifier(this::updateTurretAngle2);
+        speedNotifier3 = new Notifier(this::updateDistanceToHub);
+        
 
         // update twice per second
         speedNotifier.startPeriodic(0.5);
         speedNotifier2.startPeriodic(0.5);
+        speedNotifier3.startPeriodic(0.5);
 
     }
 
@@ -346,6 +350,10 @@ public class TurretSubsystem extends SubsystemBase {
     private void updateTurretAngle2() {
         SmartDashboard.putNumber("position turret will turn to",
                 turretDegreesAndEncoderUnits(getRawAngle()));
+    }
+
+    private void updateDistanceToHub() {
+        SmartDashboard.putNumber("distance to hub", getDistanceToHub());
     }
 
     /**
