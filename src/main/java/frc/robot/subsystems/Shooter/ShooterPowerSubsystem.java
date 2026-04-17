@@ -21,7 +21,7 @@ public class ShooterPowerSubsystem extends SubsystemBase {
 
     // Target speeds in RPM — adjust via tuning commands, setters, or the
     // distance-based calculator below once that is calibrated.
-    public double shooterTargetRPM = 4500.0;
+    public double shooterTargetRPM = 1800.0;
     public double backspinTargetRPM = 4500.0;
 
     // Idle speed kept on the flywheels between shots so the heavy flywheels
@@ -64,8 +64,8 @@ public class ShooterPowerSubsystem extends SubsystemBase {
         cfg.Slot0 = new Slot0Configs()
                 .withKS(0.25)   // V — tune first on a still motor
                 .withKV(0.12)   // V/RPS — tune to match actual free speed at 12 V
-                .withKA(0.02)   // V/(RPS/s) — increase to fight flywheel inertia
-                .withKP(0.5)    // V/RPS error — increase for faster recovery
+                .withKA(0.1)   // V/(RPS/s) — increase to fight flywheel inertia
+                .withKP(0.6)    // V/RPS error — increase for faster recovery
                 .withKI(0)
                 .withKD(0);
 

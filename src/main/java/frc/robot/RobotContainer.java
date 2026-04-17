@@ -169,6 +169,38 @@ public class RobotContainer {
 			)
 		); */
 
+NamedCommands.registerCommand(
+				"ActivateStandByMotors",
+				Commands.sequence(
+						// Then run throat and shooter in parallel for N seconds
+						Commands.sequence(
+								Commands.run(
+										() -> ShooterSubsystem
+												.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
+										ShooterSubsystem
+								/*
+								* Makes shooter rev up then after the set time will it run the spindexer/throat
+								* to feed the shooter
+								*/
+								).withTimeout(0.5),
+
+								Commands.runOnce(
+										() -> {
+											ThroatAndIndexerSubsystem.runMotorCommand();
+										},
+										ThroatAndIndexerSubsystem)
+
+						).withTimeout(0.5),
+						// Ensure both systems are stopped/put to standby afterwards
+						Commands.runOnce(
+								() -> {
+									ThroatAndIndexerSubsystem.stopMotorThroat();
+									ThroatAndIndexerSubsystem.stopMotorIndexer();
+									ShooterSubsystem.standbyMotor();
+								},
+								ThroatAndIndexerSubsystem,
+								ShooterSubsystem)));
+
 		NamedCommands.registerCommand(
 				"AimAndShootEmptyPreload",
 				Commands.sequence(
@@ -184,7 +216,7 @@ public class RobotContainer {
 								* Makes shooter rev up then after the set time will it run the spindexer/throat
 								* to feed the shooter
 								*/
-								).withTimeout(3.0),
+								).withTimeout(6.0),
 
 								Commands.runOnce(
 										() -> {
