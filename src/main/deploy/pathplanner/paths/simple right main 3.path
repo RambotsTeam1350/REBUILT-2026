@@ -69,10 +69,15 @@
       }
     },
     {
-      "name": "IntakeUpCommand",
+      "name": "IntakeHalfUpCommand",
       "waypointRelativePos": 2.0,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeHalfUpCommand"
+        }
+      }
     }
   ],
   "globalConstraints": {

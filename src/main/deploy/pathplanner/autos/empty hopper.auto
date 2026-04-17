@@ -13,19 +13,7 @@
         {
           "type": "named",
           "data": {
-            "name": "AimAndShootEmptyHopper"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "stopMotorCommand"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "IntakeDownCommand"
+            "name": "AimAndShootEmptyPreload"
           }
         }
       ]
