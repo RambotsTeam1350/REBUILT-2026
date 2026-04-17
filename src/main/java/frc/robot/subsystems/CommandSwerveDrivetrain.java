@@ -5,9 +5,11 @@ import static edu.wpi.first.units.Units.*;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 //import com.ctre.phoenix6.signals.NeutralMode;
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -35,6 +37,7 @@ import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -46,7 +49,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
-import frc.robot.generated.TunerConstantsLokiBot.TunerSwerveDrivetrain; //This still has to be changed when you change which bot you're using
+import frc.robot.generated.TunerConstantsLokiBotDistricts.TunerSwerveDrivetrain; //This still has to be changed when you change which bot you're using
 import frc.robot.generated.TunerConstants;
 import frc.robot.LimelightHelpers;
 
@@ -74,6 +77,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private double initialLeftDistance = 0.0;
     private double initialRightDistance = 0.0;
+
+    private final TalonFX testMotor;
+
+    public StatusSignal<Angle> position;
+
 
     // public double positiveXDistance =
     // poseEstimator.getEstimatedPosition().getX();
@@ -208,6 +216,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
 
+        testMotor = new TalonFX(9);
+        position = testMotor.getPosition();
+
         // initial left/right wheel distances (meters)
 
         poseEstimator = new SwerveDrivePoseEstimator(
@@ -310,6 +321,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        testMotor = new TalonFX(9);
+        position = testMotor.getPosition();
 
     }
 
@@ -351,7 +364,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-
+testMotor = new TalonFX(9);
+        position = testMotor.getPosition();
     }
 
     /**
@@ -496,6 +510,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // " + poseEstimator.getEstimatedPosition().getY() + " Angle: " +
         // poseEstimator.getEstimatedPosition().getRotation().getDegrees() + "
         // degrees");
+
+        //System.out.println(position);
 
     }
 

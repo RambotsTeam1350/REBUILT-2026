@@ -1,0 +1,31 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "simple middle (BLUE)"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AimAndShootEmptyHopper"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "simple middle depot 2"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
