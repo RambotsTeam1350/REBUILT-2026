@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "ActivateStandByMotors"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "simple right (BLUE)"
@@ -13,7 +19,7 @@
         {
           "type": "named",
           "data": {
-            "name": "AimAndShootEmptyPreload"
+            "name": "AimAndShootEmptyHopper"
           }
         },
         {

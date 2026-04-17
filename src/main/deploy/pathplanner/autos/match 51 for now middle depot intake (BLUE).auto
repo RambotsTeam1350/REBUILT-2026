@@ -5,21 +5,21 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "ActivateStandByMotors"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "simple middle (BLUE)"
+            "pathName": "simple middle (RED)"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "AimAndShootEmptyHopper"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "simple middle depot 2"
           }
         }
       ]
