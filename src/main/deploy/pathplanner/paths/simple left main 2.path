@@ -85,17 +85,6 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "IntakeDownCommand",
-      "waypointRelativePos": 0.0,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "IntakeDownCommand"
-        }
-      }
-    },
-    {
       "name": "runIntakeMotor",
       "waypointRelativePos": 1.3647058823529408,
       "endWaypointRelativePos": null,

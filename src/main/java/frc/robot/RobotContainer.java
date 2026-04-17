@@ -169,7 +169,41 @@ public class RobotContainer {
 			)
 		); */
 
-		///////////////////////////////////////////////////////////////
+		NamedCommands.registerCommand(
+				"AimAndShootEmptyPreload",
+				Commands.sequence(
+						// Aim first
+						turretSubsystem.setTurretPositionVariable(),
+						// Then run throat and shooter in parallel for N seconds
+						Commands.sequence(
+								Commands.run(
+										() -> ShooterSubsystem
+												.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
+										ShooterSubsystem
+								/*
+								* Makes shooter rev up then after the set time will it run the spindexer/throat
+								* to feed the shooter
+								*/
+								).withTimeout(3.0),
+
+								Commands.runOnce(
+										() -> {
+											ThroatAndIndexerSubsystem.runMotorCommand();
+										},
+										ThroatAndIndexerSubsystem)
+
+						).withTimeout(3.0),
+						// Ensure both systems are stopped/put to standby afterwards
+						Commands.runOnce(
+								() -> {
+									ThroatAndIndexerSubsystem.stopMotorThroat();
+									ThroatAndIndexerSubsystem.stopMotorIndexer();
+									ShooterSubsystem.standbyMotor();
+								},
+								ThroatAndIndexerSubsystem,
+								ShooterSubsystem)));
+
+								///////////////////////////////////////////////////////////////
 
 		// Start a background notifier to update the match time on the dashboard
 		matchTimeNotifier = new Notifier(this::updateMatchTimeOnDashboard);
