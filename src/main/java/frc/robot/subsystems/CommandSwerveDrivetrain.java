@@ -24,7 +24,6 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -32,7 +31,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -63,14 +61,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
     private double maxSpeedMetersPerSecond = 5.0; // Example max speed, adjust as needed
-    // Do NOT instantiate a second Pigeon2 here — the CTRE swerve framework already
-    // owns CAN ID 0 internally. Use getPigeon2() to access it.
-    public SwerveDrivePoseEstimator poseEstimator;
     private final Field2d m_wpiLibField = new Field2d();
     // False until the first valid vision measurement is accepted. While false, the
-    // pose
-    // jump filter is bypassed so an AprilTag can seed the initial position from
-    // origin.
+    // pose jump filter is bypassed so an AprilTag can seed the initial position.
     private boolean hasReceivedVisionFix = false;
     // Counts consecutive frames where all vision measurements were rejected by the
     // jump filter. When it hits the threshold the flag is cleared so a 2-tag
@@ -78,45 +71,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private int consecutiveVisionRejections = 0;
     private static final int kVisionRecoveryThreshold = 30; // ~0.6 s at 50 Hz
 
-    Pose2d vision = LimelightHelpers.getBotPose2d_wpiBlue("limelight-fifteen");
-
-    private double initialLeftDistance = 0.0;
-    private double initialRightDistance = 0.0;
-
-    private final TalonFX testMotor;
-
-    public StatusSignal<Angle> position;
-
-
     // public double positiveXDistance =
     // poseEstimator.getEstimatedPosition().getX();
     // public double positiveYDistance =
     // poseEstimator.getEstimatedPosition().getY();
     // public double positiveRotation =
     // poseEstimator.getEstimatedPosition().getRotation().getDegrees();
-
-    // positions of each swere module from the center of the bot
-    private static final Translation2d frontLeftLocation = new Translation2d(0.29, 0.29); // +X = forward, +Y = left
-    private static final Translation2d frontRightLocation = new Translation2d(0.29, -0.29); // +X = forward, -Y = right
-    private static final Translation2d backLeftLocation = new Translation2d(-0.29, 0.29); // -X = back, +Y = left
-    private static final Translation2d backRightLocation = new Translation2d(-0.29, -0.29); // -X = back, -Y = right
-
-    private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
-            frontLeftLocation,
-            frontRightLocation,
-            backLeftLocation,
-            backRightLocation);
-
-    // Do NOT cache module positions here. We must read the current module positions
-    // each update so the pose estimator can integrate wheel movement.
-    private SwerveModulePosition[] getModulePositions() {
-        return new SwerveModulePosition[] {
-                getModule(0).getCachedPosition(),
-                getModule(1).getCachedPosition(),
-                getModule(2).getCachedPosition(),
-                getModule(3).getCachedPosition(),
-        };
-    }
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -221,29 +181,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
 
-        testMotor = new TalonFX(9);
-        position = testMotor.getPosition();
-
-        // initial left/right wheel distances (meters)
-
-        poseEstimator = new SwerveDrivePoseEstimator(
-                kinematics,
-                getGyroscopeRotation(),
-                getModulePositions(),
-                new Pose2d(0, 0, new Rotation2d()));
-
         SmartDashboard.putData("WPILib Field", m_wpiLibField);
 
-        // Initialize Limelight robot orientation now that poseEstimator exists
-        LimelightHelpers.SetRobotOrientation(
-                "limelight-fifteen",
-                poseEstimator.getEstimatedPosition().getRotation().getDegrees(),
-                0, 0, 0, 0, 0);
-
-        LimelightHelpers.SetRobotOrientation(
-                "limelight-three",
-                poseEstimator.getEstimatedPosition().getRotation().getDegrees(),
-                0, 0, 0, 0, 0);
+        // Robot starts at heading 0 — orientation will be updated every loop.
+        LimelightHelpers.SetRobotOrientation("limelight-fifteen", 0, 0, 0, 0, 0, 0);
+        // LimelightHelpers.SetRobotOrientation("limelight-three", 0, 0, 0, 0, 0, 0);
 
         RobotConfig config;
         try {
@@ -326,9 +268,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-        testMotor = new TalonFX(9);
-        position = testMotor.getPosition();
-
     }
 
     /**
@@ -369,8 +308,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
-testMotor = new TalonFX(9);
-        position = testMotor.getPosition();
     }
 
     /**
@@ -429,29 +366,15 @@ testMotor = new TalonFX(9);
             });
         }
 
-        // Read fresh module positions each loop so odometry integrates wheel motion
-        SwerveModulePosition[] modulePositions = getModulePositions();
-        poseEstimator.update(
-                getGyroscopeRotation(),
-                modulePositions);
-        m_wpiLibField.setRobotPose(poseEstimator.getEstimatedPosition());
+        m_wpiLibField.setRobotPose(getState().Pose);
 
-        // MegaTag2 requires updated robot orientation EVERY cycle for accurate pose
-        // estimates.
-        // Use the raw Pigeon2 yaw — NOT the fused estimator pose — to avoid a feedback
-        // loop
-        // where a prior Limelight correction contaminates the heading fed back to the
-        // Limelight.
-        // Use field-relative heading from the pose estimator, not raw Pigeon2 yaw.
-        // Raw yaw has no knowledge of field-forward, so if the robot initializes at any
-        // heading other than 0° it introduces a permanent offset into MegaTag2's X/Y
-        // solve. The pose estimator heading is seeded correctly by PathPlanner's
-        // starting pose (or first vision hard-seed) and is safe to use here because
-        // the rotation stddev passed to addVisionMeasurement is effectively infinite
-        // (Math.toRadians(9999)), preventing any Limelight feedback into heading.
-        double currentHeading = poseEstimator.getEstimatedPosition().getRotation().getDegrees();
+        // MegaTag2 requires updated robot orientation EVERY cycle. Use the CTRE fused
+        // pose heading (not raw Pigeon2 yaw) so field-forward is correct regardless of
+        // boot orientation. Rotation stddev is effectively infinite so Limelight cannot
+        // feed back into the heading, preventing a correction loop.
+        double currentHeading = getState().Pose.getRotation().getDegrees();
         LimelightHelpers.SetRobotOrientation("limelight-fifteen", currentHeading, 0, 0, 0, 0, 0);
-        LimelightHelpers.SetRobotOrientation("limelight-three", currentHeading, 0, 0, 0, 0, 0);
+        // LimelightHelpers.SetRobotOrientation("limelight-three", currentHeading, 0, 0, 0, 0, 0);
 
         frc.robot.LimelightHelpers.PoseEstimate llEstimate5 = LimelightHelpers
                 .getBotPoseEstimate_wpiBlue_MegaTag2("limelight-fifteen");
@@ -467,7 +390,7 @@ testMotor = new TalonFX(9);
         // so an AprilTag can seed the initial pose from origin during off-field testing
         // or when no PathPlanner auto starting pose is set.
         final double kMaxPoseJumpMeters = 1.0;
-        Pose2d currentPose = poseEstimator.getEstimatedPosition();
+        Pose2d currentPose = getState().Pose;
 
         if (LimelightHelpers.validPoseEstimate(llEstimate5)
                 && llEstimate5.tagCount >= 1
@@ -478,12 +401,7 @@ testMotor = new TalonFX(9);
             if (!hasReceivedVisionFix && llEstimate5.tagCount >= 2) {
                 // Require 2+ tags for hard-seed: single-tag pose ambiguity is unreliable
                 // and can lock the estimator into a wrong position.
-                poseEstimator.resetPosition(
-                        getPigeon2().getRotation2d(),
-                        getModulePositions(),
-                        llEstimate5.pose);
-                hasReceivedVisionFix = true;
-                consecutiveVisionRejections = 0;
+                resetPose(llEstimate5.pose);
             } else if (hasReceivedVisionFix && llEstimate5.pose.getTranslation()
                     .getDistance(currentPose.getTranslation()) < kMaxPoseJumpMeters) {
                 consecutiveVisionRejections = 0;
@@ -506,12 +424,7 @@ testMotor = new TalonFX(9);
                     ? 0.1 * llEstimate3.avgTagDist * llEstimate3.avgTagDist
                     : 0.3 * llEstimate3.avgTagDist * llEstimate3.avgTagDist;
             if (!hasReceivedVisionFix && llEstimate3.tagCount >= 2) {
-                poseEstimator.resetPosition(
-                        getPigeon2().getRotation2d(),
-                        getModulePositions(),
-                        llEstimate3.pose);
-                hasReceivedVisionFix = true;
-                consecutiveVisionRejections = 0;
+                resetPose(llEstimate3.pose);
             } else if (hasReceivedVisionFix && llEstimate3.pose.getTranslation()
                     .getDistance(currentPose.getTranslation()) < kMaxPoseJumpMeters) {
                 consecutiveVisionRejections = 0;
@@ -559,13 +472,12 @@ testMotor = new TalonFX(9);
     }
 
     /**
-     * Expose the internal WPILib pose estimator so other subsystems (e.g. turret)
-     * can use the robot pose for calculations.
-     *
-     * @return the SwerveDrivePoseEstimator used by this drivetrain
+     * Returns the current robot pose from the CTRE fused estimator (250 Hz).
+     * Use this instead of a separate WPILib estimator so all subsystems share one
+     * source of truth.
      */
-    public SwerveDrivePoseEstimator getPoseEstimator() {
-        return poseEstimator;
+    public Pose2d getPose() {
+        return getState().Pose;
     }
 
     /**
@@ -576,50 +488,8 @@ testMotor = new TalonFX(9);
     @Override
     public void resetPose(Pose2d pose) {
         super.resetPose(pose);
-        if (poseEstimator != null) {
-            poseEstimator.resetPosition(getPigeon2().getRotation2d(), getModulePositions(), pose);
-        }
         hasReceivedVisionFix = true;
-    }
-
-    /**
-     * Moves 3the swerve drive at a specific speed in a given direction, with an
-     * option for field-relative movement.
-     *
-     * @param speedMetersPerSecond The desired speed in meters per second.
-     * @param direction            The desired direction of movement as a
-     *                             Rotation2d.
-     * @param isFieldRelative      Whether the movement should be field-relative.
-     */
-    public void drive(Translation2d translation, double directionDegrees, boolean isFieldRelative) {
-
-        Rotation2d direction = Rotation2d.fromDegrees(directionDegrees);
-
-        Translation2d adjustedTranslation = new Translation2d(
-                translation.getNorm() * direction.getCos(),
-                translation.getNorm() * direction.getSin());
-
-        // Get the current robot orientation
-        Rotation2d robotAngle = getGyroscopeRotation();
-
-        // Calculate the desired chassis speeds
-        ChassisSpeeds chassisSpeeds = isFieldRelative
-                ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                        translation.getX(), translation.getY(), 0.0, robotAngle)
-                : new ChassisSpeeds(translation.getX(), translation.getY(), 0.0);
-
-        // Convert chassis speeds to swerve module states
-        SwerveModuleState[] moduleStates = kinematics.toSwerveModuleStates(chassisSpeeds);
-
-        // Normalize wheel speeds to prevent saturation
-        SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, maxSpeedMetersPerSecond);
-
-        // Set the desired states to the swerve modules
-        /*
-         * for (int i = 0; i < swerveModules.length; i++) {
-         * swerveModules[i].setDesiredState(moduleStates[i]);
-         * }
-         */
+        consecutiveVisionRejections = 0;
     }
 
     private void startSimThread() {
@@ -685,17 +555,8 @@ testMotor = new TalonFX(9);
             Pose2d visionRobotPoseMeters,
             double timestampSeconds,
             Matrix<N3, N1> visionMeasurementStdDevs) {
-        // CTRE's addVisionMeasurement expects time in CTRE domain
-        // (Utils.fpgaToCurrentTime converts it).
-        double ctrTime = Utils.fpgaToCurrentTime(timestampSeconds);
-        super.addVisionMeasurement(visionRobotPoseMeters, ctrTime, visionMeasurementStdDevs);
-        if (poseEstimator != null) {
-            // WPILib's estimator expects raw FPGA seconds (same domain as
-            // Timer.getFPGATimestamp()).
-            // The Limelight timestamp is already in FPGA time, so pass it directly — do NOT
-            // use ctrTime.
-            poseEstimator.setVisionMeasurementStdDevs(visionMeasurementStdDevs);
-            poseEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
-        }
+        // CTRE's addVisionMeasurement expects time in the CTRE domain.
+        super.addVisionMeasurement(visionRobotPoseMeters,
+                Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
     }
 }

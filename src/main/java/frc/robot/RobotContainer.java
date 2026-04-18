@@ -17,8 +17,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.math.estimator.PoseEstimator;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -28,7 +26,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignToHub;
-import frc.robot.commands.AlignToReefTagRelative;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ThroatAndIndexerSubsystem;
@@ -87,7 +84,7 @@ public class RobotContainer {
 
 		// Construct the turret after the drivetrain so we can pass the drivetrain's
 		// pose estimator into the turret constructor.
-		turretSubsystem = new TurretSubsystem(drivetrain.getPoseEstimator());
+		turretSubsystem = new TurretSubsystem(drivetrain::getPose);
 		// ShooterAimSubsystem uses TurretSubsystem as its distance source so we both
 		// subsystems share the same turret-corrected distance to hub.
 		// shooterAimSubsystem = new ShooterAimSubsystem(turretSubsystem);
