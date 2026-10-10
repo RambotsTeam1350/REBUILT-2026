@@ -121,7 +121,9 @@ public class RobotContainer {
 						Commands.run(
 							() -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
 						    ShooterSubsystem
-							)
+							),
+						// Oscillate the intake to agitate balls toward the indexer while shooting
+						intaketestSubsystem.IntakeOcilateCommand()
 						) 
 					);
 	
@@ -147,7 +149,9 @@ public class RobotContainer {
                     Commands.run(
                         () -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
                         ShooterSubsystem
-                    )
+                    ),
+                    // Oscillate the intake to agitate balls toward the indexer while shooting
+                    intaketestSubsystem.IntakeOcilateCommand()
                 ).withTimeout(5.0),
                 // Ensure both systems are stopped/put to standby afterwards
                 Commands.runOnce(
@@ -158,7 +162,9 @@ public class RobotContainer {
                     },
                     ThroatAndIndexerSubsystem,
                     ShooterSubsystem
-                )
+                ),
+                // Stow the intake after oscillating, matching the teleop shoot bindings
+                intaketestSubsystem.IntakeUpCommand()
             )
         );
 /* 		NamedCommands.registerCommand(
@@ -352,12 +358,8 @@ private double[] getHubTarget() {
 								ShooterSubsystem::runShooter, //runs at a set speed, josh will drive to aim, backup if data-table fails
 								ShooterSubsystem::standbyMotor,
 								ShooterSubsystem),
-						Commands.startEnd(
-								() -> {
-									intaketestSubsystem.IntakeOcilateCommand();
-								},
-								() -> intaketestSubsystem.IntakeUpCommand(),
-								intaketestSubsystem)));		// Right trigger: hub shot — aims turret at hub and fires.
+						intaketestSubsystem.IntakeOcilateCommand()
+								.finallyDo(intaketestSubsystem::intakeUp)));		// Right trigger: hub shot — aims turret at hub and fires.
 		// On release, flywheels drop to standby RPM rather than stopping so the
 		// heavy flywheels stay in motion and reach full speed faster on the next shot.
 		joystick.rightTrigger().whileTrue(
@@ -374,12 +376,8 @@ private double[] getHubTarget() {
 								() -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()), //runs at a set speed, josh will drive to aim, backup if data-table fails
 								ShooterSubsystem::standbyMotor,
 								ShooterSubsystem),
-						Commands.startEnd(
-								() -> {
-									intaketestSubsystem.IntakeOcilateCommand();
-								},
-								() -> intaketestSubsystem.IntakeUpCommand(),
-								intaketestSubsystem)
+						intaketestSubsystem.IntakeOcilateCommand()
+								.finallyDo(intaketestSubsystem::intakeUp)
 						));
 
 		//////////////////////////////////////////////////////////////////////////////
@@ -459,12 +457,8 @@ copilotController.leftTrigger().whileTrue(
 								ShooterSubsystem::runShooter, //feeding, so auto-speed not required
 								ShooterSubsystem::standbyMotor,
 								ShooterSubsystem),
-						Commands.startEnd(
-								() -> {
-									intaketestSubsystem.IntakeOcilateCommand();
-								},
-								() -> intaketestSubsystem.IntakeUpCommand(),
-								intaketestSubsystem)
+						intaketestSubsystem.IntakeOcilateCommand()
+								.finallyDo(intaketestSubsystem::intakeUp)
 						));
 
 				//	^ For feeding

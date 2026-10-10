@@ -54,13 +54,13 @@ public class IntakeLevelSubsystem extends SubsystemBase {
 
     }
 
+    public void intakeUp() {
+        intakeMotor.setNeutralMode(NeutralModeValue.Brake);
+        intakeMotor.setControl(new MotionMagicVoltage(0).withPosition(0));
+    }
+
     public Command IntakeUpCommand() {
-        final MotionMagicVoltage m_request = new MotionMagicVoltage(0);
-        return Commands.sequence(
-                Commands.runOnce(() -> {
-                    intakeMotor.setNeutralMode(NeutralModeValue.Brake);
-                    intakeMotor.setControl(m_request.withPosition(0));
-                }));
+        return Commands.runOnce(this::intakeUp);
     }
 
     public Command intakeHalfWayCommand() {
