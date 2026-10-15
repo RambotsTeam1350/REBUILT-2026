@@ -86,7 +86,7 @@ public class IntakeLevelSubsystem extends SubsystemBase {
         return Commands.sequence(
                 Commands.runOnce(() -> {
                     intakeMotor.setNeutralMode(NeutralModeValue.Brake);
-                    intakeMotor.setControl(m_request.withPosition(-7)); // position a little bit down
+                    intakeMotor.setControl(m_request.withPosition(-8.7)); // position a little bit down
                 }),
                 Commands.waitSeconds(0.75),
                 Commands.runOnce(() -> {

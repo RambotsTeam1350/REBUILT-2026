@@ -13,7 +13,7 @@
         {
           "type": "named",
           "data": {
-            "name": "AimAndShootEmptyPreload"
+            "name": "ShootEmptyPreload"
           }
         },
         {
@@ -32,12 +32,6 @@
           "type": "sequential",
           "data": {
             "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "IntakeDownCommand"
-                }
-              },
               {
                 "type": "wait",
                 "data": {
@@ -81,7 +75,7 @@
         {
           "type": "named",
           "data": {
-            "name": "AimAndShootEmptyHopper"
+            "name": "ShootEmptyHopper"
           }
         }
       ]

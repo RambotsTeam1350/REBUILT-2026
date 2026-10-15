@@ -113,12 +113,15 @@ public class RobotContainer {
 				"stopMotorCommand",
 				Commands.parallel(
 						ThroatAndIndexerSubsystem.stopMotorCommand(),
-						ShooterSubsystem.stopMotorCommand()));
+						ShooterSubsystem.stopMotorCommand(),
+						intaketestSubsystem.IntakeDownCommand()
+						));
+
 	 	NamedCommands.registerCommand(
 				"runMotorCommand",
 				Commands.parallel(
 						ThroatAndIndexerSubsystem.runMotorCommand(),
-						Commands.run(
+						Commands.runOnce(
 							() -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
 						    ShooterSubsystem
 							),
@@ -240,6 +243,69 @@ NamedCommands.registerCommand(
 								},
 								ThroatAndIndexerSubsystem,
 								ShooterSubsystem)));
+
+	// Just for now, get rid of this later and change the autos' commands
+
+	NamedCommands.registerCommand(
+				"ShootEmptyPreload",
+				Commands.sequence(
+						// First run throat and shooter in parallel for N seconds
+						Commands.sequence(
+								Commands.run(
+										() -> ShooterSubsystem
+												.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
+										ShooterSubsystem
+								/*
+								* Makes shooter rev up then after the set time will it run the spindexer/throat
+								* to feed the shooter
+								*/
+								).withTimeout(6.0),
+
+								Commands.runOnce(
+										() -> {
+											ThroatAndIndexerSubsystem.runMotorCommand();
+										},
+										ThroatAndIndexerSubsystem)
+
+						).withTimeout(3.0),
+						// Ensure both systems are stopped/put to standby afterwards
+						Commands.runOnce(
+								() -> {
+									ThroatAndIndexerSubsystem.stopMotorThroat();
+									ThroatAndIndexerSubsystem.stopMotorIndexer();
+									ShooterSubsystem.standbyMotor();
+								},
+								ThroatAndIndexerSubsystem,
+								ShooterSubsystem)));
+
+	 NamedCommands.registerCommand(
+            "ShootEmptyHopper",
+            Commands.sequence(
+                // First run throat and shooter in parallel for N seconds
+                Commands.parallel(
+                    ThroatAndIndexerSubsystem.runMotorCommand(),
+                    Commands.run(
+                        () -> ShooterSubsystem.runShooterWithAutoVelocity(turretSubsystem.getDistanceToHub()),
+                        ShooterSubsystem
+                    )
+                ).withTimeout(5.0),
+                // Ensure both systems are stopped/put to standby afterwards
+                Commands.runOnce(
+                    () -> {
+                        ThroatAndIndexerSubsystem.stopMotorThroat();
+                        ThroatAndIndexerSubsystem.stopMotorIndexer();
+                        ShooterSubsystem.standbyMotor();
+                    },
+                    ThroatAndIndexerSubsystem,
+                    ShooterSubsystem
+                )
+            )
+        );
+
+		NamedCommands.registerCommand(
+			"RunOcil",
+			intaketestSubsystem.IntakeOcilateCommand()
+		);
 
 								///////////////////////////////////////////////////////////////
 
